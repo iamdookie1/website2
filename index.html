@@ -958,45 +958,53 @@ async function fetchPornhub(q='',page=1,sort='views'){
   return{videos:d.videos,total:d.total||d.videos.length*5};
 }
 
-/* ── API 3b: Xvideos ── */
-async function fetchXvideos(q='',page=1,sort='views'){
-  const p=page-1;
-  /* Server first */
-  if(S.serverUrl&&S.serverOk){
-    try{
-      const params=new URLSearchParams({p});
-      if(q)params.set('q',q);
-      const r=await fetch(`${S.serverUrl}/api/xvideos?${params}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
-      if(r.ok){
-        const d=await r.json();
-        const mapped=mapXvideos(d);
-        if(mapped.videos.length)return mapped;
-      }
-    }catch(e){console.warn('[XV server]',e.message);}
+/* ── API 3b: Eporner — fully public, direct browser fetch works ── */
+async function fetchEporner(q='',page=1,sort='views'){
+  const sortMap={views:'top-rated',newest:'newest',rating:'top-rated',trending:'top-weekly'};
+  const params=new URLSearchParams({
+    query:q||'',
+    per_page:CFG_PAGE,
+    page,
+    thumbsize:'big',
+    format:'json',
+    order:sortMap[sort]||'top-rated',
+    gay:0,
+  });
+  /* Direct fetch works — Eporner has open CORS */
+  try{
+    const r=await fetch(`https://www.eporner.com/api/v2/video/search/?${params}`,{
+      mode:'cors',signal:AbortSignal.timeout(10000),
+    });
+    if(!r.ok)throw new Error(`EP ${r.status}`);
+    const d=await r.json();
+    return mapEporner(d);
+  }catch(e){
+    /* Proxy fallback */
+    const d=await proxyFetch(`https://www.eporner.com/api/v2/video/search/?${params}`);
+    return mapEporner(d);
   }
-  /* Direct proxy fallback */
-  const url=q
-    ?`https://www.xvideos.com/api/search/main/${encodeURIComponent(q)}?k=${encodeURIComponent(q)}&p=${p}`
-    :`https://www.xvideos.com/api/search/main?p=${p}`;
-  const d=await proxyFetch(url);
-  return mapXvideos(d);
 }
-function mapXvideos(d){
+function mapEporner(d){
   const hits=d?.videos||[];
   return{
-    videos:hits.map(v=>({
-      id:String(v.id||v.videoId||''),
-      title:v.title||v.tf||'',
-      thumb:v.thumb||v.thumbs?.big||v.pic||'',
-      dur:parseInt(v.duration||v.d||0),
-      views:parseInt(v.nb_v||v.views||0),
-      rating:v.r?parseFloat(v.r).toFixed(1):'—',
-      qual:v.hd?'HD':'SD',
-      tags:(v.keywords||'').split(',').map(t=>t.trim()).filter(Boolean).slice(0,5),
-      url:v.id?`https://www.xvideos.com/embedframe/${v.id}`:'',
-      directUrl:'',useIframe:true,src:'Xvideos',bc:'b-new',
-    })).filter(v=>v.id&&v.url),
-    total:parseInt(d?.nb_videos||0)||hits.length*5,
+    videos:hits.map(v=>{
+      const thumbs=v.thumbs||[];
+      const thumb=thumbs.find(t=>t.size==='big')?.src||thumbs[0]?.src||v.default_thumb||'';
+      return{
+        id:String(v.id||''),
+        title:v.title||'',
+        thumb,
+        dur:parseInt(v.length_sec||v.duration||0),
+        views:parseInt(v.views||0),
+        rating:v.rate?parseFloat(v.rate).toFixed(1):'—',
+        qual:v.hd?'HD':'SD',
+        tags:(v.keywords||'').split(',').map(t=>t.trim()).filter(Boolean).slice(0,5),
+        url:`https://www.eporner.com/hd-porn/${v.id}/`,
+        embedUrl:`https://www.eporner.com/embed/${v.id}/`,
+        useIframe:true,src:'Eporner',bc:'b-hot',
+      };
+    }).filter(v=>v.id&&v.embedUrl),
+    total:parseInt(d?.total_count||0)||hits.length*5,
   };
 }
 
@@ -1011,6 +1019,7 @@ async function fetchRedgifs(q='',page=1){
   const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw new Error(`RG server ${r.status}`);
   const d=await r.json();
+  if(d.error)throw new Error(d.error);
   if(d.pos)RG.pos[posKey]=d.pos;
   const gifs=d.gifs||d.items||[];
   return{
@@ -1032,40 +1041,39 @@ async function fetchMain(params={}){
   const{q='',page=1,sort='views',tag='all'}=params;
   const up=S.serverUrl&&S.serverOk;
 
-  /* GIF tab only → Redgifs */
+  /* GIF tab only → Redgifs (server only) */
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
     if(up){try{return await fetchRedgifs(rq,page);}catch(e){console.warn('[RG]',e.message);}}
     return{videos:[],total:0,notice:'server-offline'};
   }
 
-  /* Home/Trending/New/Top: Pornhub + Xvideos */
+  /* Home/Trending/New/Top: Pornhub (server) + Eporner (direct) */
   const results=await Promise.allSettled([
     up?fetchPornhub(q,page,sort):Promise.reject('offline'),
-    fetchXvideos(q,page,sort),
+    fetchEporner(q,page,sort),
   ]);
 
   const ph=results[0].status==='fulfilled'?results[0].value.videos:[];
-  const xv=results[1].status==='fulfilled'?results[1].value.videos:[];
+  const ep=results[1].status==='fulfilled'?results[1].value.videos:[];
 
   if(results[0].status==='rejected')console.warn('[PH]',results[0].reason);
-  if(results[1].status==='rejected')console.warn('[XV]',results[1].reason);
+  if(results[1].status==='rejected')console.warn('[EP]',results[1].reason);
 
-  /* Interleave: PH, XV, PH, XV... so both sources show */
+  /* Interleave PH + EP results */
   const merged=[];
-  const max=Math.max(ph.length,xv.length);
+  const max=Math.max(ph.length,ep.length);
   for(let i=0;i<max;i++){
     if(ph[i])merged.push(ph[i]);
-    if(xv[i])merged.push(xv[i]);
+    if(ep[i])merged.push(ep[i]);
   }
 
   if(!merged.length){
-    if(!up)return{videos:[],total:0,notice:'server-offline'};
-    return{videos:[],total:0,notice:'no-results'};
+    /* Nothing at all */
+    return{videos:[],total:0,notice:up?'no-results':'server-offline'};
   }
-  const total=((results[0].status==='fulfilled'?results[0].value.total:0)
-              +(results[1].status==='fulfilled'?results[1].value.total:0))/2;
-  return{videos:merged,total:Math.max(total,merged.length*3)};
+  const total=((results[0].status==='fulfilled'?results[0].value.total:0)+(results[1].status==='fulfilled'?results[1].value.total:0))||merged.length*4;
+  return{videos:merged,total};
 }
 
 /* Mock */
@@ -1209,14 +1217,15 @@ async function fetchReddit(append=false){
     $('rstate').innerHTML=`<span class="big">⏳</span>Loading r/${esc(sub)}…`;$('rstate').style.display='block';
   }
   try{
-    const qs=new URLSearchParams({limit:25,raw_json:1,...(S.rd.sort==='top'&&S.rd.time?{t:S.rd.time}:{}),...(S.rd.after?{after:S.rd.after}:{})});
-    const res=await fetch(`https://www.reddit.com/r/${encodeURIComponent(sub)}/${S.rd.sort}.json?${qs}`,{headers:{Accept:'application/json'}});
+    const qs=new URLSearchParams({limit:100,raw_json:1,...(S.rd.sort==='top'&&S.rd.time?{t:S.rd.time}:{}),...(S.rd.after?{after:S.rd.after}:{})});
+    const res=await fetch(`https://www.reddit.com/r/${encodeURIComponent(sub)}/${S.rd.sort}.json?${qs}`,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});
     if(!res.ok){if(res.status===404)throw new Error(`r/${sub} not found`);if(res.status===403)throw new Error(`r/${sub} is private or quarantined`);throw new Error(`Reddit ${res.status}`);}
     const data=await res.json();const listing=data?.data;if(!listing)throw new Error('Unexpected Reddit response');
     S.rd.after=listing.after||null;S.rd.hasMore=!!listing.after;
     const posts=(listing.children||[]).map(c=>c.data)
-      .filter(p=>p.post_hint==='image'||p.is_video||p.url?.match(/\.(gif|gifv|mp4|webm|jpg|jpeg|png|webp)(\?|$)/i)||p.preview?.images?.length||p.is_gallery)
-      .map(normRedditPost);
+      .filter(isMediaPost)
+      .map(normRedditPost)
+      .filter(p=>p.mUrl||p.gallery?.length||p.tUrl);
     S.rd.all=append?[...S.rd.all,...posts]:posts;
     if(append){
       /* On append — filter and render only new posts */
@@ -1241,15 +1250,110 @@ async function fetchReddit(append=false){
 function loadMoreR_unused(){}
 
 function normRedditPost(p){
-  let mType='image',mUrl='',tUrl='';
-  if(p.is_video&&p.media?.reddit_video){mType='video';mUrl=p.media.reddit_video.fallback_url?.replace('?source=fallback','')||'';}
-  else if(p.url?.match(/\.(gif|gifv)(\?|$)/i)){mType='gif';if(p.preview?.images?.[0]?.variants?.mp4?.source?.url){mUrl=deh(p.preview.images[0].variants.mp4.source.url);mType='gif-v';}else mUrl=p.url.replace('.gifv','.mp4');}
-  else if(p.url?.match(/\.(mp4|webm)(\?|$)/i)){mType='video';mUrl=p.url;}
-  else if(p.is_gallery&&p.gallery_data){mType='gallery';const fid=p.gallery_data.items?.[0]?.media_id;if(fid&&p.media_metadata?.[fid])mUrl=deh(p.media_metadata[fid].s?.u||p.media_metadata[fid].s?.gif||'');}
-  else mUrl=p.url?.match(/\.(jpg|jpeg|png|webp)(\?|$)/i)?p.url:deh(p.preview?.images?.[0]?.source?.url||p.url||'');
-  tUrl=deh(p.preview?.images?.[0]?.resolutions?.[2]?.url||p.preview?.images?.[0]?.resolutions?.[1]?.url||p.preview?.images?.[0]?.source?.url||p.thumbnail||'');
-  if(['self','nsfw','default',''].includes(tUrl))tUrl='';
-  return{id:p.id,title:p.title,sub:p.subreddit,author:p.author,ups:p.ups,comments:p.num_comments,nsfw:p.over_18,flair:p.link_flair_text,link:`https://reddit.com${p.permalink}`,mType,mUrl,tUrl,gallery:p.is_gallery&&p.gallery_data?.items?.map(it=>{const m=p.media_metadata?.[it.media_id];return m?deh(m.s?.u||m.s?.gif||''):''}).filter(Boolean)||[],src:'reddit'};
+  let mType='image',mUrl='',tUrl='',audioUrl='';
+
+  const url=p.url||'';
+  const hint=p.post_hint||'';
+
+  /* ── VIDEO ── */
+  if(p.is_video&&p.media?.reddit_video){
+    mType='video';
+    /* Remove source param and get clean URL */
+    mUrl=(p.media.reddit_video.fallback_url||'').split('?')[0];
+    /* Reddit video audio is separate — attach for reference (can't mix in browser) */
+    audioUrl=mUrl.replace(/DASH_\d+/,'DASH_audio').replace(/\.mp4$/,'');
+  }
+  /* External video hosts */
+  else if(hint==='hosted:video'&&p.secure_media?.oembed?.html){
+    mType='video';
+    /* Best we can do is extract a thumbnail */
+    mUrl=url;
+  }
+  /* v.redd.it links */
+  else if(url.includes('v.redd.it')){
+    mType='video';
+    /* Try to find the direct MP4 from preview */
+    const rv=p.media?.reddit_video||p.crosspost_parent_list?.[0]?.media?.reddit_video;
+    if(rv)mUrl=(rv.fallback_url||'').split('?')[0];
+    else mUrl=url;
+  }
+  /* Streamable, gfycat etc. embeds — treat as gif-v using preview mp4 */
+  else if(p.preview?.reddit_video_preview?.fallback_url){
+    mType='gif-v';
+    mUrl=p.preview.reddit_video_preview.fallback_url.split('?')[0];
+  }
+  /* GIF/GIFV */
+  else if(url.match(/\.(gif|gifv)(\?|$)/i)){
+    mType='gif';
+    /* Imgur gifv → mp4 */
+    if(url.includes('imgur.com')&&url.endsWith('.gifv')){
+      mUrl=url.replace('.gifv','.mp4');
+      mType='gif-v';
+    } else if(p.preview?.images?.[0]?.variants?.mp4?.source?.url){
+      mUrl=deh(p.preview.images[0].variants.mp4.source.url);
+      mType='gif-v';
+    } else {
+      mUrl=url.replace('.gifv','.mp4');
+    }
+  }
+  /* Direct MP4/WebM */
+  else if(url.match(/\.(mp4|webm)(\?|$)/i)){
+    mType='video';mUrl=url;
+  }
+  /* Gallery */
+  else if(p.is_gallery&&p.gallery_data){
+    mType='gallery';
+    const fid=p.gallery_data.items?.[0]?.media_id;
+    if(fid&&p.media_metadata?.[fid]){
+      const m=p.media_metadata[fid];
+      mUrl=deh(m.s?.u||m.s?.gif||'');
+    }
+  }
+  /* Image */
+  else {
+    mType='image';
+    if(url.match(/\.(jpg|jpeg|png|webp)(\?|$)/i)){
+      mUrl=url;
+    } else {
+      mUrl=deh(p.preview?.images?.[0]?.source?.url||'');
+    }
+  }
+
+  /* ── THUMBNAIL ── best resolution available ── */
+  const res=p.preview?.images?.[0]?.resolutions||[];
+  /* Pick ~640px wide if available */
+  const bestRes=res.slice().reverse().find(r=>parseInt(r.width||0)>=480)||res[res.length-1];
+  tUrl=deh(bestRes?.url||p.preview?.images?.[0]?.source?.url||p.thumbnail||'');
+  if(!tUrl||['self','nsfw','default','spoiler','image'].includes(tUrl))tUrl='';
+
+  /* Gallery items */
+  const gallery=p.is_gallery&&p.gallery_data?.items?.map(it=>{
+    const m=p.media_metadata?.[it.media_id];
+    return m?deh(m.s?.u||m.s?.gif||''):'';
+  }).filter(Boolean)||[];
+
+  return{
+    id:p.id,title:p.title,sub:p.subreddit,author:p.author,
+    ups:p.ups,comments:p.num_comments,nsfw:p.over_18,
+    flair:p.link_flair_text,link:`https://reddit.com${p.permalink}`,
+    mType,mUrl,tUrl,audioUrl,gallery,src:'reddit',
+  };
+}
+
+/* Better filter — accept more post types */
+function isMediaPost(p){
+  const url=p.url||'';
+  const hint=p.post_hint||'';
+  return p.is_video
+    ||p.is_gallery
+    ||hint==='image'
+    ||hint==='hosted:video'
+    ||hint==='rich:video'
+    ||url.includes('v.redd.it')
+    ||url.match(/\.(gif|gifv|mp4|webm|jpg|jpeg|png|webp)(\?|$)/i)
+    ||p.preview?.images?.length
+    ||p.preview?.reddit_video_preview
+    ||(p.media?.oembed&&hint.includes('video'));
 }
 function setRF(btn,type){document.querySelectorAll('#rsi .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.rm===type));S.rd.mf=type;applyRFilter(type);}
 function applyRFilter(type){
@@ -1612,7 +1716,7 @@ function launchPlayer(opts){
 
 function openMain(v){
   S.curVid=v;
-  const src=v.useIframe?(v.url||v.embedUrl||''):(v.directUrl||v.url||'');
+  const src=v.useIframe?(v.embedUrl||v.url||''):(v.directUrl||v.url||'');
   const mType=v.useIframe?'iframe':(v.src==='Redgifs'?'gif':'video');
   launchPlayer({
     src, title:v.title, accent:'gr',
