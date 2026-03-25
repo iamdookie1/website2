@@ -965,71 +965,29 @@ async function fetchPornhub(q='',page=1,cat='',sort='views'){
   return d;
 }
 
-/* ── API 3: Redgifs (fixed auth + correct endpoints) ── */
-/* ── API 3: Redgifs ── */
-const RG={token:null,exp:0,pos:{}};
-async function rgToken(){
-  if(RG.token&&Date.now()<RG.exp)return RG.token;
-  /* Server proxy first */
-  if(S.serverUrl&&S.serverOk){
-    try{
-      const r=await fetch(`${S.serverUrl}/api/gifs/token`,{mode:'cors',signal:AbortSignal.timeout(6000)});
-      if(r.ok){const d=await r.json();if(d.token){RG.token=d.token;RG.exp=Date.now()+3400000;return RG.token;}}
-    }catch{}
-  }
-  /* Direct — no Content-Type on GET */
-  const r=await fetch('https://api.redgifs.com/v2/auth/temporary',{mode:'cors'});
-  if(!r.ok)throw new Error(`Redgifs auth ${r.status}`);
-  const d=await r.json();
-  if(!d.token)throw new Error('Redgifs auth: no token in response');
-  RG.token=d.token;RG.exp=Date.now()+3400000;
-  return RG.token;
-}
+/* ── API 3: Redgifs — server only (Redgifs CORS blocks all non-redgifs.com origins) ── */
+const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
-  /* Server first */
-  if(S.serverUrl&&S.serverOk){
-    try{
-      const p=new URLSearchParams({count:CFG_PAGE});
-      if(q)p.set('q',q);
-      const posKey=q||'__t__';
-      if(page>1&&RG.pos[posKey])p.set('pos',RG.pos[posKey]);
-      const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(10000)});
-      if(!r.ok)throw new Error(`srv ${r.status}`);
-      const d=await r.json();
-      if(d.pos)RG.pos[posKey]=d.pos;
-      const mapped=mapRedgifs(d,q);
-      if(mapped.videos.length)return mapped;
-      throw new Error('empty');
-    }catch(e){console.warn('[Server/RG]',e.message);}
-  }
-  /* Direct with auth */
-  const tok=await rgToken();
-  const posKey=q||'__trending__';
-  const pos=page>1?(RG.pos[posKey]||''):'';
-  const url=q
-    ?`https://api.redgifs.com/v2/gifs/search?search_text=${encodeURIComponent(q)}&count=${CFG_PAGE}${pos?`&pos=${pos}`:''}&order=trending`
-    :`https://api.redgifs.com/v2/gifs/trending?count=${CFG_PAGE}${pos?`&pos=${pos}`:''}`;
-  const r=await fetch(url,{mode:'cors',headers:{Authorization:`Bearer ${tok}`},signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw new Error(`Redgifs ${r.status}`);
+  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  const p=new URLSearchParams({count:CFG_PAGE});
+  if(q)p.set('q',q);
+  const posKey=q||'__t__';
+  if(page>1&&RG.pos[posKey])p.set('pos',RG.pos[posKey]);
+  const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
+  if(!r.ok)throw new Error(`Redgifs server ${r.status}`);
   const d=await r.json();
   if(d.pos)RG.pos[posKey]=d.pos;
-  return mapRedgifs(d,q);
+  return mapRedgifs(d);
 }
-function mapRedgifs(d,q=''){
+function mapRedgifs(d){
   const gifs=d.gifs||d.items||[];
   return{
     videos:gifs.map(g=>({
-      id:g.id,
-      title:g.title||g.id,
-      /* Try multiple thumbnail URL patterns */
-      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster
-            ||`https://i.redgifs.com/i/${g.id}.webp`,
-      dur:g.duration||0,
-      views:g.views||0,
+      id:g.id,title:g.title||g.id,
+      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster||`https://i.redgifs.com/i/${g.id}.webp`,
+      dur:g.duration||0,views:g.views||0,
       rating:g.likes?Math.min(10,(g.likes/Math.max(1,g.views||g.likes))*10).toFixed(1):'—',
-      qual:'GIF/HD',
-      tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
-      /* Prefer HD, fallback to SD, then mobile */
+      qual:'GIF/HD',tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
       directUrl:g.urls?.hd||g.urls?.sd||g.urls?.mobile||'',
       url:g.urls?.hd||g.urls?.sd||'',
       useIframe:false,src:'Redgifs',bc:'b-rg',
@@ -1038,29 +996,23 @@ function mapRedgifs(d,q=''){
   };
 }
 
-/* ── Combined fetch ── */
+/* ── Combined fetch — both APIs require Python server ── */
 async function fetchMain(params={}){
   const{q='',page=1,cat='',sort='views',tag='all'}=params;
+  const up=S.serverUrl&&S.serverOk;
+
+  if(!up)return{videos:[],total:0,notice:'server-offline'};
+
   /* GIF tab → Redgifs */
   if(tag==='gif'||q.startsWith('__rg')){
-    const realQ=q.startsWith('__rg')?'':q;
-    try{return await fetchRedgifs(realQ,page);}
+    try{return await fetchRedgifs(q.startsWith('__rg')?'':q,page);}
     catch(e){console.warn('[RG]',e.message);}
   }
-  /* Primary: Pornhub via server */
+  /* Primary: Pornhub */
   try{return await fetchPornhub(q,page,cat,sort);}
-  catch(e){
-    if(e.message==='server-offline'){
-      /* Server not connected — show Redgifs as fallback */
-      try{return await fetchRedgifs(q||'sex',page);}
-      catch{}
-      /* If RG also fails, return empty with a notice */
-      return{videos:[],total:0,notice:'server-offline'};
-    }
-    console.warn('[PH]',e.message);
-  }
-  /* PH errored but server was online — try Redgifs */
-  try{return await fetchRedgifs(q,page);}
+  catch(e){console.warn('[PH]',e.message);}
+  /* Fallback: Redgifs */
+  try{return await fetchRedgifs(q||'',page);}
   catch(e){console.warn('[RG fallback]',e.message);}
   return{videos:mockVids(CFG_PAGE),total:CFG_PAGE*5};
 }
