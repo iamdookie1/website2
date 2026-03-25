@@ -522,7 +522,7 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
         <div class="sb-lnk" data-nav="top">★ Top Rated</div>
       </div>
       <div class="sb-sec">
-        <div class="sb-ttl" style="color:rgba(201,168,76,.5)">API 2 — Redtube</div>
+        <div class="sb-ttl" style="color:rgba(201,168,76,.5)">API 2 — Pornhub</div>
         <div class="sb-lnk" data-nav="cat-amateur">◈ Amateur</div>
         <div class="sb-lnk" data-nav="cat-milf">◈ MILF</div>
         <div class="sb-lnk" data-nav="cat-teen">◈ Teen (18+)</div>
@@ -917,148 +917,199 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
 
 /* ══════════════════════════════════════════════════════════
    ╔══════════════════════════════════════════╗
-   ║  API 2 — REDTUBE   (main featured feed)  ║
-   ║  API 3 — REDGIFS   (main gif feed)        ║
+   ║  API 2 — PORNHUB  (main featured feed)   ║
+   ║  API 3 — REDGIFS  (gif feed)             ║
    ╚══════════════════════════════════════════╝
+   Both are public APIs — no keys needed.
 ══════════════════════════════════════════════════════════ */
 const CFG_PAGE=24;
+const PROXY_LIST=[
+  u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+  u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+  u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+];
+async function proxyFetch(url,parse='json'){
+  for(const mkP of PROXY_LIST){
+    try{
+      const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(12000)});
+      if(!r.ok)continue;
+      if(parse==='text')return await r.text();
+      const t=await r.text();
+      return JSON.parse(t);
+    }catch{continue;}
+  }
+  throw new Error('All proxies failed for: '+url);
+}
 
-/* Redtube — API 2 (routes via Python server if configured) */
-async function fetchRedtube(q='',page=1,cat='',sort='views'){
-  const sm={views:'mostviewed',newest:'latest',rating:'rating'};
-
-  /* ── Try Python server first ── */
+/* ── API 2: Pornhub webmasters (public, CORS-friendly) ── */
+const PH_SORT={views:'mostviewed',newest:'newest',rating:'rating',trending:'trending'};
+async function fetchPornhub(q='',page=1,cat='',sort='views'){
+  /* Try server first */
   if(S.serverUrl&&S.serverOk){
     try{
-      const p=new URLSearchParams({page,limit:CFG_PAGE,sort:sm[sort]||'mostviewed'});
+      const p=new URLSearchParams({page,limit:CFG_PAGE,sort:PH_SORT[sort]||'mostviewed'});
       if(q)p.set('q',q);if(cat)p.set('cat',cat);
       const r=await fetch(`${S.serverUrl}/api/videos?${p}`,{mode:'cors',signal:AbortSignal.timeout(9000)});
       if(!r.ok)throw new Error(`Server ${r.status}`);
-      return await r.json();
-    }catch(e){console.warn('[Server/Redtube]',e.message);S.serverOk=false;}
+      const d=await r.json();
+      if(d.videos&&d.videos.length)return d;
+      throw new Error('empty');
+    }catch(e){console.warn('[Server]',e.message);S.serverOk=false;}
   }
-
-  /* ── Direct Redtube API fallback ── */
+  /* Direct Pornhub webmasters API */
   const params=new URLSearchParams({
-    data:'redtube.Videos.searchVideos',output:'json',thumbsize:'medium_6',
-    limit:CFG_PAGE,page,ordering:sm[sort]||'mostviewed',
+    search:q||'',ordering:PH_SORT[sort]||'mostviewed',
+    thumbsize:'large_hd',page,
   });
-  if(q)params.set('search',q);
   if(cat)params.set('category',cat);
-  const r=await fetch(`https://api.redtube.com/?${params}`,{mode:'cors'});
-  if(!r.ok)throw new Error(`Redtube ${r.status}`);
-  const d=await r.json();
-  if(!d.videos||!d.videos.length)throw new Error('No Redtube videos');
+  const url=`https://www.pornhub.com/webmasters/search?${params}`;
+  let d;
+  try{
+    /* Try direct first (may work without proxy depending on browser) */
+    const r=await fetch(url,{mode:'cors',signal:AbortSignal.timeout(8000)});
+    if(!r.ok)throw new Error(`PH ${r.status}`);
+    d=await r.json();
+  }catch{
+    d=await proxyFetch(url);
+  }
+  if(!d?.videos?.length)throw new Error('No Pornhub videos');
   return{
-    videos:d.videos.map(v=>{
-      const thumbArr=v.thumbs||[];
-      const bigThumb=thumbArr.find(t=>t.size==='medium_6')||thumbArr.find(t=>t.size==='medium')||thumbArr[thumbArr.length-1];
-      const thumb=bigThumb?.src||v.default_thumb||'';
-      return{
-        id:v.video_id,title:v.title,thumb,dur:parseDur(v.duration),
-        views:parseInt(v.views)||0,
-        rating:v.rating?(parseFloat(v.rating)/10).toFixed(1):'—',
-        qual:'720p',tags:(v.tags||[]).map(t=>t.tag_name).slice(0,4),
-        url:`https://embed.redtube.com/?bgcolor=000000&id=${v.video_id}`,
-        useIframe:true,src:'Redtube',bc:'b-hot',
-      };
-    }),
-    total:parseInt(d.count)||CFG_PAGE,
+    videos:d.videos.map(v=>({
+      id:v.video_id,
+      title:v.title,
+      thumb:v.thumb||v.thumbs?.[0]||'',
+      dur:parseDur(v.duration),
+      views:parseInt(v.views)||0,
+      rating:v.rating?parseFloat(v.rating).toFixed(1):'—',
+      qual:v.hd==='1'?'HD':'SD',
+      tags:(v.tags||[]).map(t=>t.tag_name||t).slice(0,5),
+      url:`https://www.pornhub.com/embed/${v.video_id}`,
+      directUrl:'',
+      useIframe:true,src:'Pornhub',bc:'b-hot',
+    })),
+    total:parseInt(d.videos_count)||CFG_PAGE*5,
   };
 }
 
-/* Redgifs — API 3 (routes via Python server if configured) */
-const RG={token:null,pos:{}};
+/* ── API 3: Redgifs (fixed auth + correct endpoints) ── */
+const RG={token:null,exp:0,pos:{}};
 async function rgToken(){
-  /* Use server token endpoint if available */
+  if(RG.token&&Date.now()<RG.exp)return RG.token;
+  /* Server proxy */
   if(S.serverUrl&&S.serverOk){
     try{
       const r=await fetch(`${S.serverUrl}/api/gifs/token`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-      if(r.ok){const d=await r.json();RG.token=d.token;return d.token;}
+      if(r.ok){const d=await r.json();RG.token=d.token;RG.exp=Date.now()+3500000;return RG.token;}
     }catch{}
   }
-  if(RG.token)return RG.token;
-  const r=await fetch('https://api.redgifs.com/v2/auth/temporary',{mode:'cors'});
-  if(!r.ok)throw new Error('Redgifs auth failed');
-  const d=await r.json();RG.token=d.token;return d.token;
+  /* Direct auth */
+  try{
+    const r=await fetch('https://api.redgifs.com/v2/auth/temporary',{
+      method:'GET',mode:'cors',
+      headers:{'Content-Type':'application/json'},
+    });
+    if(!r.ok)throw new Error(`RG auth ${r.status}`);
+    const d=await r.json();
+    RG.token=d.token;RG.exp=Date.now()+3500000;
+    return RG.token;
+  }catch{
+    /* Fallback: fetch via proxy */
+    const d=await proxyFetch('https://api.redgifs.com/v2/auth/temporary');
+    RG.token=d.token;RG.exp=Date.now()+3500000;
+    return RG.token;
+  }
 }
 async function fetchRedgifs(q='',page=1){
-  /* ── Try Python server first ── */
   if(S.serverUrl&&S.serverOk){
     try{
       const p=new URLSearchParams({count:CFG_PAGE});
       if(q)p.set('q',q);
-      if(page>1&&RG.pos[q||'__t__'])p.set('pos',RG.pos[q||'__t__']);
+      const posKey=q||'__t__';
+      if(page>1&&RG.pos[posKey])p.set('pos',RG.pos[posKey]);
       const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(9000)});
-      if(!r.ok)throw new Error(`Server ${r.status}`);
+      if(!r.ok)throw new Error('srv');
       const d=await r.json();
-      if(d.pos)RG.pos[q||'__t__']=d.pos;
-      return mapRedgifs(d);
-    }catch(e){console.warn('[Server/Redgifs]',e.message);S.serverOk=false;}
+      if(d.pos)RG.pos[posKey]=d.pos;
+      return mapRedgifs(d,q);
+    }catch(e){console.warn('[Server/RG]',e.message);S.serverOk=false;}
   }
-
-  /* ── Direct Redgifs fallback ── */
   const tok=await rgToken();
-  const count=CFG_PAGE;
   const posKey=q||'__trending__';
-  const pos=page>1?RG.pos[posKey]:undefined;
-  const url=q
-    ?`https://api.redgifs.com/v2/gifs/search?search_text=${encodeURIComponent(q)}&count=${count}${pos?`&pos=${pos}`:''}&order=trending&type=g`
-    :`https://api.redgifs.com/v2/gifs/trending?count=${count}${pos?`&pos=${pos}`:''}&type=g`;
-  const r=await fetch(url,{headers:{Authorization:`Bearer ${tok}`},mode:'cors'});
-  if(!r.ok)throw new Error(`Redgifs ${r.status}`);
-  const d=await r.json();
+  const pos=page>1?RG.pos[posKey]:'';
+  const base='https://api.redgifs.com/v2';
+  const endpoint=q
+    ?`${base}/gifs/search?search_text=${encodeURIComponent(q)}&count=${CFG_PAGE}${pos?`&pos=${pos}`:''}&order=trending`
+    :`${base}/gifs/trending?count=${CFG_PAGE}${pos?`&pos=${pos}`:''}`;
+  let d;
+  try{
+    const r=await fetch(endpoint,{
+      mode:'cors',
+      headers:{Authorization:`Bearer ${tok}`},
+      signal:AbortSignal.timeout(10000),
+    });
+    if(!r.ok)throw new Error(`RG ${r.status}`);
+    d=await r.json();
+  }catch{
+    /* Proxy fallback with auth in URL isn't possible, so try without token */
+    const fallbackUrl=q
+      ?`${base}/gifs/search?search_text=${encodeURIComponent(q)}&count=${CFG_PAGE}`
+      :`${base}/gifs/trending?count=${CFG_PAGE}`;
+    d=await proxyFetch(fallbackUrl);
+  }
   if(d.pos)RG.pos[posKey]=d.pos;
-  return mapRedgifs(d);
+  return mapRedgifs(d,q);
 }
-function mapRedgifs(d){
+function mapRedgifs(d,q=''){
+  const gifs=d.gifs||d.items||[];
   return{
-    videos:(d.gifs||[]).map(g=>({
-      id:g.id,title:g.title||g.id,
-      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster||`https://i.redgifs.com/i/${g.id}.webp`,
-      dur:g.duration||0,views:g.views||0,
-      rating:g.likes?Math.min(10,g.likes/100).toFixed(1):'—',
-      qual:'GIF/HD',tags:Array.isArray(g.tags)?g.tags.slice(0,4):[],
-      url:g.urls?.hd||g.urls?.sd||'',useIframe:false,src:'Redgifs',bc:'b-rg',
-    })),
-    total:(d.pages||5)*CFG_PAGE,
+    videos:gifs.map(g=>({
+      id:g.id,
+      title:g.title||g.id,
+      /* Try multiple thumbnail URL patterns */
+      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster
+            ||`https://i.redgifs.com/i/${g.id}.webp`,
+      dur:g.duration||0,
+      views:g.views||0,
+      rating:g.likes?Math.min(10,(g.likes/Math.max(1,g.views||g.likes))*10).toFixed(1):'—',
+      qual:'GIF/HD',
+      tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
+      /* Prefer HD, fallback to SD, then mobile */
+      directUrl:g.urls?.hd||g.urls?.sd||g.urls?.mobile||'',
+      url:g.urls?.hd||g.urls?.sd||'',
+      useIframe:false,src:'Redgifs',bc:'b-rg',
+    })).filter(g=>g.directUrl),
+    total:(d.pages||10)*CFG_PAGE,
   };
 }
 
-/* Combined API 2+3 fetch */
+/* ── Combined fetch: tries PH then RG ── */
 async function fetchMain(params={}){
   const{q='',page=1,cat='',sort='views',tag='all'}=params;
-
-  /* Redgifs-priority when gif tab selected or rg- nav */
-  if(tag==='gif'||q==='__rg_trending__'||q==='__rg_new__'){
-    try{
-      const realQ=q==='__rg_trending__'?'':q==='__rg_new__'?'':q;
-      return await fetchRedgifs(realQ,page);
-    }catch(e){console.warn('[Redgifs]',e.message);}
+  /* GIF tab or GIF nav → Redgifs */
+  if(tag==='gif'||q.startsWith('__rg')){
+    const realQ=q.startsWith('__rg')?'':q;
+    try{return await fetchRedgifs(realQ,page);}catch(e){console.warn('[RG]',e.message);}
   }
-
-  /* Try Redtube first (API 2) */
-  try{return await fetchRedtube(q,page,cat,sort);}
-  catch(e){console.warn('[Redtube]',e.message);}
-
-  /* Fallback to Redgifs (API 3) */
-  try{return await fetchRedgifs(q||'',page);}
-  catch(e){console.warn('[Redgifs]',e.message);}
-
-  /* Mock fallback */
-  return{videos:mockVids(CFG_PAGE),total:120};
+  /* Primary: Pornhub */
+  try{return await fetchPornhub(q,page,cat,sort);}
+  catch(e){console.warn('[PH]',e.message);}
+  /* Fallback: Redgifs */
+  try{return await fetchRedgifs(q,page);}
+  catch(e){console.warn('[RG fallback]',e.message);}
+  /* Last resort: mock */
+  return{videos:mockVids(CFG_PAGE),total:CFG_PAGE*5};
 }
 
 /* Mock */
 function mockVids(n){
-  const T=['Midnight Session','Golden Hour Exclusive','Studio Private Cut','Raw Premium Vol.2','After Hours Special','VIP Access Only','4K Premium','Late Night Exclusive','Director\'s Cut','Studio Release'];
-  const Q=['720p','1080p','4K'],B=['b-hot','b-hd','b-4k','b-new'];
+  const T=['Midnight Session','Golden Hour Cut','Studio Exclusive','Raw Collection','After Hours','VIP Access','Late Night','Premium Cut','Director\'s Edition','Studio Release'];
+  const Q=['HD','1080p','4K'],B=['b-hot','b-hd','b-4k','b-new'];
   return Array.from({length:n},(_,i)=>({
     id:`m-${i+1+S.page*100}`,title:T[i%T.length]+(i>9?` ${Math.ceil(i/10)}`:''),
     thumb:`https://picsum.photos/seed/ob${i+S.page*77}/640/360`,
-    dur:Math.floor(Math.random()*3600)+120,views:Math.floor(Math.random()*5e6)+1000,
-    rating:(7+Math.random()*3).toFixed(1),qual:Q[i%3],tags:['amateur','hd','exclusive'].slice(0,2),
-    url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    dur:Math.floor(Math.random()*3600)+120,views:Math.floor(Math.random()*5e6)+1e3,
+    rating:(7+Math.random()*3).toFixed(1),qual:Q[i%3],tags:['amateur','hd'].slice(0,2),
+    directUrl:'',url:'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     useIframe:false,src:'Demo',bc:B[i%4],
   }));
 }
@@ -1513,68 +1564,163 @@ function renderR4Grid(append=false){
   });
 }
 /* ══════════════════════════════════════════════════════════
-   PLAYER MODAL
+   UNIFIED PLAYER — all content uses the same UI
 ══════════════════════════════════════════════════════════ */
+
+/* Shared image overlay inside pvw — for images shown in video wrap */
+function setPlayerImage(src,alt=''){
+  const pvw=$('pvw');
+  let img=pvw.querySelector('.pvw-img');
+  if(!img){
+    img=document.createElement('img');
+    img.className='pvw-img';
+    img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2;';
+    pvw.insertBefore(img,pvw.firstChild);
+  }
+  img.src=src;img.alt=alt;img.style.display='block';
+  img.referrerPolicy='no-referrer';
+  img.onerror=()=>{ img.style.display='none'; };
+}
+function clearPlayerImage(){
+  const img=$('pvw').querySelector('.pvw-img');
+  if(img)img.style.display='none';
+}
+
+/* Gallery overlay inside pvw */
+let GAL={items:[],idx:0};
+function setGallery(items){
+  GAL={items,idx:0};
+  const pvw=$('pvw');
+  let nav=pvw.querySelector('.pvw-galnav');
+  if(!nav){
+    nav=document.createElement('div');nav.className='pvw-galnav';
+    nav.style.cssText='position:absolute;bottom:52px;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.4rem;background:rgba(0,0,0,.6);pointer-events:all;';
+    nav.innerHTML=`<button onclick="galNav(-1)" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;cursor:pointer;font-size:.9rem;border-radius:2px;">◀</button>
+      <span id="gal-idx" style="font-family:'DM Mono',monospace;font-size:.6rem;color:rgba(255,255,255,.7);min-width:40px;text-align:center;">1/${items.length}</span>
+      <button onclick="galNav(1)" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;cursor:pointer;font-size:.9rem;border-radius:2px;">▶</button>`;
+    pvw.appendChild(nav);
+  }else{
+    nav.style.display='flex';
+    nav.querySelector('#gal-idx').textContent=`1/${items.length}`;
+  }
+  if(items.length<=1&&nav)nav.style.display='none';
+  setPlayerImage(items[0]);
+}
+function galNav(d){
+  if(!GAL.items.length)return;
+  GAL.idx=(GAL.idx+d+GAL.items.length)%GAL.items.length;
+  setPlayerImage(GAL.items[GAL.idx]);
+  const el=$('gal-idx');if(el)el.textContent=`${GAL.idx+1}/${GAL.items.length}`;
+}
+function clearGallery(){
+  const nav=$('pvw').querySelector('.pvw-galnav');
+  if(nav)nav.style.display='none';
+  GAL={items:[],idx:0};
+}
+
+/* Core player launcher */
+function launchPlayer(opts){
+  /* opts: {src, title, meta (html), actions (html), accent, extra (html),
+            showRelated, mediaType, galleryItems, loop, thumb} */
+  const{src='',title='',meta='',actions='',accent='gr',extra='',
+        showRelated=false,mediaType='video',galleryItems=[],loop=false}=opts;
+
+  /* Shell accent */
+  $('pshell').className=`ps ${accent}`;
+  $('ptitle').textContent=title;
+  $('pmeta').innerHTML=meta;
+  $('par').innerHTML=actions;
+  const xtra=$('pxtra');
+  if(extra){xtra.classList.remove('hidden');xtra.innerHTML=extra;}
+  else xtra.classList.add('hidden');
+  $('prl').style.display=showRelated?'':'none';
+
+  /* Kill any previous dead notice */
+  const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
+
+  /* Always show pvw — hide separate image/iframe wrappers */
+  $('pvw').style.display='block';
+  $('pfw').style.display='none';
+  $('piw').style.display='none';
+
+  clearGallery();clearPlayerImage();
+
+  if(mediaType==='iframe'){
+    /* Pornhub embed and similar */
+    $('pvw').style.display='none';
+    $('pfw').style.display='block';
+    vidPause();
+    $('mf').src=src;
+  } else if(mediaType==='image'){
+    /* Image shown inside pvw with custom overlay */
+    vidPause();
+    if(galleryItems.length>1)setGallery(galleryItems);
+    else setPlayerImage(src,title);
+    /* Mute the controls (no video) */
+    $('ctime').textContent='— / —';
+    pf.style.width='0%';
+  } else {
+    /* video or gif → native <video> */
+    vidPause();
+    const v=$('mv');
+    v.loop=loop||mediaType==='gif';
+    loadStream(src);
+  }
+
+  $('pm').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+
 function openMain(v){
   S.curVid=v;
-  $('pshell').className='ps gr';
-  $('ptitle').textContent=v.title;
-  $('pmeta').innerHTML=`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span style="color:var(--gold)">${esc(v.src)}</span>`;
-  $('par').innerHTML=`<button class="btn" onclick="toast('Liked ♥','ok')">♥ Like</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`;
-  $('pxtra').classList.add('hidden');$('prl').style.display='';
-  if(v.useIframe){
-    $('pvw').style.display='none';$('pfw').style.display='block';$('piw').style.display='none';
-    vidPause();
-    $('mf').src=v.url;
-  }else{
-    $('pvw').style.display='block';$('pfw').style.display='none';$('piw').style.display='none';
-    vidPause();loadStream(v.url);
-  }
-  $('pm').classList.add('on');document.body.style.overflow='hidden';
+  const mType=v.useIframe?'iframe':(v.src==='Redgifs'?'gif':'video');
+  const src=v.useIframe?v.url:(v.directUrl||v.url);
+  launchPlayer({
+    src, title:v.title, accent:'gr',
+    meta:`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span>${v.qual||''}</span><span style="color:var(--gold)">${esc(v.src)}</span>`,
+    actions:`<button class="btn" onclick="toast('Liked ♥','ok')">♥ Like</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
+    mediaType:mType, showRelated:true,
+  });
   loadRelated(v);
 }
 
 function openRedditPost(post){
-  $('pshell').className='ps rr';
-  $('ptitle').textContent=post.title;
-  $('pmeta').innerHTML=`<span style="color:var(--red)">r/${esc(post.sub)}</span><span>u/${esc(post.author)}</span><span>▲${fmtV(post.ups)}</span><span>💬${fmtV(post.comments)}</span>${post.nsfw?'<span style="color:#f88;font-size:.5rem">NSFW</span>':''}`;
-  $('par').innerHTML=`<a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Open on Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘ Copy</button>`;
-  $('pxtra').classList.remove('hidden');$('pxtra').className='pxtra';
-  $('pxtra').innerHTML=`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes<br/><a href="${esc(post.link)}" target="_blank">${esc(post.link)}</a>`;
-  $('prl').style.display='none';
-  const isV=post.mType==='video'||post.mType==='gif-v';
-  $('pfw').style.display='none';
-  if(isV&&post.mUrl){$('pvw').style.display='block';$('piw').style.display='none';vidPause();
-    const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
-    const mv=$('mv');mv.src=post.mUrl;mv.loop=post.mType==='gif-v';mv.load();mv.play().catch(()=>{});}
-  else if(post.mUrl){$('pvw').style.display='none';$('piw').style.display='block';vidPause();$('mi').src=post.mUrl;$('mi').alt=post.title;const ex=$('piw').querySelector('.galnn');if(ex)ex.remove();if(post.gallery?.length>1)buildGal($('piw'),post.gallery);}
-  $('pm').classList.add('on');document.body.style.overflow='hidden';
+  const isVid=post.mType==='video'||post.mType==='gif-v';
+  const isGif=post.mType==='gif'||post.mType==='gif-v';
+  const isGal=post.mType==='gallery';
+  const isImg=post.mType==='image'||isGal;
+  const mType=isVid||isGif?'video':'image';
+  const src=isImg?(post.gallery?.[0]||post.mUrl):post.mUrl;
+  const galItems=isGal&&post.gallery?.length>1?post.gallery:[];
+  launchPlayer({
+    src, title:post.title, accent:'rr',
+    meta:`<span style="color:var(--red)">r/${esc(post.sub)}</span><span>u/${esc(post.author)}</span><span>▲ ${fmtV(post.ups)}</span><span>💬 ${fmtV(post.comments)}</span>${post.nsfw?'<span style="color:#f77;font-size:.5rem">NSFW</span>':''}`,
+    actions:`<a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Open Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘ Copy</button>`,
+    extra:`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes<br/><a href="${esc(post.link)}" target="_blank" rel="noopener">${esc(post.link)}</a>`,
+    mediaType:mType, galleryItems:galItems,
+    loop:isGif, showRelated:false,
+  });
 }
 
 function openR34Post(post){
-  $('pshell').className='ps pr';
-  $('ptitle').textContent=`Rule34 #${post.id}`;
-  $('pmeta').innerHTML=`<span style="color:var(--pur)">rule34.xxx</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`;
-  $('par').innerHTML=`<a href="https://rule34.xxx/index.php?page=post&s=view&id=${post.id}" target="_blank" rel="noopener" class="btn p">View on R34 ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘ Copy Link</button>`;
-  $('pxtra').classList.remove('hidden');$('pxtra').className='pxtra p';
+  const isVid=post.mType==='video';
+  const isGif=post.mType==='gif';
+  const mType=(isVid||isGif)?'video':'image';
   const tagLinks=post.tags.map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');closePlayer()" style="cursor:pointer">${esc(t)}</span>`).join('');
-  $('pxtra').innerHTML=`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`;
-  $('prl').style.display='none';
-  $('pfw').style.display='none';
-  if(post.mType==='video'||post.mType==='gif'){
-    $('pvw').style.display='block';$('piw').style.display='none';
-    vidPause();const mv=$('mv');mv.src=post.fileUrl;mv.loop=post.mType==='gif';mv.load();mv.play().catch(()=>{});
-  }else{
-    $('pvw').style.display='none';$('piw').style.display='block';
-    vidPause();$('mi').src=post.fileUrl;$('mi').alt=`Rule34 #${post.id}`;
-  }
-  $('pm').classList.add('on');document.body.style.overflow='hidden';
+  const srcLabel=post.apiSrc==='e621'?'e621.net':post.apiSrc==='paheal'?'rule34.paheal.net':'rule34.xxx';
+  const viewUrl=post.apiSrc==='e621'
+    ?`https://e621.net/posts/${post.id}`
+    :post.apiSrc==='paheal'
+    ?`https://rule34.paheal.net/post/view/${post.id}`
+    :`https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;
+  launchPlayer({
+    src:post.fileUrl, title:`${srcLabel} #${post.id}`, accent:'pr',
+    meta:`<span style="color:var(--pur)">${srcLabel}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
+    actions:`<a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View on site ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘ Copy</button>`,
+    extra:`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`,
+    mediaType:mType, loop:isGif, showRelated:false,
+  });
 }
-
-/* Gallery nav */
-let galIdx=0,galItems=[];
-function buildGal(wrap,items){galIdx=0;galItems=items;const n=document.createElement('div');n.className='galnn';n.style.cssText='display:flex;gap:.42rem;justify-content:center;padding:.52rem;background:var(--bg1);';n.innerHTML=`<button onclick="galStep(-1)" style="background:none;border:1px solid var(--bdr);color:var(--ts);padding:.26rem .72rem;cursor:pointer;font-family:'DM Mono',monospace;font-size:.66rem">◀</button><span id="gal-c" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);align-self:center">1/${items.length}</span><button onclick="galStep(1)" style="background:none;border:1px solid var(--bdr);color:var(--ts);padding:.26rem .72rem;cursor:pointer;font-family:'DM Mono',monospace;font-size:.66rem">▶</button>`;wrap.appendChild(n);}
-function galStep(d){galIdx=(galIdx+d+galItems.length)%galItems.length;$('mi').src=galItems[galIdx];const c=$('gal-c');if(c)c.textContent=`${galIdx+1}/${galItems.length}`;}
 
 function cpLink(url){navigator.clipboard?.writeText(url).then(()=>toast('Link copied','ok')).catch(()=>toast('Copy failed','err'));}
 
@@ -1582,18 +1728,26 @@ function cpLink(url){navigator.clipboard?.writeText(url).then(()=>toast('Link co
 async function loadRelated(v){
   const g=$('rlg');g.innerHTML='';
   try{
-    /* Use same source for related */
-    let vids;
-    if(v.src==='Redgifs'){const d=await fetchRedgifs(v.tags?.[0]||'',1);vids=d.videos.filter(x=>x.id!==v.id).slice(0,6);}
-    else{const d=await fetchRedtube(v.tags?.[0]||'');vids=d.videos.filter(x=>x.id!==v.id).slice(0,6);}
-    vids.forEach(rv=>{const el=document.createElement('div');el.className='rlc';el.setAttribute('tabindex','0');el.innerHTML=`<div class="rlct"><img src="${esc(rv.thumb)}" alt="${esc(rv.title)}" loading="lazy"/></div><div class="rlci">${esc(rv.title)}</div>`;el.addEventListener('click',()=>openMain(rv));g.appendChild(el);});
+    const tag=v.tags?.[0]||'';
+    const{videos}=v.src==='Redgifs'
+      ?await fetchRedgifs(tag,1)
+      :await fetchPornhub(tag,1,'',v.src==='Demo'?'views':'views');
+    videos.filter(x=>x.id!==v.id).slice(0,6).forEach(rv=>{
+      const el=document.createElement('div');el.className='rlc';el.setAttribute('tabindex','0');
+      el.innerHTML=`<div class="rlct"><img src="${esc(rv.thumb)}" alt="${esc(rv.title)}" loading="lazy" referrerpolicy="no-referrer"/></div><div class="rlci">${esc(rv.title)}</div>`;
+      el.addEventListener('click',()=>openMain(rv));
+      g.appendChild(el);
+    });
   }catch{g.innerHTML=`<p style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm)">—</p>`;}
 }
 
 /* ── Video controls ── */
 const mv=$('mv'),pw=$('pw'),pf=$('pf'),pb=$('pb');
 let drag=false;
-function vidPause(){try{if(mv.src){mv.pause();mv.removeAttribute('src');mv.load();}if($('mf').src)$('mf').src='';}catch{}}
+function vidPause(){
+  try{if(mv&&mv.src){mv.pause();mv.removeAttribute('src');mv.load();}}catch{}
+  try{const mf=$('mf');if(mf&&mf.src)mf.src='';}catch{}
+}
 mv.addEventListener('timeupdate',()=>{if(drag||!mv.duration)return;const p=(mv.currentTime/mv.duration)*100;pf.style.width=p+'%';pw.setAttribute('aria-valuenow',Math.round(p));$('ctime').textContent=`${fmtD(mv.currentTime)} / ${fmtD(mv.duration)}`;});
 mv.addEventListener('progress',()=>{if(!mv.duration)return;const b=mv.buffered;if(b.length)pb.style.width=(b.end(b.length-1)/mv.duration*100)+'%';});
 mv.addEventListener('play',()=>{$('bplay').textContent='⏸';$('bplay').setAttribute('aria-label','Pause');});
