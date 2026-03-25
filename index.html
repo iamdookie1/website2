@@ -524,7 +524,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="sb-lnk" data-nav="liked">♥ Liked</div>
       </div>
       <div class="sb-sec">
-        <div class="sb-ttl" style="color:rgba(102,204,255,.4)">API 3 — Redgifs GIFs</div>
+        <div class="sb-ttl" style="color:rgba(102,204,255,.4)">GIF Tab — Reddit NSFW</div>
         <div class="sb-lnk" data-nav="rg-trending">◈ Trending GIFs</div>
         <div class="sb-lnk" data-nav="rg-new">◈ New GIFs</div>
       </div>
@@ -827,7 +827,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           <div>★ <strong style="color:var(--tp)">Pornhub</strong> — server required</div>
           <div>★ <strong style="color:var(--tp)">RedTube</strong> — server required</div>
           <div>★ <strong style="color:var(--tp)">YouPorn</strong> — server required</div>
-          <div>★ <strong style="color:var(--tp)">Redgifs</strong> — server required (GIFs)</div>
+          <div>★ <strong style="color:var(--tp)">Reddit GIFs</strong> — server required (pulls r/nsfwgif etc.)</div>
           <div>◉ <strong style="color:var(--tp)">Reddit NSFW</strong> — works direct</div>
           <div>◉ <strong style="color:var(--tp)">e621</strong> — works direct (proxy)</div>
           <div>★ <strong style="color:var(--tp)">Rule34.xxx</strong> — server required</div>
@@ -1145,27 +1145,29 @@ function fetchByName(name,q,page,sort){
 const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({count:CFG_PAGE});
+  const p=new URLSearchParams({count:CFG_PAGE,page:Math.max(0,page-1)});
   if(q)p.set('q',q);
   const posKey=q||'__t__';
-  if(page>1&&RG.pos[posKey])p.set('pos',RG.pos[posKey]);
-  const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw new Error(`RG server ${r.status}`);
+  if(page>1&&RG.pos[posKey])p.set('after',RG.pos[posKey]);
+  const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
+  if(!r.ok)throw new Error(`GIF server ${r.status}`);
   const d=await r.json();
-  if(d.error)throw new Error(d.error);
-  if(d.pos)RG.pos[posKey]=d.pos;
-  const gifs=d.gifs||d.items||[];
+  if(d.after)RG.pos[posKey]=d.after;
+  const items=d.gifs||d.videos||[];
   return{
-    videos:gifs.map(g=>({
+    videos:items.map(g=>({
       id:g.id,title:g.title||g.id,
-      thumb:g.urls?.poster||g.urls?.thumbnail||`https://i.redgifs.com/i/${g.id}.webp`,
-      dur:g.duration||0,views:g.views||0,
-      rating:g.likes?Math.min(10,(g.likes/Math.max(1,g.views||g.likes))*10).toFixed(1):'—',
-      qual:'GIF',tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
-      directUrl:g.urls?.hd||g.urls?.sd||'',url:g.urls?.hd||g.urls?.sd||'',
-      useIframe:false,src:'Redgifs',bc:'b-rg',
+      thumb:g.thumb||g.tUrl||'',
+      dur:g.dur||g.duration||0,
+      views:g.views||g.ups||g.score||0,
+      rating:'—',qual:'GIF',
+      tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
+      directUrl:g.directUrl||g.url||g.mUrl||'',
+      url:g.directUrl||g.url||g.mUrl||'',
+      embedUrl:'',useIframe:false,
+      src:g.src||'Reddit GIF',bc:'b-rg',
     })).filter(g=>g.directUrl),
-    total:(d.pages||10)*CFG_PAGE,
+    total:d.total||items.length*10,
   };
 }
 
