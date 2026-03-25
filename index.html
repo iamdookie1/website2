@@ -522,14 +522,7 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
         <div class="sb-lnk" data-nav="top">★ Top Rated</div>
       </div>
       <div class="sb-sec">
-        <div class="sb-ttl" style="color:rgba(201,168,76,.5)">API 2 — Pornhub</div>
-        <div class="sb-lnk" data-nav="cat-amateur">◈ Amateur</div>
-        <div class="sb-lnk" data-nav="cat-milf">◈ MILF</div>
-        <div class="sb-lnk" data-nav="cat-teen">◈ Teen (18+)</div>
-        <div class="sb-lnk" data-nav="cat-lesbian">◈ Lesbian</div>
-      </div>
-      <div class="sb-sec">
-        <div class="sb-ttl" style="color:rgba(102,204,255,.4)">API 3 — Redgifs</div>
+        <div class="sb-ttl" style="color:rgba(102,204,255,.4)">API 3 — Redgifs GIFs</div>
         <div class="sb-lnk" data-nav="rg-trending">◈ Trending GIFs</div>
         <div class="sb-lnk" data-nav="rg-new">◈ New GIFs</div>
       </div>
@@ -953,19 +946,61 @@ async function proxyFetch(url,parse='json'){
 
 /* ── API 2: Pornhub via Python server ── */
 const PH_SORT={views:'mostviewed',newest:'newest',rating:'rating',trending:'trending'};
-async function fetchPornhub(q='',page=1,cat='',sort='views'){
+async function fetchPornhub(q='',page=1,sort='views'){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
   const p=new URLSearchParams({page,limit:CFG_PAGE,sort:PH_SORT[sort]||'mostviewed'});
   if(q)p.set('q',q);
-  if(cat)p.set('cat',cat);
-  const r=await fetch(`${S.serverUrl}/api/videos?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw new Error(`Server ${r.status}`);
+  const r=await fetch(`${S.serverUrl}/api/videos?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
+  if(!r.ok)throw new Error(`PH server ${r.status}`);
   const d=await r.json();
-  if(!d.videos?.length)throw new Error('No videos from server');
-  return d;
+  if(d.error)throw new Error(d.error);
+  if(!d.videos?.length)throw new Error('PH empty');
+  return{videos:d.videos,total:d.total||d.videos.length*5};
 }
 
-/* ── API 3: Redgifs — server only (Redgifs CORS blocks all non-redgifs.com origins) ── */
+/* ── API 3b: Xvideos ── */
+async function fetchXvideos(q='',page=1,sort='views'){
+  const p=page-1;
+  /* Server first */
+  if(S.serverUrl&&S.serverOk){
+    try{
+      const params=new URLSearchParams({p});
+      if(q)params.set('q',q);
+      const r=await fetch(`${S.serverUrl}/api/xvideos?${params}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
+      if(r.ok){
+        const d=await r.json();
+        const mapped=mapXvideos(d);
+        if(mapped.videos.length)return mapped;
+      }
+    }catch(e){console.warn('[XV server]',e.message);}
+  }
+  /* Direct proxy fallback */
+  const url=q
+    ?`https://www.xvideos.com/api/search/main/${encodeURIComponent(q)}?k=${encodeURIComponent(q)}&p=${p}`
+    :`https://www.xvideos.com/api/search/main?p=${p}`;
+  const d=await proxyFetch(url);
+  return mapXvideos(d);
+}
+function mapXvideos(d){
+  const hits=d?.videos||[];
+  return{
+    videos:hits.map(v=>({
+      id:String(v.id||v.videoId||''),
+      title:v.title||v.tf||'',
+      thumb:v.thumb||v.thumbs?.big||v.pic||'',
+      dur:parseInt(v.duration||v.d||0),
+      views:parseInt(v.nb_v||v.views||0),
+      rating:v.r?parseFloat(v.r).toFixed(1):'—',
+      qual:v.hd?'HD':'SD',
+      tags:(v.keywords||'').split(',').map(t=>t.trim()).filter(Boolean).slice(0,5),
+      url:v.id?`https://www.xvideos.com/embedframe/${v.id}`:'',
+      directUrl:'',useIframe:true,src:'Xvideos',bc:'b-new',
+    })).filter(v=>v.id&&v.url),
+    total:parseInt(d?.nb_videos||0)||hits.length*5,
+  };
+}
+
+/* ── API 3: Redgifs GIFs — server only ── */
 const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
@@ -974,47 +1009,63 @@ async function fetchRedgifs(q='',page=1){
   const posKey=q||'__t__';
   if(page>1&&RG.pos[posKey])p.set('pos',RG.pos[posKey]);
   const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw new Error(`Redgifs server ${r.status}`);
+  if(!r.ok)throw new Error(`RG server ${r.status}`);
   const d=await r.json();
   if(d.pos)RG.pos[posKey]=d.pos;
-  return mapRedgifs(d);
-}
-function mapRedgifs(d){
   const gifs=d.gifs||d.items||[];
   return{
     videos:gifs.map(g=>({
       id:g.id,title:g.title||g.id,
-      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster||`https://i.redgifs.com/i/${g.id}.webp`,
+      thumb:g.urls?.poster||g.urls?.thumbnail||`https://i.redgifs.com/i/${g.id}.webp`,
       dur:g.duration||0,views:g.views||0,
       rating:g.likes?Math.min(10,(g.likes/Math.max(1,g.views||g.likes))*10).toFixed(1):'—',
-      qual:'GIF/HD',tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
-      directUrl:g.urls?.hd||g.urls?.sd||g.urls?.mobile||'',
-      url:g.urls?.hd||g.urls?.sd||'',
+      qual:'GIF',tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
+      directUrl:g.urls?.hd||g.urls?.sd||'',url:g.urls?.hd||g.urls?.sd||'',
       useIframe:false,src:'Redgifs',bc:'b-rg',
     })).filter(g=>g.directUrl),
     total:(d.pages||10)*CFG_PAGE,
   };
 }
 
-/* ── Combined fetch — both APIs require Python server ── */
+/* ── Combined fetch ── */
 async function fetchMain(params={}){
-  const{q='',page=1,cat='',sort='views',tag='all'}=params;
+  const{q='',page=1,sort='views',tag='all'}=params;
   const up=S.serverUrl&&S.serverOk;
 
-  if(!up)return{videos:[],total:0,notice:'server-offline'};
-
-  /* GIF tab → Redgifs */
+  /* GIF tab only → Redgifs */
   if(tag==='gif'||q.startsWith('__rg')){
-    try{return await fetchRedgifs(q.startsWith('__rg')?'':q,page);}
-    catch(e){console.warn('[RG]',e.message);}
+    const rq=q.startsWith('__rg')?'':q;
+    if(up){try{return await fetchRedgifs(rq,page);}catch(e){console.warn('[RG]',e.message);}}
+    return{videos:[],total:0,notice:'server-offline'};
   }
-  /* Primary: Pornhub */
-  try{return await fetchPornhub(q,page,cat,sort);}
-  catch(e){console.warn('[PH]',e.message);}
-  /* Fallback: Redgifs */
-  try{return await fetchRedgifs(q||'',page);}
-  catch(e){console.warn('[RG fallback]',e.message);}
-  return{videos:mockVids(CFG_PAGE),total:CFG_PAGE*5};
+
+  /* Home/Trending/New/Top: Pornhub + Xvideos */
+  const results=await Promise.allSettled([
+    up?fetchPornhub(q,page,sort):Promise.reject('offline'),
+    fetchXvideos(q,page,sort),
+  ]);
+
+  const ph=results[0].status==='fulfilled'?results[0].value.videos:[];
+  const xv=results[1].status==='fulfilled'?results[1].value.videos:[];
+
+  if(results[0].status==='rejected')console.warn('[PH]',results[0].reason);
+  if(results[1].status==='rejected')console.warn('[XV]',results[1].reason);
+
+  /* Interleave: PH, XV, PH, XV... so both sources show */
+  const merged=[];
+  const max=Math.max(ph.length,xv.length);
+  for(let i=0;i<max;i++){
+    if(ph[i])merged.push(ph[i]);
+    if(xv[i])merged.push(xv[i]);
+  }
+
+  if(!merged.length){
+    if(!up)return{videos:[],total:0,notice:'server-offline'};
+    return{videos:[],total:0,notice:'no-results'};
+  }
+  const total=((results[0].status==='fulfilled'?results[0].value.total:0)
+              +(results[1].status==='fulfilled'?results[1].value.total:0))/2;
+  return{videos:merged,total:Math.max(total,merged.length*3)};
 }
 
 /* Mock */
@@ -1064,7 +1115,7 @@ async function loadVideos(append=false){
   if(S.loading)return;S.loading=true;
   if(!append)skels();
   try{
-    const res=await fetchMain({q:S.f.q,page:S.page,cat:S.f.cat,sort:S.f.sort,tag:S.f.tag});
+    const res=await fetchMain({q:S.f.q,page:S.page,sort:S.f.sort,tag:S.f.tag});
     const videos=res.videos||[];
     const total=res.total||0;
     S.totalPages=Math.max(1,Math.ceil(total/CFG_PAGE));
@@ -1285,77 +1336,36 @@ async function fetchR34(append=false){
     const cleanTag=rawTag.trim();
     let posts=[];
 
-    /* ── Build API URL based on selected source ── */
-    let apiUrl='';
-    if(apiSrc==='paheal'){
-      apiUrl=`https://rule34.paheal.net/api/danbooru/find_posts/index.xml?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&pid=${pid}`;
-    }else if(apiSrc==='e621'){
-      apiUrl=`https://e621.net/posts.json?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&page=${pid+1}`;
-    }else{
-      /* rule34.xxx (default) */
-      apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
-    }
-
-    /* ── Try Python server first ── */
-    if(S.serverUrl&&S.serverOk&&apiSrc==='rule34xxx'){
-      try{
-        const p=new URLSearchParams({tags:cleanTag,limit,pid});
-        const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
-        if(r.ok){posts=await r.json();if(!Array.isArray(posts))posts=[];}
-        else throw new Error(`Server ${r.status}`);
-      }catch(e){console.warn('[Server/R34]',e.message);S.serverOk=false;posts=[];}
-    }
-
-    /* ── Proxy fallback for all sources ── */
-    if(!posts.length){
-      const PROXIES=[
-        u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
-        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
-        u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
-      ];
-      for(const mkProxy of PROXIES){
+    if(apiSrc==='e621'){
+      /* ── e621 works via proxy ── */
+      const url=`https://e621.net/posts.json?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&page=${pid+1}`;
+      for(const mkP of PROXY_LIST){
         try{
-          const res=await fetch(mkProxy(apiUrl),{mode:'cors',signal:AbortSignal.timeout(10000)});
-          if(!res.ok)continue;
-          const text=await res.text();
-
-          if(apiSrc==='e621'){
-            /* e621 returns JSON with posts array */
-            let d;try{d=JSON.parse(text);}catch{continue;}
-            posts=(d?.posts||[]).map(p=>({
-              id:p.id,score:p.score?.total||0,
-              tags:Object.values(p.tags||{}).flat().slice(0,8),
-              file_url:p.file?.url||'',
-              preview_url:p.preview?.url||'',
-              sample_url:p.sample?.url||'',
-              width:p.file?.width||0,height:p.file?.height||0,
-            }));
-          }else if(apiSrc==='paheal'){
-            /* Paheal returns XML — parse manually */
-            const parser=new DOMParser();
-            const xml=parser.parseFromString(text,'text/xml');
-            posts=[...xml.querySelectorAll('tag')].map(t=>({
-              id:t.getAttribute('id'),
-              score:parseInt(t.getAttribute('score'))||0,
-              tags:String(t.getAttribute('tags')||'').split(' ').filter(Boolean),
-              file_url:t.getAttribute('file_url')||'',
-              preview_url:t.getAttribute('preview_url')||'',
-              sample_url:t.getAttribute('sample_url')||'',
-              width:parseInt(t.getAttribute('width'))||0,
-              height:parseInt(t.getAttribute('height'))||0,
-            }));
-          }else{
-            let parsed;try{parsed=JSON.parse(text);}catch{continue;}
-            if(parsed===0||parsed===null||parsed===false)parsed=[];
-            if(!Array.isArray(parsed)){
-              if(Array.isArray(parsed?.post))parsed=parsed.post;
-              else if(parsed?.post)parsed=[parsed.post];
-              else parsed=[];
-            }
-            posts=parsed;
-          }
+          const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(12000)});
+          if(!r.ok)continue;
+          const d=JSON.parse(await r.text());
+          posts=(d?.posts||[]).map(p=>({
+            id:p.id,score:p.score?.total||0,
+            tags:Object.values(p.tags||{}).flat().slice(0,8),
+            file_url:p.file?.url||'',
+            preview_url:p.preview?.url||'',
+            sample_url:p.sample?.url||'',
+            width:p.file?.width||0,height:p.file?.height||0,
+          }));
           if(posts.length)break;
         }catch{continue;}
+      }
+    } else if(apiSrc==='rule34xxx'||apiSrc==='paheal'){
+      /* ── .xxx and .paheal: server only (they block proxies) ── */
+      if(S.serverUrl&&S.serverOk){
+        try{
+          const p=new URLSearchParams({tags:cleanTag,limit,pid,source:apiSrc});
+          const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
+          if(r.ok){posts=await r.json();if(!Array.isArray(posts))posts=[];}
+          else throw new Error(`Server ${r.status}`);
+        }catch(e){throw new Error(`Server needed for ${apiSrc} — ${e.message}`);}
+      } else {
+        throw new Error(`${apiSrc} requires the Python server to be running (it blocks direct/proxy access)`);
       }
     }
 
@@ -1387,7 +1397,7 @@ async function fetchR34(append=false){
     if(S.r4.all.length)$('r4state').style.display='none';
     else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span> on ${apiSrc}<br/>Try different tags or source`;$('r4state').style.display='block';}
   }catch(e){
-    const msg=e.message||'Rule34 error';
+    const msg=e.message||'R34 error';
     $('r4state').innerHTML=`<span class="big">⚠️</span><span class="hl-p">${esc(msg)}</span>`;
     $('r4state').style.display='block';
     toast(msg,'err',5000);
@@ -1602,13 +1612,13 @@ function launchPlayer(opts){
 
 function openMain(v){
   S.curVid=v;
+  const src=v.useIframe?(v.url||v.embedUrl||''):(v.directUrl||v.url||'');
   const mType=v.useIframe?'iframe':(v.src==='Redgifs'?'gif':'video');
-  const src=v.useIframe?v.url:(v.directUrl||v.url);
   launchPlayer({
     src, title:v.title, accent:'gr',
     meta:`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span>${v.qual||''}</span><span style="color:var(--gold)">${esc(v.src)}</span>`,
     actions:`<button class="btn" onclick="toast('Liked ♥','ok')">♥ Like</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
-    mediaType:mType, showRelated:true,
+    mediaType:mType,showRelated:true,
   });
   loadRelated(v);
 }
