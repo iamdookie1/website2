@@ -322,6 +322,59 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
 .tst.err{border-left-color:#C0392B;}.tst.ok{border-left-color:#4CAF50;}.tst.info{border-left-color:var(--red);}.tst.pur{border-left-color:var(--pur);}
 
+/* ═══ API-DOWN POPUP ════════════════════════════════════════ */
+#api-down{
+  position:fixed;inset:0;z-index:9100;
+  background:rgba(4,4,4,.96);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+  backdrop-filter:blur(12px);
+}
+#api-down.show{display:flex;animation:fadeIn .5s ease;}
+.apd-logo{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:900;letter-spacing:.28em;color:var(--gold);opacity:.5;}
+.apd-icon{font-size:3rem;opacity:.7;}
+.apd-title{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:700;color:var(--tp);text-align:center;line-height:1.4;}
+.apd-sub{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);text-align:center;max-width:360px;line-height:1.9;}
+.apd-btns{display:flex;gap:.85rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem;}
+.apd-btn{padding:.72rem 2rem;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;border:none;cursor:pointer;transition:all .25s;}
+.apd-btn.reddit{background:var(--red);color:#fff;}.apd-btn.reddit:hover{background:#FF5722;box-shadow:0 0 22px rgba(255,69,0,.3);}
+.apd-btn.leave{background:transparent;color:var(--tm);border:1px solid rgba(255,255,255,.1);}.apd-btn.leave:hover{border-color:var(--ts);color:var(--ts);}
+.apd-rule{width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);}
+
+/* ═══ SERVER CONFIG MODAL ═══════════════════════════════════ */
+#cfg-modal{position:fixed;inset:0;z-index:8500;background:rgba(4,4,4,.88);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+#cfg-modal.show{display:flex;animation:mIn .25s ease;}
+.cfg-box{background:var(--bg1);border:1px solid var(--bdr);border-top:2px solid var(--gold);padding:1.8rem;width:min(480px,92vw);display:flex;flex-direction:column;gap:1rem;}
+.cfg-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--tp);}
+.cfg-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);letter-spacing:.07em;line-height:1.8;}
+.cfg-sub b{color:var(--gold);}
+.cfg-inp-row{display:flex;gap:.5rem;}
+.cfg-inp{flex:1;padding:.48rem .85rem;background:var(--bg2);border:1px solid var(--bdr);color:var(--tp);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
+.cfg-inp:focus{border-color:var(--gold-d);}
+.cfg-inp::placeholder{color:var(--tm);}
+.cfg-actions{display:flex;gap:.5rem;justify-content:flex-end;}
+.cfg-status{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.28rem .65rem;border:1px solid var(--bdr);}
+.cfg-status.ok{color:#4CAF50;border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.08);}
+.cfg-status.err{color:#C0392B;border-color:rgba(192,57,43,.3);}
+.cfg-status.chk{color:var(--tm);border-color:var(--bdr);}
+
+/* ═══ OFFLINE BANNER ════════════════════════════════════════ */
+#offline-banner{
+  display:none;align-items:center;justify-content:center;gap:.65rem;
+  padding:.4rem 1.4rem;
+  background:rgba(255,69,0,.1);border-bottom:1px solid rgba(255,69,0,.25);
+  font-family:'DM Mono',monospace;font-size:.6rem;color:rgba(255,110,60,.8);
+  letter-spacing:.08em;
+}
+#offline-banner.show{display:flex;}
+.ob-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.5s ease infinite;}
+
+/* ═══ REDDIT-ONLY MODE ══════════════════════════════════════ */
+body.reddit-only .sb-lnk:not(.rl){opacity:.22;pointer-events:none;cursor:default;}
+body.reddit-only #fbar{opacity:.2;pointer-events:none;}
+body.reddit-only .nav-logo{pointer-events:none;}
+body.reddit-only #nsw{opacity:.2;pointer-events:none;}
+body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
+
 /* ═══ RESPONSIVE ════════════════════════════════════════════ */
 @media(max-width:870px){.ml{grid-template-columns:1fr;}.sb{display:none;}.ca{padding:1.05rem;}}
 @media(max-width:560px){.topbar{padding:.65rem .82rem;}.hero-b{padding:1.25rem;}.iso-row{flex-direction:column;}.pinfo{grid-template-columns:1fr;}}
@@ -341,6 +394,43 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
     <button class="ag-btn n" onclick="window.location.href='https://www.google.com'">I Am Under 18 — Exit</button>
   </div>
   <p class="ag-legal">18 U.S.C. 2257 — All depicted individuals are 18+. Content sourced via third-party APIs. This platform stores no user data.</p>
+</div>
+
+<!-- ══ API DOWN POPUP ════════════════════════════════════════ -->
+<div id="api-down" role="alertdialog" aria-modal="true" aria-labelledby="apd-title">
+  <div class="apd-logo">OBSIDIAN</div>
+  <div class="apd-icon">📡</div>
+  <div class="apd-rule"></div>
+  <div class="apd-title" id="apd-title">Sorry — the API is down</div>
+  <p class="apd-sub">
+    The laptop server is currently offline.<br/>
+    It may be back up later. You can still browse Reddit NSFW content without it.
+  </p>
+  <div class="apd-btns">
+    <button class="apd-btn reddit" onclick="redditOnlyMode()">👽 Only Use Reddit</button>
+    <button class="apd-btn leave" onclick="window.location.href='https://www.google.com'">Oh Okay</button>
+  </div>
+</div>
+
+<!-- ══ SERVER CONFIG MODAL ══════════════════════════════════ -->
+<div id="cfg-modal" role="dialog" aria-modal="true" aria-labelledby="cfg-title">
+  <div class="cfg-box">
+    <div class="cfg-title" id="cfg-title">⚙ Server Connection</div>
+    <p class="cfg-sub">
+      Paste your <b>Cloudflare Tunnel</b> or <b>ngrok</b> URL below.<br/>
+      Example: <b>https://abc-123.trycloudflare.com</b><br/>
+      Leave blank to use direct public APIs only.
+    </p>
+    <div class="cfg-inp-row">
+      <input class="cfg-inp" id="cfg-url" type="url" placeholder="https://your-tunnel-url.trycloudflare.com" autocomplete="off"/>
+      <button class="btn g" id="cfg-test" onclick="testServerUrl()">Test</button>
+    </div>
+    <div id="cfg-status" class="cfg-status chk" style="display:none"></div>
+    <div class="cfg-actions">
+      <button class="btn" onclick="closeCfg()">Cancel</button>
+      <button class="btn g" onclick="saveServerUrl()">Save &amp; Connect</button>
+    </div>
+  </div>
 </div>
 
 <!-- ══ SPLASH ══════════════════════════════════════════════ -->
@@ -368,9 +458,16 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
     <nav class="nav-acts">
       <button class="bico" id="theme-btn" aria-label="Toggle theme">🌙</button>
       <button class="bico" aria-label="Notifications">🔔</button>
-      <button class="bico" aria-label="Account">👤</button>
+      <button class="bico" onclick="openCfg()" aria-label="Server settings" title="Server connection">⚙</button>
     </nav>
   </header>
+
+  <!-- Offline mode banner -->
+  <div id="offline-banner">
+    <span class="ob-dot"></span>
+    <span>Reddit-only mode — laptop server is offline</span>
+    <button class="btn" onclick="retryServer()" style="height:20px;font-size:.52rem;padding:0 .55rem;margin-left:.5rem;">Retry</button>
+  </div>
 
   <!-- Filter bar — main content only -->
   <div id="fbar" role="toolbar">
@@ -639,6 +736,13 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 
 <script>
 /* ══════════════════════════════════════════════════════════
+   ★  PASTE YOUR CLOUDFLARE TUNNEL URL HERE  ★
+   Example: 'https://abc-def-123.trycloudflare.com'
+   Leave as '' to use direct public APIs only.
+══════════════════════════════════════════════════════════ */
+const HARDCODED_SERVER = '';
+
+/* ══════════════════════════════════════════════════════════
    UTILS
 ══════════════════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
@@ -676,7 +780,86 @@ const S={
   f:{cat:'',dur:'',sort:'views',tag:'all',q:''},
   rd:{sub:'',after:null,sort:'hot',time:'day',all:[],filtered:[],mf:'all',loading:false,hasMore:false},
   r4:{tag:'',pid:0,all:[],filtered:[],mf:'all',loading:false,hasMore:false,sort:'score:desc'},
+  serverUrl: (HARDCODED_SERVER||localStorage.getItem('obs_server')||'').replace(/\/$/,''),
+  serverOk: false,
+  redditOnly: false,
 };
+
+/* ══════════════════════════════════════════════════════════
+   SERVER CONFIG + HEALTH CHECK
+══════════════════════════════════════════════════════════ */
+function openCfg(){
+  $('cfg-url').value=S.serverUrl;
+  $('cfg-status').style.display='none';
+  if(HARDCODED_SERVER){
+    const st=$('cfg-status');st.style.display='block';
+    st.className='cfg-status chk';
+    st.textContent='ℹ URL is set in the HTML file — saving here overrides it for this session only';
+  }
+  $('cfg-modal').classList.add('show');
+}
+function closeCfg(){$('cfg-modal').classList.remove('show');}
+$('cfg-modal').addEventListener('click',e=>{if(e.target===$('cfg-modal'))closeCfg();});
+
+async function testServerUrl(){
+  const url=$('cfg-url').value.trim().replace(/\/$/,'');
+  const st=$('cfg-status');st.style.display='block';
+  if(!url){st.className='cfg-status err';st.textContent='✕ Enter a URL first';return;}
+  st.className='cfg-status chk';st.textContent='Checking…';
+  try{
+    const r=await fetch(`${url}/health`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+    if(r.ok){st.className='cfg-status ok';st.textContent='✓ Server is online and responding';}
+    else{st.className='cfg-status err';st.textContent=`✕ Server returned ${r.status}`;}
+  }catch{st.className='cfg-status err';st.textContent='✕ Cannot reach server — check the URL';}
+}
+
+function saveServerUrl(){
+  const url=$('cfg-url').value.trim().replace(/\/$/,'');
+  S.serverUrl=url;
+  localStorage.setItem('obs_server',url);
+  closeCfg();
+  if(url)checkServer();
+  else toast('Server URL cleared — using direct APIs','ok');
+}
+
+async function checkServer(){
+  if(!S.serverUrl)return false;
+  try{
+    const r=await fetch(`${S.serverUrl}/health`,{mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(r.ok){S.serverOk=true;return true;}
+  }catch{}
+  S.serverOk=false;return false;
+}
+
+async function retryServer(){
+  toast('Retrying server…','ok',1500);
+  const ok=await checkServer();
+  if(ok){
+    exitRedditOnly();
+    toast('Server back online!','ok');
+    loadVideos();
+  }else{
+    toast('Still offline','err',2500);
+  }
+}
+
+function showApiDownPopup(){$('api-down').classList.add('show');}
+function hideApiDownPopup(){$('api-down').classList.remove('show');}
+
+function redditOnlyMode(){
+  hideApiDownPopup();
+  S.redditOnly=true;
+  document.body.classList.add('reddit-only');
+  $('offline-banner').classList.add('show');
+  switchView('reddit');
+  toast('Reddit-only mode enabled','info',3000);
+}
+
+function exitRedditOnly(){
+  S.redditOnly=false;
+  document.body.classList.remove('reddit-only');
+  $('offline-banner').classList.remove('show');
+}
 
 /* ══════════════════════════════════════════════════════════
    VIEW SWITCHING
@@ -717,59 +900,81 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
 ══════════════════════════════════════════════════════════ */
 const CFG_PAGE=24;
 
-/* Redtube — API 2 */
+/* Redtube — API 2 (routes via Python server if configured) */
 async function fetchRedtube(q='',page=1,cat='',sort='views'){
   const sm={views:'mostviewed',newest:'latest',rating:'rating'};
+
+  /* ── Try Python server first ── */
+  if(S.serverUrl&&S.serverOk){
+    try{
+      const p=new URLSearchParams({page,limit:CFG_PAGE,sort:sm[sort]||'mostviewed'});
+      if(q)p.set('q',q);if(cat)p.set('cat',cat);
+      const r=await fetch(`${S.serverUrl}/api/videos?${p}`,{mode:'cors',signal:AbortSignal.timeout(9000)});
+      if(!r.ok)throw new Error(`Server ${r.status}`);
+      return await r.json();
+    }catch(e){console.warn('[Server/Redtube]',e.message);S.serverOk=false;}
+  }
+
+  /* ── Direct Redtube API fallback ── */
   const params=new URLSearchParams({
-    data:'redtube.Videos.searchVideos',
-    output:'json',
-    thumbsize:'medium_6',   /* larger thumbnails */
-    limit:CFG_PAGE,
-    page,
-    ordering:sm[sort]||'mostviewed',
+    data:'redtube.Videos.searchVideos',output:'json',thumbsize:'medium_6',
+    limit:CFG_PAGE,page,ordering:sm[sort]||'mostviewed',
   });
   if(q)params.set('search',q);
   if(cat)params.set('category',cat);
-
   const r=await fetch(`https://api.redtube.com/?${params}`,{mode:'cors'});
   if(!r.ok)throw new Error(`Redtube ${r.status}`);
   const d=await r.json();
   if(!d.videos||!d.videos.length)throw new Error('No Redtube videos');
-
   return{
     videos:d.videos.map(v=>{
-      /* Pick largest available thumb; fall back through options */
       const thumbArr=v.thumbs||[];
       const bigThumb=thumbArr.find(t=>t.size==='medium_6')||thumbArr.find(t=>t.size==='medium')||thumbArr[thumbArr.length-1];
       const thumb=bigThumb?.src||v.default_thumb||'';
       return{
-        id:v.video_id,
-        title:v.title,
-        thumb,
-        dur:parseDur(v.duration),
+        id:v.video_id,title:v.title,thumb,dur:parseDur(v.duration),
         views:parseInt(v.views)||0,
         rating:v.rating?(parseFloat(v.rating)/10).toFixed(1):'—',
-        qual:'720p',
-        tags:(v.tags||[]).map(t=>t.tag_name).slice(0,4),
+        qual:'720p',tags:(v.tags||[]).map(t=>t.tag_name).slice(0,4),
         url:`https://embed.redtube.com/?bgcolor=000000&id=${v.video_id}`,
-        useIframe:true,
-        src:'Redtube',
-        bc:'b-hot',
+        useIframe:true,src:'Redtube',bc:'b-hot',
       };
     }),
     total:parseInt(d.count)||CFG_PAGE,
   };
 }
 
-/* Redgifs — API 3 */
+/* Redgifs — API 3 (routes via Python server if configured) */
 const RG={token:null,pos:{}};
 async function rgToken(){
+  /* Use server token endpoint if available */
+  if(S.serverUrl&&S.serverOk){
+    try{
+      const r=await fetch(`${S.serverUrl}/api/gifs/token`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      if(r.ok){const d=await r.json();RG.token=d.token;return d.token;}
+    }catch{}
+  }
   if(RG.token)return RG.token;
   const r=await fetch('https://api.redgifs.com/v2/auth/temporary',{mode:'cors'});
   if(!r.ok)throw new Error('Redgifs auth failed');
   const d=await r.json();RG.token=d.token;return d.token;
 }
 async function fetchRedgifs(q='',page=1){
+  /* ── Try Python server first ── */
+  if(S.serverUrl&&S.serverOk){
+    try{
+      const p=new URLSearchParams({count:CFG_PAGE});
+      if(q)p.set('q',q);
+      if(page>1&&RG.pos[q||'__t__'])p.set('pos',RG.pos[q||'__t__']);
+      const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(9000)});
+      if(!r.ok)throw new Error(`Server ${r.status}`);
+      const d=await r.json();
+      if(d.pos)RG.pos[q||'__t__']=d.pos;
+      return mapRedgifs(d);
+    }catch(e){console.warn('[Server/Redgifs]',e.message);S.serverOk=false;}
+  }
+
+  /* ── Direct Redgifs fallback ── */
   const tok=await rgToken();
   const count=CFG_PAGE;
   const posKey=q||'__trending__';
@@ -781,23 +986,19 @@ async function fetchRedgifs(q='',page=1){
   if(!r.ok)throw new Error(`Redgifs ${r.status}`);
   const d=await r.json();
   if(d.pos)RG.pos[posKey]=d.pos;
+  return mapRedgifs(d);
+}
+function mapRedgifs(d){
   return{
     videos:(d.gifs||[]).map(g=>({
-      id:g.id,
-      title:g.title||g.id,
-      /* poster > thumbnail > mobile preview, in order */
+      id:g.id,title:g.title||g.id,
       thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster||`https://i.redgifs.com/i/${g.id}.webp`,
-      dur:g.duration||0,
-      views:g.views||0,
+      dur:g.duration||0,views:g.views||0,
       rating:g.likes?Math.min(10,g.likes/100).toFixed(1):'—',
-      qual:'GIF/HD',
-      tags:Array.isArray(g.tags)?g.tags.slice(0,4):[],
-      url:g.urls?.hd||g.urls?.sd||'',
-      useIframe:false,
-      src:'Redgifs',
-      bc:'b-rg',
+      qual:'GIF/HD',tags:Array.isArray(g.tags)?g.tags.slice(0,4):[],
+      url:g.urls?.hd||g.urls?.sd||'',useIframe:false,src:'Redgifs',bc:'b-rg',
     })),
-    total:(d.pages||5)*count,
+    total:(d.pages||5)*CFG_PAGE,
   };
 }
 
@@ -1022,26 +1223,37 @@ async function fetchR34(append=false){
     $('r4state').innerHTML=`<span class="big">⏳</span>Searching Rule34 for: <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';
   }
   try{
-    /* corsproxy.io lets this work with no local server needed */
     const PROXY='https://corsproxy.io/?url=';
     const limit=40;
     const pid=append?Math.floor(S.r4.all.length/limit):0;
-    /* Don't append sort metatags — they cause empty results on r34 API */
     const cleanTag=rawTag.trim();
-    const apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
-    const res=await fetch(PROXY+encodeURIComponent(apiUrl),{mode:'cors'});
-    if(!res.ok)throw new Error(`Rule34 returned ${res.status}`);
-    const text=await res.text();
-    /* Rule34 returns [] for no results, 0 for errors, or a JSON array */
-    let posts;
-    try{posts=JSON.parse(text);}catch{throw new Error('Rule34 returned invalid JSON — try different tags');}
-    /* Handle all possible response shapes */
-    if(posts===0||posts===null||posts===false)posts=[];
-    if(!Array.isArray(posts)){
-      if(Array.isArray(posts?.post))posts=posts.post;
-      else if(posts?.post)posts=[posts.post];
-      else posts=[];
+    let posts=[];
+
+    /* ── Try Python server first (zero CORS issues) ── */
+    if(S.serverUrl&&S.serverOk){
+      try{
+        const p=new URLSearchParams({tags:cleanTag,limit,pid});
+        const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
+        if(r.ok){posts=await r.json();if(!Array.isArray(posts))posts=[];}
+        else throw new Error(`Server ${r.status}`);
+      }catch(e){console.warn('[Server/R34]',e.message);S.serverOk=false;posts=[];}
     }
+
+    /* ── Fall back to corsproxy.io ── */
+    if(!posts.length){
+      const apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
+      const res=await fetch(PROXY+encodeURIComponent(apiUrl),{mode:'cors'});
+      if(!res.ok)throw new Error(`Rule34 returned ${res.status}`);
+      const text=await res.text();
+      try{posts=JSON.parse(text);}catch{throw new Error('Rule34 returned invalid JSON — try different tags');}
+      if(posts===0||posts===null||posts===false)posts=[];
+      if(!Array.isArray(posts)){
+        if(Array.isArray(posts?.post))posts=posts.post;
+        else if(posts?.post)posts=[posts.post];
+        else posts=[];
+      }
+    }
+
     S.r4.hasMore=posts.length>=limit;
     const mapped=posts.map(p=>{
       const url=String(p.file_url||'');
@@ -1050,8 +1262,7 @@ async function fetchR34(append=false){
       return{
         id:p.id,score:parseInt(p.score)||0,
         tags:String(p.tags||'').split(' ').filter(t=>t&&!t.startsWith('sort:')).slice(0,8),
-        fileUrl:url,
-        previewUrl:p.preview_url||p.sample_url||'',
+        fileUrl:url,previewUrl:p.preview_url||p.sample_url||'',
         width:parseInt(p.width)||0,height:parseInt(p.height)||0,
         mType,src:'rule34',
       };
@@ -1239,7 +1450,23 @@ function initParticles(){
 function confirmAge(){localStorage.setItem('obs_age','1');const g=$('age-gate');g.classList.add('out');setTimeout(()=>{g.style.display='none';showSplash();},500);}
 if(localStorage.getItem('obs_age')==='1')$('age-gate').style.display='none';
 function showSplash(){const sp=$('splash');sp.classList.add('active');const stop=initParticles();const go=()=>{clearTimeout(auto);document.removeEventListener('keydown',onKey);exitSplash(stop);};const onKey=e=>{if(e.key==='Enter')go();};document.addEventListener('keydown',onKey);const auto=setTimeout(go,8000);sp.addEventListener('click',go,{once:true});}
-function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');loadVideos();},600);}
+function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
+
+async function bootApp(){
+  /* If server URL is set, check if it's alive */
+  if(S.serverUrl){
+    const ok=await checkServer();
+    if(!ok){
+      /* Server configured but offline → show popup */
+      showApiDownPopup();
+      return;
+    }
+    toast('Server connected ✓','ok',2500);
+  }
+  /* Server online or no server configured — load normally */
+  loadVideos();
+}
+
 if(localStorage.getItem('obs_age')==='1')showSplash();
 </script>
 </body>
