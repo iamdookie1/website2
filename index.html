@@ -281,21 +281,28 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 /* ═══ PLAYER MODAL ══════════════════════════════════════════ */
 .pm{position:fixed;inset:0;z-index:850;background:var(--ov);display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
 .pm.on{display:flex;animation:mIn .28s ease;}
-.ps{width:100%;max-width:1040px;background:var(--bg1);border:1px solid var(--bdr);position:relative;display:flex;flex-direction:column;max-height:92vh;overflow-y:auto;}
+/* Shell: fixed layout, media + info + related each scroll independently */
+.ps{width:100%;max-width:1040px;background:var(--bg1);border:1px solid var(--bdr);
+    position:relative;display:flex;flex-direction:column;
+    max-height:92vh;overflow:hidden;}  /* NO overflow-y:auto on shell */
 .ps.gr{border-left:3px solid var(--gold);}
 .ps.rr{border-left:3px solid var(--red);}
 .ps.pr{border-left:3px solid var(--pur);}
+/* Media section - never grows, never scrolls */
+.ps-media{flex-shrink:0;position:relative;background:#000;width:100%;}
+/* Scrollable info section below media */
+.ps-scroll{overflow-y:auto;flex:1;min-height:0;}
 .pclose{position:absolute;top:.65rem;right:.65rem;z-index:10;width:28px;height:28px;background:rgba(0,0,0,.7);border:1px solid var(--bdr);color:var(--ts);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .pclose:hover{background:var(--crim);color:#fff;border-color:var(--crim);}
-/* Video */
-.pvw{position:relative;background:#000;aspect-ratio:16/9;}
+/* Video — fixed 16/9, no overflow */
+.pvw{position:relative;background:#000;aspect-ratio:16/9;width:100%;overflow:hidden;}
 #mv{width:100%;height:100%;display:block;object-fit:contain;}
-/* Iframe (Redtube) */
+/* Iframe */
 #mf{width:100%;aspect-ratio:16/9;display:block;border:none;}
-/* Image */
-#mi{width:100%;max-height:82vh;object-fit:contain;display:block;background:#000;}
+/* Image overlay inside pvw — always contained */
+.pvw-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2;}
 /* Controls */
-.co{position:absolute;bottom:0;left:0;right:0;padding:1.2rem .92rem .62rem;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 100%);opacity:0;transition:opacity .28s;display:flex;flex-direction:column;gap:.48rem;}
+.co{position:absolute;bottom:0;left:0;right:0;padding:1.2rem .92rem .62rem;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 100%);opacity:0;transition:opacity .28s;display:flex;flex-direction:column;gap:.48rem;z-index:5;}
 .pvw:hover .co{opacity:1;}
 .pw{position:relative;height:4px;background:rgba(255,255,255,.2);cursor:pointer;transition:height .15s;}
 .pw:hover{height:6px;}
@@ -308,9 +315,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .cvr{-webkit-appearance:none;width:60px;height:3px;background:rgba(255,255,255,.3);outline:none;cursor:pointer;}
 .cvr::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;background:var(--gold);border-radius:50%;}
 .ct{font-family:'DM Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.6);letter-spacing:.04em;}
-.cq{margin-left:auto;padding:.11rem .4rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.6);font-family:'DM Mono',monospace;font-size:.54rem;cursor:pointer;transition:all .2s;}
-.cq:hover{border-color:var(--gold-d);color:var(--gold);}
-/* Info */
+/* Info (inside scrollable section) */
 .pinfo{padding:.95rem 1.25rem;display:grid;grid-template-columns:1fr auto;gap:.82rem;}
 .ptitle{font-family:'Playfair Display',serif;font-size:clamp(.92rem,2vw,1.22rem);font-weight:700;color:var(--tp);line-height:1.28;margin-bottom:.35rem;}
 .pmeta{display:flex;align-items:center;gap:.78rem;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);letter-spacing:.06em;}
@@ -327,6 +332,39 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .rlct{aspect-ratio:16/9;background:var(--bg2);overflow:hidden;}
 .rlct img{width:100%;height:100%;object-fit:cover;}
 .rlci{padding:.4rem .5rem;font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--ts);line-height:1.3;}
+
+/* ═══ SETTINGS MODAL ════════════════════════════════════════ */
+#settings-modal{position:fixed;inset:0;z-index:8600;background:rgba(4,4,4,.88);
+  display:none;align-items:flex-start;justify-content:flex-end;backdrop-filter:blur(6px);}
+#settings-modal.on{display:flex;animation:mIn .25s ease;}
+.sm-panel{width:min(420px,96vw);height:100vh;background:var(--bg1);border-left:1px solid var(--bdr);
+  display:flex;flex-direction:column;overflow:hidden;}
+.sm-head{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.3rem;
+  border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.sm-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--tp);}
+.sm-body{overflow-y:auto;flex:1;padding:1rem 1.3rem;}
+.sm-sec{margin-bottom:1.6rem;}
+.sm-sec-title{font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--tm);margin-bottom:.7rem;padding-bottom:.3rem;border-bottom:1px solid var(--bdr);}
+.sm-row{display:flex;align-items:center;justify-content:space-between;padding:.42rem 0;
+  font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ts);}
+.sm-row select{padding:.3rem .6rem;background:var(--bg2);border:1px solid var(--bdr);
+  color:var(--ts);font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;outline:none;
+  transition:border-color .2s;min-width:140px;}
+.sm-row select:focus{border-color:var(--gold-d);}
+/* Toggle switch */
+.toggle{position:relative;width:38px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.tslider{position:absolute;inset:0;background:var(--bg3);border-radius:10px;cursor:pointer;transition:.3s;}
+.tslider:before{content:'';position:absolute;width:14px;height:14px;left:3px;bottom:3px;
+  background:var(--ts);border-radius:50%;transition:.3s;}
+.toggle input:checked+.tslider{background:var(--gold);}
+.toggle input:checked+.tslider:before{transform:translateX(18px);background:#080808;}
+
+/* ═══ LIKED TAB ═════════════════════════════════════════════ */
+.liked-empty{text-align:center;padding:4rem 2rem;font-family:'DM Mono',monospace;
+  font-size:.68rem;color:var(--tm);letter-spacing:.1em;line-height:2;}
+.liked-empty .big{font-size:2.4rem;display:block;margin-bottom:.7rem;opacity:.25;}
 
 /* ═══ TOAST ═════════════════════════════════════════════════ */
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
@@ -351,24 +389,9 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .apd-btn.leave{background:transparent;color:var(--tm);border:1px solid rgba(255,255,255,.1);}.apd-btn.leave:hover{border-color:var(--ts);color:var(--ts);}
 .apd-rule{width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);}
 
-/* ═══ SERVER CONFIG MODAL ═══════════════════════════════════ */
-#cfg-modal{position:fixed;inset:0;z-index:8500;background:rgba(4,4,4,.88);display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
-#cfg-modal.show{display:flex;animation:mIn .25s ease;}
-.cfg-box{background:var(--bg1);border:1px solid var(--bdr);border-top:2px solid var(--gold);padding:1.8rem;width:min(480px,92vw);display:flex;flex-direction:column;gap:1rem;}
-.cfg-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--tp);}
-.cfg-sub{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);letter-spacing:.07em;line-height:1.8;}
-.cfg-sub b{color:var(--gold);}
-.cfg-inp-row{display:flex;gap:.5rem;}
-.cfg-inp{flex:1;padding:.48rem .85rem;background:var(--bg2);border:1px solid var(--bdr);color:var(--tp);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
-.cfg-inp:focus{border-color:var(--gold-d);}
-.cfg-inp::placeholder{color:var(--tm);}
-.cfg-actions{display:flex;gap:.5rem;justify-content:flex-end;}
-.cfg-status{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.08em;padding:.28rem .65rem;border:1px solid var(--bdr);}
-.cfg-status.ok{color:#4CAF50;border-color:rgba(76,175,80,.3);background:rgba(76,175,80,.08);}
-.cfg-status.err{color:#C0392B;border-color:rgba(192,57,43,.3);}
-.cfg-status.chk{color:var(--tm);border-color:var(--bdr);}
-
 /* ═══ OFFLINE BANNER ════════════════════════════════════════ */
+.cfg-inp{padding:.48rem .85rem;background:var(--bg2);border:1px solid var(--bdr);color:var(--tp);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
+.cfg-inp:focus{border-color:var(--gold-d);}.cfg-inp::placeholder{color:var(--tm);}
 #offline-banner{
   display:none;align-items:center;justify-content:center;gap:.65rem;
   padding:.4rem 1.4rem;
@@ -384,7 +407,7 @@ body.reddit-only .sb-lnk:not(.rl){opacity:.22;pointer-events:none;cursor:default
 body.reddit-only #fbar{opacity:.2;pointer-events:none;}
 body.reddit-only .nav-logo{pointer-events:none;}
 body.reddit-only #nsw{opacity:.2;pointer-events:none;}
-body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
+body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 /* ═══ RESPONSIVE ════════════════════════════════════════════ */
 @media(max-width:870px){.ml{grid-template-columns:1fr;}.sb{display:none;}.ca{padding:1.05rem;}}
@@ -423,27 +446,6 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ SERVER CONFIG MODAL ══════════════════════════════════ -->
-<div id="cfg-modal" role="dialog" aria-modal="true" aria-labelledby="cfg-title">
-  <div class="cfg-box">
-    <div class="cfg-title" id="cfg-title">⚙ Server Connection</div>
-    <p class="cfg-sub">
-      Paste your <b>Cloudflare Tunnel</b> or <b>ngrok</b> URL below.<br/>
-      Example: <b>https://abc-123.trycloudflare.com</b><br/>
-      Leave blank to use direct public APIs only.
-    </p>
-    <div class="cfg-inp-row">
-      <input class="cfg-inp" id="cfg-url" type="url" placeholder="https://your-tunnel-url.trycloudflare.com" autocomplete="off"/>
-      <button class="btn g" id="cfg-test" onclick="testServerUrl()">Test</button>
-    </div>
-    <div id="cfg-status" class="cfg-status chk" style="display:none"></div>
-    <div class="cfg-actions">
-      <button class="btn" onclick="closeCfg()">Cancel</button>
-      <button class="btn g" onclick="saveServerUrl()">Save &amp; Connect</button>
-    </div>
-  </div>
-</div>
-
 <!-- ══ SPLASH ══════════════════════════════════════════════ -->
 <div id="splash">
   <canvas id="pc" aria-hidden="true"></canvas>
@@ -467,9 +469,8 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
       <div class="acl" id="acl" role="listbox"></div>
     </div>
     <nav class="nav-acts">
-      <button class="bico" id="theme-btn" aria-label="Toggle theme">🌙</button>
       <button class="bico" aria-label="Notifications">🔔</button>
-      <button class="bico" onclick="openCfg()" aria-label="Server settings" title="Server connection">⚙</button>
+      <button class="bico" onclick="openSM()" aria-label="Settings" title="Settings">⚙</button>
     </nav>
   </header>
 
@@ -520,6 +521,7 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
         <div class="sb-lnk" data-nav="trending">▲ Trending <span class="sb-bdg">Hot</span></div>
         <div class="sb-lnk" data-nav="new">◉ New</div>
         <div class="sb-lnk" data-nav="top">★ Top Rated</div>
+        <div class="sb-lnk" data-nav="liked">♥ Liked</div>
       </div>
       <div class="sb-sec">
         <div class="sb-ttl" style="color:rgba(102,204,255,.4)">API 3 — Redgifs GIFs</div>
@@ -562,6 +564,20 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
         <div id="main-autoload" class="auto-loading hidden"></div>
         <div class="scroll-sentinel" id="main-sentinel"></div>
         <div class="pag" id="pag"></div>
+      </div>
+
+      <!-- ── LIKED VIEW ── -->
+      <div id="view-liked" class="view">
+        <div class="sh">
+          <h2 class="st">♥ Liked Videos</h2>
+          <span class="sc" id="liked-count" aria-live="polite"></span>
+        </div>
+        <div class="vg" id="liked-grid" role="list"></div>
+        <div id="liked-empty" class="liked-empty" style="display:none">
+          <span class="big">♥</span>
+          Like videos while browsing and they'll appear here.<br/>
+          Press <span style="color:var(--gold)">♥ Like</span> when a video is open.
+        </div>
       </div>
 
       <!-- ── REDDIT VIEW (API 1 — isolated) ── -->
@@ -698,52 +714,135 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
 <div class="pm" id="pm" role="dialog" aria-modal="true" aria-labelledby="ptitle">
   <div class="ps" id="pshell">
     <button class="pclose" id="pclose" aria-label="Close">✕</button>
-
-    <!-- Video (direct MP4/WebM — Redgifs, Reddit, Rule34) -->
-    <div class="pvw" id="pvw" style="display:none">
-      <video id="mv" playsinline preload="metadata">Your browser does not support video.</video>
-      <div class="co">
-        <div class="pw" id="pw" role="slider" tabindex="0" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="pb" id="pb"></div><div class="pf" id="pf"></div>
-        </div>
-        <div class="cr">
-          <button class="cb" id="bplay" aria-label="Play">▶</button>
-          <div class="cvol">
-            <button class="cb" id="bmute" aria-label="Mute">🔊</button>
-            <input type="range" class="cvr" id="vol" min="0" max="1" step="0.02" value="1" aria-label="Volume"/>
+    <!-- Media — fixed, never scrolls -->
+    <div class="ps-media">
+      <div class="pvw" id="pvw" style="display:none">
+        <video id="mv" playsinline preload="metadata">Your browser does not support video.</video>
+        <div class="co">
+          <div class="pw" id="pw" role="slider" tabindex="0" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="pb" id="pb"></div><div class="pf" id="pf"></div>
           </div>
-          <span class="ct" id="ctime">0:00 / 0:00</span>
-          <button class="cb" id="bpip" title="PiP">⧉</button>
-          <button class="cb" id="bfs" style="font-size:.76rem">⛶</button>
+          <div class="cr">
+            <button class="cb" id="bplay" aria-label="Play">▶</button>
+            <div class="cvol">
+              <button class="cb" id="bmute" aria-label="Mute">🔊</button>
+              <input type="range" class="cvr" id="vol" min="0" max="1" step="0.02" value="1" aria-label="Volume"/>
+            </div>
+            <span class="ct" id="ctime">0:00 / 0:00</span>
+            <button class="cb" id="bpip" title="PiP">⧉</button>
+            <button class="cb" id="bfs" style="font-size:.76rem">⛶</button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Iframe (Redtube embed) -->
-    <div id="pfw" style="display:none">
-      <iframe id="mf" allowfullscreen allow="autoplay; fullscreen"></iframe>
-    </div>
-
-    <!-- Image -->
-    <div id="piw" style="display:none;background:#000">
-      <img id="mi" src="" alt=""/>
-    </div>
-
-    <div class="pinfo">
-      <div>
-        <div class="ptitle" id="ptitle">—</div>
-        <div class="pmeta" id="pmeta"></div>
+      <div id="pfw" style="display:none">
+        <iframe id="mf" allowfullscreen allow="autoplay; fullscreen"></iframe>
       </div>
-      <div class="par" id="par"></div>
     </div>
+    <!-- Scrollable info below -->
+    <div class="ps-scroll">
+      <div class="pinfo">
+        <div>
+          <div class="ptitle" id="ptitle">—</div>
+          <div class="pmeta" id="pmeta"></div>
+        </div>
+        <div class="par" id="par"></div>
+      </div>
+      <div class="pxtra hidden" id="pxtra"></div>
+      <div class="prl" id="prl">
+        <div class="prl-t">Related</div>
+        <div class="rlg" id="rlg"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- Extra info (Reddit/Rule34) -->
-    <div class="pxtra hidden" id="pxtra"></div>
+<!-- ══ SETTINGS PANEL ═══════════════════════════════════════ -->
+<div id="settings-modal" onclick="if(event.target===this)closeSM()">
+  <div class="sm-panel">
+    <div class="sm-head">
+      <span class="sm-title">⚙ Settings</span>
+      <button class="btn" onclick="closeSM()" style="padding:.28rem .7rem;font-size:.62rem">✕</button>
+    </div>
+    <div class="sm-body">
 
-    <!-- Related (main videos only) -->
-    <div class="prl" id="prl">
-      <div class="prl-t">Related</div>
-      <div class="rlg" id="rlg"></div>
+      <div class="sm-sec">
+        <div class="sm-sec-title">Appearance</div>
+        <div class="sm-row">
+          <span>Dark Mode</span>
+          <label class="toggle">
+            <input type="checkbox" id="st-dark" onchange="applyTheme(this.checked?'dark':'light')"/>
+            <span class="tslider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="sm-sec">
+        <div class="sm-sec-title">Server Connection</div>
+        <div class="sm-row" style="flex-direction:column;align-items:stretch;gap:.4rem">
+          <span style="font-size:.6rem;color:var(--tm)">Tunnel URL (Cloudflare / ngrok)</span>
+          <div style="display:flex;gap:.4rem">
+            <input class="cfg-inp" id="sm-url" type="url" placeholder="https://your-tunnel.trycloudflare.com" style="flex:1"/>
+            <button class="btn" onclick="smTestServer()" id="sm-test">Test</button>
+          </div>
+          <div id="sm-status" style="font-family:'DM Mono',monospace;font-size:.58rem;display:none"></div>
+          <button class="btn g" onclick="smSaveServer()" style="align-self:flex-end;margin-top:.2rem">Save &amp; Connect</button>
+        </div>
+      </div>
+
+      <div class="sm-sec">
+        <div class="sm-sec-title">Main Feed API Sources</div>
+        <p style="font-family:'DM Mono',monospace;font-size:.57rem;color:var(--tm);margin-bottom:.7rem;line-height:1.7">
+          Choose which APIs power Home, Trending, New &amp; Top Rated.
+          ★ = requires server &nbsp; ◉ = works direct
+        </p>
+        <div class="sm-row">
+          <span>Primary Video API</span>
+          <select id="st-api1" onchange="saveApiSettings()">
+            <option value="pornhub">★ Pornhub</option>
+            <option value="redtube">★ RedTube</option>
+            <option value="youporn">★ YouPorn</option>
+          </select>
+        </div>
+        <div class="sm-row">
+          <span>Secondary Video API</span>
+          <select id="st-api2" onchange="saveApiSettings()">
+            <option value="redtube">★ RedTube</option>
+            <option value="pornhub">★ Pornhub</option>
+            <option value="youporn">★ YouPorn</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div class="sm-row">
+          <span>GIF Tab API</span>
+          <select id="st-gifapi" onchange="saveApiSettings()">
+            <option value="redgifs">★ Redgifs</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sm-sec">
+        <div class="sm-sec-title">Available APIs</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);line-height:2.2">
+          <div>★ <strong style="color:var(--tp)">Pornhub</strong> — server required</div>
+          <div>★ <strong style="color:var(--tp)">RedTube</strong> — server required</div>
+          <div>★ <strong style="color:var(--tp)">YouPorn</strong> — server required</div>
+          <div>★ <strong style="color:var(--tp)">Redgifs</strong> — server required (GIFs)</div>
+          <div>◉ <strong style="color:var(--tp)">Reddit NSFW</strong> — works direct</div>
+          <div>◉ <strong style="color:var(--tp)">e621</strong> — works direct (proxy)</div>
+          <div>★ <strong style="color:var(--tp)">Rule34.xxx</strong> — server required</div>
+          <div>★ <strong style="color:var(--tp)">Rule34.paheal</strong> — server required</div>
+        </div>
+      </div>
+
+      <div class="sm-sec">
+        <div class="sm-sec-title">Liked Videos</div>
+        <div class="sm-row">
+          <span id="liked-count-label">— liked videos saved</span>
+          <button class="btn" onclick="clearLiked()" style="font-size:.58rem">Clear All</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -781,13 +880,6 @@ function toast(msg,type='ok',ms=3000){
 }
 
 /* ══════════════════════════════════════════════════════════
-   THEME
-══════════════════════════════════════════════════════════ */
-let theme=localStorage.getItem('obs_theme')||'dark';
-function applyTheme(t){document.documentElement.setAttribute('data-theme',t);theme=t;localStorage.setItem('obs_theme',t);$('theme-btn').textContent=t==='dark'?'🌙':'☀️';}
-$('theme-btn').addEventListener('click',()=>applyTheme(theme==='dark'?'light':'dark'));
-applyTheme(theme);
-
 /* ══════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════ */
@@ -802,41 +894,59 @@ const S={
 };
 
 /* ══════════════════════════════════════════════════════════
-   SERVER CONFIG + HEALTH CHECK
+   SETTINGS
 ══════════════════════════════════════════════════════════ */
-function openCfg(){
-  $('cfg-url').value=S.serverUrl;
-  $('cfg-status').style.display='none';
-  if(HARDCODED_SERVER){
-    const st=$('cfg-status');st.style.display='block';
-    st.className='cfg-status chk';
-    st.textContent='ℹ URL is set in the HTML file — saving here overrides it for this session only';
-  }
-  $('cfg-modal').classList.add('show');
-}
-function closeCfg(){$('cfg-modal').classList.remove('show');}
-$('cfg-modal').addEventListener('click',e=>{if(e.target===$('cfg-modal'))closeCfg();});
+const DEF_SETTINGS={theme:'dark',api1:'pornhub',api2:'redtube',gifApi:'redgifs'};
+let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
+ST={...DEF_SETTINGS,...ST};
 
-async function testServerUrl(){
-  const url=$('cfg-url').value.trim().replace(/\/$/,'');
-  const st=$('cfg-status');st.style.display='block';
-  if(!url){st.className='cfg-status err';st.textContent='✕ Enter a URL first';return;}
-  st.className='cfg-status chk';st.textContent='Checking…';
+function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));}
+function saveApiSettings(){
+  ST.api1=$('st-api1').value;
+  ST.api2=$('st-api2').value;
+  ST.gifApi=$('st-gifapi').value;
+  saveSettings();
+  toast('API settings saved','ok',2000);
+}
+
+function openSM(){
+  /* Sync controls */
+  $('st-dark').checked=ST.theme==='dark';
+  $('sm-url').value=S.serverUrl;
+  $('sm-status').style.display='none';
+  $('st-api1').value=ST.api1;
+  $('st-api2').value=ST.api2;
+  $('st-gifapi').value=ST.gifApi;
+  $('liked-count-label').textContent=`${getLiked().length} liked videos saved`;
+  $('settings-modal').classList.add('on');
+}
+function closeSM(){$('settings-modal').classList.remove('on');}
+
+async function smTestServer(){
+  const url=$('sm-url').value.trim().replace(/\/$/,'');
+  const st=$('sm-status');st.style.display='block';
+  if(!url){st.style.color='#C0392B';st.textContent='✕ Enter a URL first';return;}
+  st.style.color='var(--tm)';st.textContent='Checking…';
   try{
-    const r=await fetch(`${url}/health`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-    if(r.ok){st.className='cfg-status ok';st.textContent='✓ Server is online and responding';}
-    else{st.className='cfg-status err';st.textContent=`✕ Server returned ${r.status}`;}
-  }catch{st.className='cfg-status err';st.textContent='✕ Cannot reach server — check the URL';}
+    const r=await fetch(`${url}/health`,{mode:'cors',signal:AbortSignal.timeout(8000)});
+    if(r.ok){st.style.color='#4CAF50';st.textContent='✓ Server is online';}
+    else{st.style.color='#C0392B';st.textContent=`✕ Server returned ${r.status}`;}
+  }catch{st.style.color='#C0392B';st.textContent='✕ Cannot reach server';}
+}
+function smSaveServer(){
+  const url=$('sm-url').value.trim().replace(/\/$/,'');
+  S.serverUrl=url;localStorage.setItem('obs_server',url);
+  closeSM();if(url)checkServer().then(ok=>ok&&loadVideos());
+  toast(url?'Server URL saved':'Server URL cleared','ok');
 }
 
-function saveServerUrl(){
-  const url=$('cfg-url').value.trim().replace(/\/$/,'');
-  S.serverUrl=url;
-  localStorage.setItem('obs_server',url);
-  closeCfg();
-  if(url)checkServer();
-  else toast('Server URL cleared — using direct APIs','ok');
+/* ── Theme (inside settings) ── */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  ST.theme=t;saveSettings();
+  const el=$('st-dark');if(el)el.checked=t==='dark';
 }
+applyTheme(ST.theme);
 
 async function checkServer(retries=3){
   if(!S.serverUrl)return false;
@@ -869,8 +979,45 @@ async function retryServer(){
   }
 }
 
-function showApiDownPopup(){$('api-down').classList.add('show');}
-function hideApiDownPopup(){$('api-down').classList.remove('show');}
+/* ══════════════════════════════════════════════════════════
+   LIKED VIDEOS
+══════════════════════════════════════════════════════════ */
+function getLiked(){try{return JSON.parse(localStorage.getItem('obs_liked')||'[]');}catch{return[];}}
+function saveLiked(arr){localStorage.setItem('obs_liked',JSON.stringify(arr));}
+function isLiked(id){return getLiked().some(v=>v.id===id);}
+function toggleLike(v){
+  const liked=getLiked();
+  const idx=liked.findIndex(x=>x.id===v.id);
+  if(idx>=0){liked.splice(idx,1);saveLiked(liked);toast('Removed from Liked','ok');}
+  else{
+    /* Store minimal data */
+    liked.unshift({id:v.id,title:v.title,thumb:v.thumb,dur:v.dur,views:v.views,rating:v.rating,
+                   qual:v.qual,src:v.src,url:v.url,embedUrl:v.embedUrl,directUrl:v.directUrl,
+                   useIframe:v.useIframe,bc:v.bc,tags:v.tags||[]});
+    if(liked.length>200)liked.length=200;
+    saveLiked(liked);toast('Added to Liked ♥','ok');
+  }
+  /* Update button if player open */
+  updateLikeBtn(v.id);
+  if(S.curView==='liked')renderLiked();
+}
+function updateLikeBtn(id){
+  const btn=$('liked-btn');
+  if(!btn)return;
+  const l=isLiked(id);
+  btn.textContent=l?'♥ Liked':'♥ Like';
+  btn.style.background=l?'var(--crim)':'';
+  btn.style.borderColor=l?'var(--crim)':'';
+  btn.style.color=l?'#fff':'';
+}
+function clearLiked(){saveLiked([]);if(S.curView==='liked')renderLiked();$('liked-count-label').textContent='0 liked videos saved';toast('Liked cleared','ok');}
+function renderLiked(){
+  const liked=getLiked();
+  $('liked-count').textContent=liked.length?`${liked.length} videos`:'';
+  const g=$('liked-grid');g.innerHTML='';
+  if(!liked.length){$('liked-empty').style.display='block';}
+  else{$('liked-empty').style.display='none';liked.forEach(v=>g.appendChild(mkCard(v)));}
+}
 
 function redditOnlyMode(){
   hideApiDownPopup();
@@ -887,18 +1034,23 @@ function exitRedditOnly(){
   $('offline-banner').classList.remove('show');
 }
 
+function showApiDownPopup(){$('api-down').classList.add('show');}
+function hideApiDownPopup(){$('api-down').classList.remove('show');}
+
 /* ══════════════════════════════════════════════════════════
    VIEW SWITCHING
 ══════════════════════════════════════════════════════════ */
 function switchView(name){
   S.curView=name;
   const iso=name==='reddit'||name==='r34';
-  $('fbar').classList.toggle('off',iso);
-  $('nsw').style.display=iso?'none':'';
+  const isLikedView=name==='liked';
+  $('fbar').classList.toggle('off',iso||isLikedView);
+  $('nsw').style.display=(iso||isLikedView)?'none':'';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
-  const map={reddit:'view-reddit',r34:'view-r34'};
+  const map={reddit:'view-reddit',r34:'view-r34',liked:'view-liked'};
   $(map[name]||'view-main').classList.add('on');
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.toggle('on',l.dataset.nav===name));
+  if(isLikedView){renderLiked();return;}
   if(!iso)loadVideos();
 }
 function goHome(){switchView('home');}
@@ -958,57 +1110,38 @@ async function fetchPornhub(q='',page=1,sort='views'){
   return{videos:d.videos,total:d.total||d.videos.length*5};
 }
 
-/* ── API 3b: Eporner — fully public, direct browser fetch works ── */
-async function fetchEporner(q='',page=1,sort='views'){
-  const sortMap={views:'top-rated',newest:'newest',rating:'top-rated',trending:'top-weekly'};
-  const params=new URLSearchParams({
-    query:q||'',
-    per_page:CFG_PAGE,
-    page,
-    thumbsize:'big',
-    format:'json',
-    order:sortMap[sort]||'top-rated',
-    gay:0,
-  });
-  /* Direct fetch works — Eporner has open CORS */
-  try{
-    const r=await fetch(`https://www.eporner.com/api/v2/video/search/?${params}`,{
-      mode:'cors',signal:AbortSignal.timeout(10000),
-    });
-    if(!r.ok)throw new Error(`EP ${r.status}`);
-    const d=await r.json();
-    return mapEporner(d);
-  }catch(e){
-    /* Proxy fallback */
-    const d=await proxyFetch(`https://www.eporner.com/api/v2/video/search/?${params}`);
-    return mapEporner(d);
-  }
-}
-function mapEporner(d){
-  const hits=d?.videos||[];
-  return{
-    videos:hits.map(v=>{
-      const thumbs=v.thumbs||[];
-      const thumb=thumbs.find(t=>t.size==='big')?.src||thumbs[0]?.src||v.default_thumb||'';
-      return{
-        id:String(v.id||''),
-        title:v.title||'',
-        thumb,
-        dur:parseInt(v.length_sec||v.duration||0),
-        views:parseInt(v.views||0),
-        rating:v.rate?parseFloat(v.rate).toFixed(1):'—',
-        qual:v.hd?'HD':'SD',
-        tags:(v.keywords||'').split(',').map(t=>t.trim()).filter(Boolean).slice(0,5),
-        url:`https://www.eporner.com/hd-porn/${v.id}/`,
-        embedUrl:`https://www.eporner.com/embed/${v.id}/`,
-        useIframe:true,src:'Eporner',bc:'b-hot',
-      };
-    }).filter(v=>v.id&&v.embedUrl),
-    total:parseInt(d?.total_count||0)||hits.length*5,
-  };
+/* ── API: RedTube via server ── */
+async function fetchRedTube(q='',page=1,sort='views'){
+  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
+  if(q)p.set('q',q);
+  const r=await fetch(`${S.serverUrl}/api/redtube?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
+  if(!r.ok)throw new Error(`RT server ${r.status}`);
+  const d=await r.json();
+  if(!d.videos?.length)throw new Error('RT empty');
+  return{videos:d.videos,total:d.total||d.videos.length*5};
 }
 
-/* ── API 3: Redgifs GIFs — server only ── */
+/* ── API: YouPorn via server ── */
+async function fetchYouPorn(q='',page=1,sort='views'){
+  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
+  if(q)p.set('q',q);
+  const r=await fetch(`${S.serverUrl}/api/youporn?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
+  if(!r.ok)throw new Error(`YP server ${r.status}`);
+  const d=await r.json();
+  if(!d.videos?.length)throw new Error('YP empty');
+  return{videos:d.videos,total:d.total||d.videos.length*5};
+}
+
+/* ── Fetch by API name ── */
+function fetchByName(name,q,page,sort){
+  if(name==='pornhub')  return fetchPornhub(q,page,sort);
+  if(name==='redtube')  return fetchRedTube(q,page,sort);
+  if(name==='youporn')  return fetchYouPorn(q,page,sort);
+  if(name==='redgifs')  return fetchRedgifs(q,page);
+  return Promise.reject(new Error(`Unknown API: ${name}`));
+}
 const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
@@ -1036,42 +1169,40 @@ async function fetchRedgifs(q='',page=1){
   };
 }
 
-/* ── Combined fetch ── */
+/* ── Combined fetch using settings-selected APIs ── */
 async function fetchMain(params={}){
   const{q='',page=1,sort='views',tag='all'}=params;
   const up=S.serverUrl&&S.serverOk;
 
-  /* GIF tab only → Redgifs (server only) */
+  /* GIF tab → settings gifApi */
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
-    if(up){try{return await fetchRedgifs(rq,page);}catch(e){console.warn('[RG]',e.message);}}
+    if(up&&ST.gifApi!=='none'){
+      try{return await fetchByName(ST.gifApi,rq,page,sort);}
+      catch(e){console.warn('[GIF]',e.message);}
+    }
     return{videos:[],total:0,notice:'server-offline'};
   }
 
-  /* Home/Trending/New/Top: Pornhub (server) + Eporner (direct) */
-  const results=await Promise.allSettled([
-    up?fetchPornhub(q,page,sort):Promise.reject('offline'),
-    fetchEporner(q,page,sort),
-  ]);
+  /* Primary + Secondary video APIs in parallel */
+  const api1 = ST.api1||'pornhub';
+  const api2 = ST.api2||'redtube';
+  const fetches=[
+    fetchByName(api1,q,page,sort),
+    api2!=='none'?fetchByName(api2,q,page,sort):Promise.reject('disabled'),
+  ];
+  const results=await Promise.allSettled(fetches);
+  const v1=results[0].status==='fulfilled'?results[0].value.videos:[];
+  const v2=results[1].status==='fulfilled'?results[1].value.videos:[];
+  if(results[0].status==='rejected')console.warn(`[${api1}]`,results[0].reason);
+  if(results[1].status==='rejected'&&api2!=='none')console.warn(`[${api2}]`,results[1].reason);
 
-  const ph=results[0].status==='fulfilled'?results[0].value.videos:[];
-  const ep=results[1].status==='fulfilled'?results[1].value.videos:[];
-
-  if(results[0].status==='rejected')console.warn('[PH]',results[0].reason);
-  if(results[1].status==='rejected')console.warn('[EP]',results[1].reason);
-
-  /* Interleave PH + EP results */
+  /* Interleave both sources */
   const merged=[];
-  const max=Math.max(ph.length,ep.length);
-  for(let i=0;i<max;i++){
-    if(ph[i])merged.push(ph[i]);
-    if(ep[i])merged.push(ep[i]);
-  }
+  const max=Math.max(v1.length,v2.length);
+  for(let i=0;i<max;i++){if(v1[i])merged.push(v1[i]);if(v2[i])merged.push(v2[i]);}
 
-  if(!merged.length){
-    /* Nothing at all */
-    return{videos:[],total:0,notice:up?'no-results':'server-offline'};
-  }
+  if(!merged.length)return{videos:[],total:0,notice:up?'no-results':'server-offline'};
   const total=((results[0].status==='fulfilled'?results[0].value.total:0)+(results[1].status==='fulfilled'?results[1].value.total:0))||merged.length*4;
   return{videos:merged,total};
 }
@@ -1681,27 +1812,22 @@ function launchPlayer(opts){
   /* Kill any previous dead notice */
   const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
 
-  /* Always show pvw — hide separate image/iframe wrappers */
   $('pvw').style.display='block';
   $('pfw').style.display='none';
-  $('piw').style.display='none';
-
   clearGallery();clearPlayerImage();
 
   if(mediaType==='iframe'){
-    /* Pornhub embed and similar */
     $('pvw').style.display='none';
     $('pfw').style.display='block';
     vidPause();
     $('mf').src=src;
   } else if(mediaType==='image'){
-    /* Image shown inside pvw with custom overlay */
+    $('pvw').style.display='block';  /* show pvw as image container */
+    $('pfw').style.display='none';
     vidPause();
     if(galleryItems.length>1)setGallery(galleryItems);
     else setPlayerImage(src,title);
-    /* Mute the controls (no video) */
-    $('ctime').textContent='— / —';
-    pf.style.width='0%';
+    $('ctime').textContent='— / —';pf.style.width='0%';
   } else {
     /* video or gif → native <video> */
     vidPause();
@@ -1718,10 +1844,11 @@ function openMain(v){
   S.curVid=v;
   const src=v.useIframe?(v.embedUrl||v.url||''):(v.directUrl||v.url||'');
   const mType=v.useIframe?'iframe':(v.src==='Redgifs'?'gif':'video');
+  const liked=isLiked(v.id);
   launchPlayer({
-    src, title:v.title, accent:'gr',
+    src,title:v.title,accent:'gr',
     meta:`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span>${v.qual||''}</span><span style="color:var(--gold)">${esc(v.src)}</span>`,
-    actions:`<button class="btn" onclick="toast('Liked ♥','ok')">♥ Like</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
+    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">♥${liked?' Liked':' Like'}</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
     mediaType:mType,showRelated:true,
   });
   loadRelated(v);
