@@ -896,7 +896,7 @@ const S={
 /* ══════════════════════════════════════════════════════════
    SETTINGS
 ══════════════════════════════════════════════════════════ */
-const DEF_SETTINGS={theme:'dark',api1:'pornhub',api2:'redtube',gifApi:'redgifs'};
+const DEF_SETTINGS={theme:'dark',api1:'pornhub',api2:'none',gifApi:'redgifs'};
 let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
 ST={...DEF_SETTINGS,...ST};
 
@@ -1195,7 +1195,7 @@ async function fetchMain(params={}){
   const v1=results[0].status==='fulfilled'?results[0].value.videos:[];
   const v2=results[1].status==='fulfilled'?results[1].value.videos:[];
   if(results[0].status==='rejected')console.warn(`[${api1}]`,results[0].reason);
-  if(results[1].status==='rejected'&&api2!=='none')console.warn(`[${api2}]`,results[1].reason);
+  /* api2 failures are silent — it's optional */
 
   /* Interleave both sources */
   const merged=[];
@@ -1591,16 +1591,22 @@ async function fetchR34(append=false){
         }catch{continue;}
       }
     } else if(apiSrc==='rule34xxx'||apiSrc==='paheal'){
-      /* ── .xxx and .paheal: server only (they block proxies) ── */
+      /* ── .xxx and .paheal: server only ── */
       if(S.serverUrl&&S.serverOk){
         try{
           const p=new URLSearchParams({tags:cleanTag,limit,pid,source:apiSrc});
           const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
-          if(r.ok){posts=await r.json();if(!Array.isArray(posts))posts=[];}
-          else throw new Error(`Server ${r.status}`);
-        }catch(e){throw new Error(`Server needed for ${apiSrc} — ${e.message}`);}
+          if(r.ok){
+            posts=await r.json();
+            if(!Array.isArray(posts))posts=[];
+          }else if(r.status===403){
+            throw new Error(`rule34.xxx is protected by Cloudflare WAF and blocked the server request.\nTry switching to e621 in the source dropdown — it always works ✓`);
+          }else{
+            throw new Error(`Server returned ${r.status}`);
+          }
+        }catch(e){throw new Error(e.message);}
       } else {
-        throw new Error(`${apiSrc} requires the Python server to be running (it blocks direct/proxy access)`);
+        throw new Error(`${apiSrc} requires your Python server to be running`);
       }
     }
 
