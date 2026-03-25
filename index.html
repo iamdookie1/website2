@@ -1047,7 +1047,7 @@ function mkCard(v){
   const el=document.createElement('article');el.className='vc';el.setAttribute('role','listitem');el.setAttribute('tabindex','0');
   const tgs=(v.tags||[]).slice(0,3).map(t=>`<span class="vtg">${esc(t)}</span>`).join('');
   const b=v.qual?.includes('GIF')?'<span class="bdg b-rg">GIF</span>':v.qual?.includes('4K')?'<span class="bdg b-4k">4K</span>':v.qual?.includes('1080')||v.qual?.includes('HD')?'<span class="bdg b-hd">HD</span>':v.bc?`<span class="bdg ${v.bc}">${v.bc.replace('b-','').toUpperCase()}</span>`:'';
-  el.innerHTML=`<div class="vth"><img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://picsum.photos/seed/${esc(v.id)}/640/360'"/>
+  el.innerHTML=`<div class="vth"><img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.closest('.vc').dataset.dead='1';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect width=%2216%22 height=%229%22 fill=%22%231a1a1a%22/><text x=%228%22 y=%225.5%22 text-anchor=%22middle%22 font-size=%222%22 fill=%22%235a554e%22>unavailable</text></svg>'"/>
     <div class="vov" aria-hidden="true"><div class="pio">▶</div></div>
     <div class="vbg" aria-hidden="true">${b}</div>
     <span class="vdur">${fmtD(v.dur)}</span>
@@ -1192,7 +1192,7 @@ function renderRGrid(){
     const tLbl=isV?'VIDEO':isG?'GIF':isGal?'GALLERY':'IMAGE';
     const tCls=isV?'rt-v':isG?'rt-g':isGal?'rt-gl':'rt-i';
     const el=document.createElement('article');el.className='rc';el.setAttribute('tabindex','0');
-    el.innerHTML=`<div class="rcm">${post.tUrl?`<img src="${esc(post.tUrl)}" alt="${esc(post.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none'"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.22;">${isV?'▶':'🖼'}</div>`}
+    el.innerHTML=`<div class="rcm">${post.tUrl?`<img src="${esc(post.tUrl)}" alt="${esc(post.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.opacity='.2';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect width=%2216%22 height=%229%22 fill=%22%231a1a1a%22/><text x=%228%22 y=%225.5%22 text-anchor=%22middle%22 font-size=%222%22 fill=%22%235a554e%22>unavailable</text></svg>'"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.22;">${isV?'▶':'🖼'}</div>`}
       <div class="rcov"><div class="rcp">${isV||isG?'▶':'🔍'}</div></div>
       <span class="rctb ${tCls}">${tLbl}</span>${post.nsfw?'<span class="rcnsfw">NSFW</span>':''}<span class="rcups">▲ ${fmtV(post.ups)}</span></div>
       <div class="rci"><div class="rct">${esc(post.title)}</div>
@@ -1239,18 +1239,30 @@ async function fetchR34(append=false){
       }catch(e){console.warn('[Server/R34]',e.message);S.serverOk=false;posts=[];}
     }
 
-    /* ── Fall back to corsproxy.io ── */
+    /* ── Fall back through multiple CORS proxies ── */
     if(!posts.length){
       const apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
-      const res=await fetch(PROXY+encodeURIComponent(apiUrl),{mode:'cors'});
-      if(!res.ok)throw new Error(`Rule34 returned ${res.status}`);
-      const text=await res.text();
-      try{posts=JSON.parse(text);}catch{throw new Error('Rule34 returned invalid JSON — try different tags');}
-      if(posts===0||posts===null||posts===false)posts=[];
-      if(!Array.isArray(posts)){
-        if(Array.isArray(posts?.post))posts=posts.post;
-        else if(posts?.post)posts=[posts.post];
-        else posts=[];
+      const PROXIES=[
+        u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+        u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+        u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+      ];
+      for(const mkProxy of PROXIES){
+        try{
+          const res=await fetch(mkProxy(apiUrl),{mode:'cors',signal:AbortSignal.timeout(10000)});
+          if(!res.ok)continue;
+          const text=await res.text();
+          let parsed;
+          try{parsed=JSON.parse(text);}catch{continue;}
+          if(parsed===0||parsed===null||parsed===false)parsed=[];
+          if(!Array.isArray(parsed)){
+            if(Array.isArray(parsed?.post))parsed=parsed.post;
+            else if(parsed?.post)parsed=[parsed.post];
+            else parsed=[];
+          }
+          posts=parsed;
+          break;
+        }catch{continue;}
       }
     }
 
@@ -1304,7 +1316,7 @@ function renderR4Grid(){
     const ar=post.width&&post.height?(post.width/post.height>1.5?'r16':'sq'):'r16';
     const el=document.createElement('article');el.className='r4c';el.setAttribute('tabindex','0');
     const tagHtml=post.tags.slice(0,4).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');event.stopPropagation()">${esc(t)}</span>`).join('');
-    el.innerHTML=`<div class="r4m ${ar}">${post.previewUrl?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(post.fileUrl)}'"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.22">${isV?'▶':'🖼'}</div>`}
+    el.innerHTML=`<div class="r4m ${ar}">${post.previewUrl?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(post.fileUrl)}';this.onerror=()=>{this.onerror=null;this.closest('.r4c').dataset.dead='1';this.style.opacity='.15'}"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.22">${isV?'▶':'🖼'}</div>`}
       <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
       <span class="r4tb ${tCls}">${tLbl}</span><span class="r4sc">▲${post.score}</span></div>
       <div class="r4in"><div class="r4tg">${tagHtml}</div>
@@ -1346,7 +1358,9 @@ function openRedditPost(post){
   $('prl').style.display='none';
   const isV=post.mType==='video'||post.mType==='gif-v';
   $('pfw').style.display='none';
-  if(isV&&post.mUrl){$('pvw').style.display='block';$('piw').style.display='none';vidPause();const mv=$('mv');mv.src=post.mUrl;mv.loop=post.mType==='gif-v';mv.load();mv.play().catch(()=>{});}
+  if(isV&&post.mUrl){$('pvw').style.display='block';$('piw').style.display='none';vidPause();
+    const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
+    const mv=$('mv');mv.src=post.mUrl;mv.loop=post.mType==='gif-v';mv.load();mv.play().catch(()=>{});}
   else if(post.mUrl){$('pvw').style.display='none';$('piw').style.display='block';vidPause();$('mi').src=post.mUrl;$('mi').alt=post.title;const ex=$('piw').querySelector('.galnn');if(ex)ex.remove();if(post.gallery?.length>1)buildGal($('piw'),post.gallery);}
   $('pm').classList.add('on');document.body.style.overflow='hidden';
 }
@@ -1398,6 +1412,16 @@ mv.addEventListener('timeupdate',()=>{if(drag||!mv.duration)return;const p=(mv.c
 mv.addEventListener('progress',()=>{if(!mv.duration)return;const b=mv.buffered;if(b.length)pb.style.width=(b.end(b.length-1)/mv.duration*100)+'%';});
 mv.addEventListener('play',()=>{$('bplay').textContent='⏸';$('bplay').setAttribute('aria-label','Pause');});
 mv.addEventListener('pause',()=>{$('bplay').textContent='▶';$('bplay').setAttribute('aria-label','Play');});
+mv.addEventListener('error',()=>{
+  /* Dead stream — show a message in the player */
+  const vw=$('pvw');
+  if(vw.querySelector('.dead-notice'))return;
+  const n=document.createElement('div');
+  n.className='dead-notice';
+  n.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:var(--bg1);font-family:"DM Mono",monospace;text-align:center;';
+  n.innerHTML='<span style="font-size:2rem;opacity:.3">📭</span><span style="font-size:.65rem;color:var(--tm);letter-spacing:.12em;text-transform:uppercase">Media unavailable or removed</span>';
+  vw.appendChild(n);
+});
 function seekAt(e){const r=pw.getBoundingClientRect();const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));if(mv.duration)mv.currentTime=p*mv.duration;pf.style.width=(p*100)+'%';}
 pw.addEventListener('mousedown',e=>{drag=true;seekAt(e);});
 document.addEventListener('mousemove',e=>{if(drag)seekAt(e);});
@@ -1411,7 +1435,10 @@ $('bfs').addEventListener('click',()=>{document.fullscreenElement?document.exitF
 
 let hlsI=null;
 function loadStream(url){
-  const v=$('mv');if(!url){toast('Stream unavailable','err');return;}
+  const v=$('mv');
+  /* Clear any previous dead notice */
+  const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
+  if(!url){toast('Stream unavailable','err');return;}
   if(hlsI){hlsI.destroy();hlsI=null;}
   if(url.endsWith('.m3u8')){
     if(typeof Hls==='undefined'){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';s.onload=()=>initHls(url);document.head.appendChild(s);}
@@ -1453,18 +1480,20 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  /* If server URL is set, check if it's alive */
-  if(S.serverUrl){
-    const ok=await checkServer();
-    if(!ok){
-      /* Server configured but offline → show popup */
-      showApiDownPopup();
-      return;
-    }
-    toast('Server connected ✓','ok',2500);
-  }
-  /* Server online or no server configured — load normally */
+  /* Start loading content immediately — don't wait for server check */
   loadVideos();
+
+  /* Check server in the background — show popup only if it was relied upon */
+  if(S.serverUrl){
+    checkServer().then(ok=>{
+      if(!ok){
+        /* Server configured but offline — show popup over the loaded content */
+        showApiDownPopup();
+      }else{
+        toast('Server connected ✓','ok',2000);
+      }
+    });
+  }
 }
 
 if(localStorage.getItem('obs_age')==='1')showSplash();
