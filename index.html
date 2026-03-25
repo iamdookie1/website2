@@ -213,25 +213,36 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-lm-btn.p{border:1px solid rgba(155,89,182,.35);color:rgba(180,130,210,.75);}.iso-lm-btn.p:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
 .iso-lm-btn:disabled{opacity:.3;cursor:not-allowed;}
 
-/* ═══ REDDIT CARDS ══════════════════════════════════════════ */
-.rc{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s;}
-.rc:hover{transform:translateY(-3px);border-color:rgba(255,69,0,.4);box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 0 1px rgba(255,69,0,.26);}
-.rcm{position:relative;aspect-ratio:16/9;background:var(--bg2);overflow:hidden;}
-.rcm img,.rcm video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .34s,filter .34s;filter:brightness(.84);}
-.rc:hover .rcm img,.rc:hover .rcm video{transform:scale(1.05);filter:brightness(1);}
-.rcov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.8) 0%,transparent 52%);opacity:0;transition:opacity .24s;display:flex;align-items:center;justify-content:center;}
-.rc:hover .rcov{opacity:1;}
-.rcp{width:44px;height:44px;background:var(--red);display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:1rem;color:#fff;padding-left:3px;transition:transform .18s;}
-.rc:hover .rcp{transform:scale(1.12);}
-.rctb{position:absolute;top:.4rem;right:.4rem;padding:.1rem .38rem;font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;}
-.rt-v{background:rgba(255,69,0,.85);color:#fff;}.rt-i{background:rgba(20,20,20,.9);color:#ccc;}
-.rt-g{background:rgba(0,100,60,.85);color:#aef;}.rt-gl{background:rgba(80,40,180,.85);color:#ccf;}
-.rcnsfw{position:absolute;top:.4rem;left:.4rem;padding:.1rem .38rem;background:rgba(180,20,20,.85);font-family:'DM Mono',monospace;font-size:.46rem;letter-spacing:.12em;text-transform:uppercase;color:#fcc;}
-.rcups{position:absolute;bottom:.4rem;left:.4rem;background:rgba(8,8,8,.85);padding:.09rem .35rem;font-family:'DM Mono',monospace;font-size:.54rem;color:#ffa;}
-.rci{padding:.72rem .85rem .65rem;}
-.rct{font-family:'Cormorant Garamond',serif;font-size:.86rem;font-weight:600;color:var(--tp);line-height:1.36;margin-bottom:.35rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.rcmt{display:flex;align-items:center;gap:.58rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);letter-spacing:.04em;flex-wrap:wrap;}
-.rcsub{color:var(--red);}.rcfl{padding:.05rem .32rem;background:rgba(255,69,0,.1);border:1px solid rgba(255,69,0,.2);color:rgba(255,100,50,.75);font-size:.46rem;}
+/* ═══ GIF/VIDEO HOVER AUTOPLAY ══════════════════════════════ */
+.vth .hov-vid,.rcm .hov-vid,.r4m .hov-vid{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity .25s;pointer-events:none;z-index:1;
+}
+.vc:hover .hov-vid,.rc:hover .hov-vid,.r4c:hover .hov-vid{opacity:1;}
+/* Reddit cards restyled to match main vc cards */
+.rc{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .24s,border-color .24s,box-shadow .24s;}
+.rc:hover{transform:translateY(-3px);border-color:rgba(255,69,0,.4);box-shadow:0 10px 32px rgba(0,0,0,.55),0 0 0 1px rgba(255,69,0,.28);}
+.rc .vth{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg2);}
+.rc .vth img{width:100%;height:100%;object-fit:cover;transition:transform .4s,filter .4s;filter:brightness(.82);}
+.rc:hover .vth img{transform:scale(1.06);filter:brightness(1);}
+.rc .vov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.85) 0%,transparent 55%);opacity:0;transition:opacity .28s;display:flex;align-items:center;justify-content:center;}
+.rc:hover .vov{opacity:1;}
+.rc .pio{width:46px;height:46px;background:var(--red);display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:1.05rem;color:#fff;padding-left:3px;transition:transform .2s,box-shadow .2s;}
+.rc:hover .pio{transform:scale(1.1);box-shadow:0 0 22px rgba(255,69,0,.35);}
+.rc .vbg{position:absolute;top:.4rem;left:.4rem;display:flex;gap:.2rem;}
+.rc .vdur{position:absolute;bottom:.4rem;right:.4rem;background:rgba(8,8,8,.85);padding:.1rem .38rem;font-family:'DM Mono',monospace;font-size:.54rem;color:#eee;}
+.rc .vi{padding:.78rem .88rem .68rem;}
+.rc .vti{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-weight:600;color:var(--tp);line-height:1.38;margin-bottom:.3rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.rc .vm{display:flex;align-items:center;gap:.62rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);letter-spacing:.05em;flex-wrap:wrap;}
+.rc .vtgs{margin-top:.4rem;display:flex;gap:.2rem;flex-wrap:wrap;}
+/* Sentinel for infinite scroll */
+.scroll-sentinel{height:1px;width:100%;}
+/* Loading spinner for auto-load */
+.auto-loading{text-align:center;padding:1.2rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);letter-spacing:.1em;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bdr);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem;}
+.spinner.r{border-top-color:var(--red);}
+.spinner.p{border-top-color:var(--pur);}
 
 /* ═══ RULE34 CARDS ══════════════════════════════════════════ */
 .r4c{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s;}
@@ -555,6 +566,8 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
           <span class="sc" id="sec-c" aria-live="polite"></span>
         </div>
         <div class="vg" id="vgrid" role="list"></div>
+        <div id="main-autoload" class="auto-loading hidden"></div>
+        <div class="scroll-sentinel" id="main-sentinel"></div>
         <div class="pag" id="pag"></div>
       </div>
 
@@ -612,7 +625,8 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
           </div>
           <div class="iso-grid" id="rgrid"></div>
           <div id="rstate" class="iso-state"><span class="big">👽</span>Enter a subreddit and press <span class="hl-r">Browse r/</span></div>
-          <div class="iso-lm hidden" id="rlm"><button class="iso-lm-btn r" id="r-more" onclick="loadMoreR()">Load More Posts</button></div>
+          <div id="r-autoload" class="auto-loading hidden"></div>
+          <div class="scroll-sentinel" id="r-sentinel"></div>
         </div>
       </div>
 
@@ -639,6 +653,14 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
                   <option value="score:desc">Top Score</option>
                   <option value="id:desc">Newest</option>
                   <option value="score:asc">Low Score</option>
+                </select>
+              </div>
+              <div class="iso-f" style="flex:0 0 auto">
+                <label class="iso-lbl" for="r4-api">API Source</label>
+                <select class="iso-sel" id="r4-api" style="border-color:rgba(155,89,182,.2);">
+                  <option value="rule34xxx">rule34.xxx</option>
+                  <option value="paheal">rule34.paheal</option>
+                  <option value="e621">e621 (furry)</option>
                 </select>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
@@ -670,7 +692,8 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
           </div>
           <div class="iso-grid" id="r4grid"></div>
           <div id="r4state" class="iso-state"><span class="big">🔞</span>Enter tags and press <span class="hl-p">Search R34</span></div>
-          <div class="iso-lm hidden" id="r4lm"><button class="iso-lm-btn p" id="r4-more" onclick="loadMoreR4()">Load More</button></div>
+          <div id="r4-autoload" class="auto-loading hidden"></div>
+          <div class="scroll-sentinel" id="r4-sentinel"></div>
         </div>
       </div>
 
@@ -1047,7 +1070,11 @@ function mkCard(v){
   const el=document.createElement('article');el.className='vc';el.setAttribute('role','listitem');el.setAttribute('tabindex','0');
   const tgs=(v.tags||[]).slice(0,3).map(t=>`<span class="vtg">${esc(t)}</span>`).join('');
   const b=v.qual?.includes('GIF')?'<span class="bdg b-rg">GIF</span>':v.qual?.includes('4K')?'<span class="bdg b-4k">4K</span>':v.qual?.includes('1080')||v.qual?.includes('HD')?'<span class="bdg b-hd">HD</span>':v.bc?`<span class="bdg ${v.bc}">${v.bc.replace('b-','').toUpperCase()}</span>`:'';
-  el.innerHTML=`<div class="vth"><img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.closest('.vc').dataset.dead='1';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect width=%2216%22 height=%229%22 fill=%22%231a1a1a%22/><text x=%228%22 y=%225.5%22 text-anchor=%22middle%22 font-size=%222%22 fill=%22%235a554e%22>unavailable</text></svg>'"/>
+  const vidUrl=(!v.useIframe&&v.url&&(v.url.match(/\.(mp4|webm)(\?|$)/i)||v.src==='Redgifs'))?v.url:'';
+  el.innerHTML=`<div class="vth">
+    <img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer"
+      onerror="this.onerror=null;const c=this.closest('.vc');if(c)c.remove();"/>
+    ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
     <div class="vov" aria-hidden="true"><div class="pio">▶</div></div>
     <div class="vbg" aria-hidden="true">${b}</div>
     <span class="vdur">${fmtD(v.dur)}</span>
@@ -1056,21 +1083,27 @@ function mkCard(v){
     <div class="vi"><div class="vti">${esc(v.title)}</div>
     <div class="vm"><span class="vr2">★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)}</span></div>
     <div class="vtgs">${tgs}</div></div>`;
+  if(vidUrl){
+    const hv=el.querySelector('.hov-vid');
+    el.addEventListener('mouseenter',()=>{if(hv)hv.play().catch(()=>{});});
+    el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}});
+  }
   el.addEventListener('click',()=>openMain(v));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openMain(v);});
   return el;
 }
 
-async function loadVideos(){
-  if(S.loading)return;S.loading=true;skels();
+async function loadVideos(append=false){
+  if(S.loading)return;S.loading=true;
+  if(!append)skels();
   try{
     const{videos,total}=await fetchMain({q:S.f.q,page:S.page,cat:S.f.cat,sort:S.f.sort,tag:S.f.tag});
     S.totalPages=Math.max(1,Math.ceil(total/CFG_PAGE));
-    const g=$('vgrid');g.innerHTML='';
-    if(!videos.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm);">NO RESULTS</div>`;}
+    const g=$('vgrid');
+    if(!append)g.innerHTML='';
+    if(!videos.length&&!append){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm);">NO RESULTS</div>`;}
     else videos.forEach(v=>g.appendChild(mkCard(v)));
-    $('sec-c').textContent=`${fmtV(total)} results`;
-    mkPag();setHero(videos[0]);
-  }catch(e){toast('Failed to load content: '+e.message,'err',5000);}
+    if(!append){$('sec-c').textContent=`${fmtV(total)} results`;mkPag();setHero(videos[0]);}
+  }catch(e){toast('Failed to load: '+e.message,'err',5000);}
   finally{S.loading=false;}
 }
 
@@ -1152,7 +1185,18 @@ async function fetchReddit(append=false){
       .filter(p=>p.post_hint==='image'||p.is_video||p.url?.match(/\.(gif|gifv|mp4|webm|jpg|jpeg|png|webp)(\?|$)/i)||p.preview?.images?.length||p.is_gallery)
       .map(normRedditPost);
     S.rd.all=append?[...S.rd.all,...posts]:posts;
-    applyRFilter(S.rd.mf);
+    if(append){
+      /* On append — filter and render only new posts */
+      let f=S.rd.all;
+      if(S.rd.mf==='video')f=f.filter(p=>p.mType==='video'||p.mType==='gif-v');
+      if(S.rd.mf==='image')f=f.filter(p=>p.mType==='image'||p.mType==='gallery');
+      if(S.rd.mf==='gif')f=f.filter(p=>p.mType==='gif'||p.mType==='gif-v');
+      S.rd.filtered=f;
+      renderRGrid(true);
+      $('rsi-m').textContent=`${S.rd.all.length} posts · ${f.length} shown`;
+    }else{
+      applyRFilter(S.rd.mf);
+    }
     $('rsi').classList.add('on');$('rsi-n').textContent=`r/${sub}`;$('rsi-m').textContent=`${S.rd.all.length} posts · ${S.rd.sort}`;
     $('rlm').classList.toggle('hidden',!S.rd.hasMore);
     if($('r-more'))$('r-more').disabled=false;
@@ -1161,9 +1205,9 @@ async function fetchReddit(append=false){
   }catch(e){
     $('rstate').innerHTML=`<span class="big">⚠️</span><span class="hl-r">${esc(e.message)}</span>`;$('rstate').style.display='block';
     toast(e.message,'err',5000);
-  }finally{S.rd.loading=false;btn.disabled=false;btn.textContent='Browse r/';}
+  }finally{S.rd.loading=false;btn.disabled=false;btn.textContent='Browse r/';hideAutoLoad('r-autoload');}
 }
-function loadMoreR(){if(!S.rd.after)return;$('r-more').disabled=true;$('r-more').textContent='Loading…';$('r-sub').value=S.rd.sub;$('r-sort').value=S.rd.sort;$('r-time').value=S.rd.time;fetchReddit(true);}
+function loadMoreR_unused(){}
 
 function normRedditPost(p){
   let mType='image',mUrl='',tUrl='';
@@ -1182,22 +1226,54 @@ function applyRFilter(type){
   if(type==='video')f=f.filter(p=>p.mType==='video'||p.mType==='gif-v');
   if(type==='image')f=f.filter(p=>p.mType==='image'||p.mType==='gallery');
   if(type==='gif')f=f.filter(p=>p.mType==='gif'||p.mType==='gif-v');
-  S.rd.filtered=f;renderRGrid();
+  S.rd.filtered=f;renderRGrid(false);
   $('rsi-m').textContent=`${S.rd.all.length} posts · ${f.length} shown`;
 }
-function renderRGrid(){
-  const g=$('rgrid');g.innerHTML='';
+function renderRGrid(append=false){
+  const g=$('rgrid');
+  if(!append)g.innerHTML='';
   S.rd.filtered.forEach(post=>{
-    const isV=post.mType==='video'||post.mType==='gif-v',isG=post.mType==='gif',isGal=post.mType==='gallery';
-    const tLbl=isV?'VIDEO':isG?'GIF':isGal?'GALLERY':'IMAGE';
-    const tCls=isV?'rt-v':isG?'rt-g':isGal?'rt-gl':'rt-i';
-    const el=document.createElement('article');el.className='rc';el.setAttribute('tabindex','0');
-    el.innerHTML=`<div class="rcm">${post.tUrl?`<img src="${esc(post.tUrl)}" alt="${esc(post.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.opacity='.2';this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect width=%2216%22 height=%229%22 fill=%22%231a1a1a%22/><text x=%228%22 y=%225.5%22 text-anchor=%22middle%22 font-size=%222%22 fill=%22%235a554e%22>unavailable</text></svg>'"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.22;">${isV?'▶':'🖼'}</div>`}
-      <div class="rcov"><div class="rcp">${isV||isG?'▶':'🔍'}</div></div>
-      <span class="rctb ${tCls}">${tLbl}</span>${post.nsfw?'<span class="rcnsfw">NSFW</span>':''}<span class="rcups">▲ ${fmtV(post.ups)}</span></div>
-      <div class="rci"><div class="rct">${esc(post.title)}</div>
-      <div class="rcmt"><span class="rcsub">r/${esc(post.sub)}</span><span>u/${esc(post.author)}</span>${post.flair?`<span class="rcfl">${esc(post.flair)}</span>`:''}<span>💬${fmtV(post.comments)}</span></div></div>`;
-    el.addEventListener('click',()=>openRedditPost(post));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openRedditPost(post);});
+    if(g.querySelector(`[data-rid="${post.id}"]`))return;
+    const isV=post.mType==='video'||post.mType==='gif-v';
+    const isG=post.mType==='gif';
+    const hasVid=isV||isG;
+    /* Type badge */
+    const tLbl=isV?'VIDEO':isG?'GIF':post.mType==='gallery'?'GALLERY':'IMAGE';
+    const tCls=isV?'rt-v':isG?'rt-g':post.mType==='gallery'?'rt-gl':'rt-i';
+    const el=document.createElement('article');
+    el.className='rc';el.setAttribute('tabindex','0');el.setAttribute('data-rid',post.id);
+    const thumb=post.tUrl||'';
+    const vidUrl=hasVid?post.mUrl:'';
+    el.innerHTML=`
+      <div class="vth">
+        ${thumb?`<img src="${esc(thumb)}" alt="${esc(post.title)}" loading="lazy" referrerpolicy="no-referrer"
+          onerror="this.onerror=null;const c=this.closest('.rc');if(c){c.remove();return;}"/>`
+        :`<div style="width:100%;height:100%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.2">${hasVid?'▶':'🖼'}</div>`}
+        ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
+        <div class="vov"><div class="pio">${hasVid?'▶':'🔍'}</div></div>
+        <div class="vbg">
+          <span class="bdg ${tCls}">${tLbl}</span>
+          ${post.nsfw?'<span class="bdg" style="background:rgba(180,20,20,.85);color:#fcc">NSFW</span>':''}
+        </div>
+        <span class="vdur" style="color:var(--red)">▲ ${fmtV(post.ups)}</span>
+      </div>
+      <div class="vi">
+        <div class="vti">${esc(post.title)}</div>
+        <div class="vm">
+          <span style="color:var(--red)">r/${esc(post.sub)}</span>
+          <span>u/${esc(post.author)}</span>
+          ${post.flair?`<span style="color:rgba(255,100,50,.7);font-size:.48rem">${esc(post.flair)}</span>`:''}
+          <span>💬 ${fmtV(post.comments)}</span>
+        </div>
+      </div>`;
+    /* Hover autoplay */
+    if(vidUrl){
+      const hv=el.querySelector('.hov-vid');
+      el.addEventListener('mouseenter',()=>{if(hv){hv.play().catch(()=>{});}});
+      el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}});
+    }
+    el.addEventListener('click',()=>openRedditPost(post));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openRedditPost(post);});
     g.appendChild(el);
   });
 }
@@ -1213,24 +1289,35 @@ function qs_r4(tag){$('r4-tag').value=tag;fetchR34();}
 async function fetchR34(append=false){
   const rawTag=$('r4-tag').value.trim();
   const sort=$('r4-sort').value;
+  const apiSrc=$('r4-api').value;
   if(!rawTag){toast('Enter at least one tag','err');return;}
   if(S.r4.loading)return;S.r4.loading=true;
   const btn=$('r4-go');btn.disabled=true;btn.textContent='Searching…';
   if(!append){
-    Object.assign(S.r4,{tag:rawTag,sort,pid:0,all:[],filtered:[],mf:'all'});
+    Object.assign(S.r4,{tag:rawTag,sort,apiSrc,pid:0,all:[],filtered:[],mf:'all'});
     document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m==='all'));
-    $('r4grid').innerHTML='';$('r4lm').classList.add('hidden');
-    $('r4state').innerHTML=`<span class="big">⏳</span>Searching Rule34 for: <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';
+    $('r4grid').innerHTML='';
+    $('r4state').innerHTML=`<span class="big">⏳</span>Searching ${apiSrc} for: <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';
   }
   try{
-    const PROXY='https://corsproxy.io/?url=';
     const limit=40;
     const pid=append?Math.floor(S.r4.all.length/limit):0;
     const cleanTag=rawTag.trim();
     let posts=[];
 
-    /* ── Try Python server first (zero CORS issues) ── */
-    if(S.serverUrl&&S.serverOk){
+    /* ── Build API URL based on selected source ── */
+    let apiUrl='';
+    if(apiSrc==='paheal'){
+      apiUrl=`https://rule34.paheal.net/api/danbooru/find_posts/index.xml?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&pid=${pid}`;
+    }else if(apiSrc==='e621'){
+      apiUrl=`https://e621.net/posts.json?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&page=${pid+1}`;
+    }else{
+      /* rule34.xxx (default) */
+      apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
+    }
+
+    /* ── Try Python server first ── */
+    if(S.serverUrl&&S.serverOk&&apiSrc==='rule34xxx'){
       try{
         const p=new URLSearchParams({tags:cleanTag,limit,pid});
         const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
@@ -1239,9 +1326,8 @@ async function fetchR34(append=false){
       }catch(e){console.warn('[Server/R34]',e.message);S.serverOk=false;posts=[];}
     }
 
-    /* ── Fall back through multiple CORS proxies ── */
+    /* ── Proxy fallback for all sources ── */
     if(!posts.length){
-      const apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
       const PROXIES=[
         u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
         u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -1252,16 +1338,43 @@ async function fetchR34(append=false){
           const res=await fetch(mkProxy(apiUrl),{mode:'cors',signal:AbortSignal.timeout(10000)});
           if(!res.ok)continue;
           const text=await res.text();
-          let parsed;
-          try{parsed=JSON.parse(text);}catch{continue;}
-          if(parsed===0||parsed===null||parsed===false)parsed=[];
-          if(!Array.isArray(parsed)){
-            if(Array.isArray(parsed?.post))parsed=parsed.post;
-            else if(parsed?.post)parsed=[parsed.post];
-            else parsed=[];
+
+          if(apiSrc==='e621'){
+            /* e621 returns JSON with posts array */
+            let d;try{d=JSON.parse(text);}catch{continue;}
+            posts=(d?.posts||[]).map(p=>({
+              id:p.id,score:p.score?.total||0,
+              tags:Object.values(p.tags||{}).flat().slice(0,8),
+              file_url:p.file?.url||'',
+              preview_url:p.preview?.url||'',
+              sample_url:p.sample?.url||'',
+              width:p.file?.width||0,height:p.file?.height||0,
+            }));
+          }else if(apiSrc==='paheal'){
+            /* Paheal returns XML — parse manually */
+            const parser=new DOMParser();
+            const xml=parser.parseFromString(text,'text/xml');
+            posts=[...xml.querySelectorAll('tag')].map(t=>({
+              id:t.getAttribute('id'),
+              score:parseInt(t.getAttribute('score'))||0,
+              tags:String(t.getAttribute('tags')||'').split(' ').filter(Boolean),
+              file_url:t.getAttribute('file_url')||'',
+              preview_url:t.getAttribute('preview_url')||'',
+              sample_url:t.getAttribute('sample_url')||'',
+              width:parseInt(t.getAttribute('width'))||0,
+              height:parseInt(t.getAttribute('height'))||0,
+            }));
+          }else{
+            let parsed;try{parsed=JSON.parse(text);}catch{continue;}
+            if(parsed===0||parsed===null||parsed===false)parsed=[];
+            if(!Array.isArray(parsed)){
+              if(Array.isArray(parsed?.post))parsed=parsed.post;
+              else if(parsed?.post)parsed=[parsed.post];
+              else parsed=[];
+            }
+            posts=parsed;
           }
-          posts=parsed;
-          break;
+          if(posts.length)break;
         }catch{continue;}
       }
     }
@@ -1273,59 +1386,132 @@ async function fetchR34(append=false){
       const mType=ext==='mp4'||ext==='webm'?'video':ext==='gif'?'gif':'image';
       return{
         id:p.id,score:parseInt(p.score)||0,
-        tags:String(p.tags||'').split(' ').filter(t=>t&&!t.startsWith('sort:')).slice(0,8),
+        tags:(Array.isArray(p.tags)?p.tags:String(p.tags||'').split(' ')).filter(t=>t&&!t.startsWith('sort:')).slice(0,8),
         fileUrl:url,previewUrl:p.preview_url||p.sample_url||'',
         width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        mType,src:'rule34',
+        mType,src:'rule34',apiSrc,
       };
     }).filter(p=>p.fileUrl);
     S.r4.all=append?[...S.r4.all,...mapped]:mapped;
-    applyR4Filter(S.r4.mf);
-    $('r4si').classList.add('on');$('r4si-n').textContent=cleanTag;$('r4si-m').textContent=`${S.r4.all.length} results`;
-    $('r4lm').classList.toggle('hidden',!S.r4.hasMore);
-    if($('r4-more'))$('r4-more').disabled=false;
+    if(append){
+      let f=S.r4.all;
+      if(S.r4.mf==='image')f=f.filter(p=>p.mType==='image');
+      if(S.r4.mf==='video')f=f.filter(p=>p.mType==='video');
+      if(S.r4.mf==='gif')f=f.filter(p=>p.mType==='gif');
+      S.r4.filtered=f;renderR4Grid(true);
+      $('r4si-m').textContent=`${S.r4.all.length} results · ${f.length} shown`;
+    }else{
+      applyR4Filter(S.r4.mf);
+    }
+    $('r4si').classList.add('on');$('r4si-n').textContent=`${cleanTag} (${apiSrc})`;$('r4si-m').textContent=`${S.r4.all.length} results`;
     if(S.r4.all.length)$('r4state').style.display='none';
-    else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span><br/>Try different tags`;$('r4state').style.display='block';}
+    else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span> on ${apiSrc}<br/>Try different tags or source`;$('r4state').style.display='block';}
   }catch(e){
     const msg=e.message||'Rule34 error';
     $('r4state').innerHTML=`<span class="big">⚠️</span><span class="hl-p">${esc(msg)}</span>`;
     $('r4state').style.display='block';
     toast(msg,'err',5000);
-  }finally{S.r4.loading=false;btn.disabled=false;btn.textContent='Search R34';}
+  }finally{S.r4.loading=false;btn.disabled=false;btn.textContent='Search R34';hideAutoLoad('r4-autoload');}
 }
-function loadMoreR4(){
-  if(!S.r4.hasMore)return;$('r4-more').disabled=true;$('r4-more').textContent='Loading…';
-  $('r4-tag').value=S.r4.tag;$('r4-sort').value=S.r4.sort;
-  fetchR34(true);
+function loadMoreR4(){if(!S.r4.hasMore||S.r4.loading)return;$('r4-tag').value=S.r4.tag;$('r4-sort').value=S.r4.sort;if($('r4-api'))$('r4-api').value=S.r4.apiSrc||'rule34xxx';fetchR34(true);}
+function loadMoreR(){if(!S.rd.after||S.rd.loading)return;$('r-sub').value=S.rd.sub;$('r-sort').value=S.rd.sort;$('r-time').value=S.rd.time;fetchReddit(true);}
+
+/* ══════════════════════════════════════════════════════════
+   INFINITE SCROLL (IntersectionObserver for all 3 grids)
+══════════════════════════════════════════════════════════ */
+function showAutoLoad(id,color=''){
+  const el=$(id);if(!el)return;
+  el.classList.remove('hidden');
+  el.innerHTML=`<span class="spinner ${color}"></span>Loading more…`;
 }
+function hideAutoLoad(id){const el=$(id);if(el)el.classList.add('hidden');}
+
+const iOpts={rootMargin:'0px 0px 300px 0px',threshold:0};
+
+/* Main grid infinite scroll */
+const mainSentinel=$('main-sentinel');
+if(mainSentinel){
+  new IntersectionObserver((entries)=>{
+    if(!entries[0].isIntersecting||S.loading)return;
+    if(S.page<S.totalPages){
+      showAutoLoad('main-autoload');
+      S.page++;
+      loadVideos(true).finally(()=>hideAutoLoad('main-autoload'));
+    }
+  },iOpts).observe(mainSentinel);
+}
+
+/* Reddit infinite scroll */
+const rSentinel=$('r-sentinel');
+if(rSentinel){
+  new IntersectionObserver((entries)=>{
+    if(!entries[0].isIntersecting||S.rd.loading||!S.rd.sub)return;
+    if(S.rd.hasMore){
+      showAutoLoad('r-autoload','r');
+      loadMoreR();
+    }
+  },iOpts).observe(rSentinel);
+}
+
+/* R34 infinite scroll */
+const r4Sentinel=$('r4-sentinel');
+if(r4Sentinel){
+  new IntersectionObserver((entries)=>{
+    if(!entries[0].isIntersecting||S.r4.loading||!S.r4.tag)return;
+    if(S.r4.hasMore){
+      showAutoLoad('r4-autoload','p');
+      loadMoreR4();
+    }
+  },iOpts).observe(r4Sentinel);
+}
+
 function setR4F(btn,type){document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m===type));S.r4.mf=type;applyR4Filter(type);}
 function applyR4Filter(type){
   let f=S.r4.all;
   if(type==='image')f=f.filter(p=>p.mType==='image');
   if(type==='video')f=f.filter(p=>p.mType==='video');
   if(type==='gif')f=f.filter(p=>p.mType==='gif');
-  S.r4.filtered=f;renderR4Grid();
+  S.r4.filtered=f;renderR4Grid(false);
   $('r4si-m').textContent=`${S.r4.all.length} results · ${f.length} shown`;
 }
-function renderR4Grid(){
-  const g=$('r4grid');g.innerHTML='';
+function renderR4Grid(append=false){
+  const g=$('r4grid');
+  if(!append)g.innerHTML='';
   S.r4.filtered.forEach(post=>{
+    if(g.querySelector(`[data-r4id="${post.id}"]`))return;
     const isV=post.mType==='video',isG=post.mType==='gif';
     const tLbl=isV?'VIDEO':isG?'GIF':'IMAGE';
     const tCls=isV?'r4-v':isG?'r4-g':'r4-i';
     const ar=post.width&&post.height?(post.width/post.height>1.5?'r16':'sq'):'r16';
-    const el=document.createElement('article');el.className='r4c';el.setAttribute('tabindex','0');
+    const vidUrl=(isV||isG)?post.fileUrl:'';
     const tagHtml=post.tags.slice(0,4).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');event.stopPropagation()">${esc(t)}</span>`).join('');
-    el.innerHTML=`<div class="r4m ${ar}">${post.previewUrl?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(post.fileUrl)}';this.onerror=()=>{this.onerror=null;this.closest('.r4c').dataset.dead='1';this.style.opacity='.15'}"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.22">${isV?'▶':'🖼'}</div>`}
-      <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
-      <span class="r4tb ${tCls}">${tLbl}</span><span class="r4sc">▲${post.score}</span></div>
-      <div class="r4in"><div class="r4tg">${tagHtml}</div>
-      <div class="r4mt"><span style="color:var(--pur);font-size:.54rem">rule34.xxx</span><span>#${post.id}</span></div></div>`;
-    el.addEventListener('click',()=>openR34Post(post));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openR34Post(post);});
+    const el=document.createElement('article');
+    el.className='r4c';el.setAttribute('tabindex','0');el.setAttribute('data-r4id',post.id);
+    el.innerHTML=`
+      <div class="r4m ${ar}">
+        ${post.previewUrl
+          ?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer"
+              onerror="this.onerror=null;this.src='${esc(post.fileUrl)}';this.onerror=function(){this.onerror=null;this.closest('.r4c')?.remove();};"/>`
+          :`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.2">${isV?'▶':'🖼'}</div>`}
+        ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
+        <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
+        <span class="r4tb ${tCls}">${tLbl}</span>
+        <span class="r4sc">▲ ${post.score}</span>
+      </div>
+      <div class="r4in">
+        <div class="r4tg">${tagHtml}</div>
+        <div class="r4mt"><span style="color:var(--pur);font-size:.54rem">${esc(post.apiSrc||'rule34.xxx')}</span><span>#${post.id}</span></div>
+      </div>`;
+    if(vidUrl){
+      const hv=el.querySelector('.hov-vid');
+      el.addEventListener('mouseenter',()=>{if(hv)hv.play().catch(()=>{});});
+      el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}});
+    }
+    el.addEventListener('click',()=>openR34Post(post));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openR34Post(post);});
     g.appendChild(el);
   });
 }
-
 /* ══════════════════════════════════════════════════════════
    PLAYER MODAL
 ══════════════════════════════════════════════════════════ */
