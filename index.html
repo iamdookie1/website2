@@ -763,7 +763,7 @@ body.reddit-only .bico:not(#theme-btn){opacity:.2;pointer-events:none;}
    Example: 'https://abc-def-123.trycloudflare.com'
    Leave as '' to use direct public APIs only.
 ══════════════════════════════════════════════════════════ */
-const HARDCODED_SERVER = 'https://guitars-ambassador-fcc-connections.trycloudflare.com';
+const HARDCODED_SERVER = 'https://illustration-picture-governing-cookie.trycloudflare.com';
 
 /* ══════════════════════════════════════════════════════════
    UTILS
@@ -845,20 +845,30 @@ function saveServerUrl(){
   else toast('Server URL cleared — using direct APIs','ok');
 }
 
-async function checkServer(){
+async function checkServer(retries=3){
   if(!S.serverUrl)return false;
-  try{
-    const r=await fetch(`${S.serverUrl}/health`,{mode:'cors',signal:AbortSignal.timeout(6000)});
-    if(r.ok){S.serverOk=true;return true;}
-  }catch{}
+  for(let i=0;i<retries;i++){
+    try{
+      const r=await fetch(`${S.serverUrl}/health`,{
+        mode:'cors',
+        signal:AbortSignal.timeout(10000), /* 10s per attempt */
+      });
+      if(r.ok){S.serverOk=true;return true;}
+    }catch(e){
+      console.warn(`[Server] attempt ${i+1} failed:`,e.message);
+    }
+    /* Wait before retry: 1s, 2s */
+    if(i<retries-1)await new Promise(r=>setTimeout(r,1000*(i+1)));
+  }
   S.serverOk=false;return false;
 }
 
 async function retryServer(){
   toast('Retrying server…','ok',1500);
-  const ok=await checkServer();
+  const ok=await checkServer(2);
   if(ok){
     exitRedditOnly();
+    hideApiDownPopup();
     toast('Server back online!','ok');
     loadVideos();
   }else{
@@ -1820,19 +1830,16 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  /* Start loading content immediately — don't wait for server check */
+  /* Load content immediately — don't block on server check */
   loadVideos();
-
-  /* Check server in the background — show popup only if it was relied upon */
+  /* Check server in background with retries — only popup if truly offline */
   if(S.serverUrl){
-    checkServer().then(ok=>{
-      if(!ok){
-        /* Server configured but offline — show popup over the loaded content */
-        showApiDownPopup();
-      }else{
-        toast('Server connected ✓','ok',2000);
-      }
-    });
+    const ok=await checkServer(3); /* 3 attempts, ~13s total max */
+    if(ok){
+      toast('Server connected ✓','ok',2000);
+    }else{
+      showApiDownPopup();
+    }
   }
 }
 
