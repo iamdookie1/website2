@@ -1990,16 +1990,20 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  /* Load content immediately — don't block on server check */
-  loadVideos();
-  /* Check server in background with retries — only popup if truly offline */
   if(S.serverUrl){
-    const ok=await checkServer(3); /* 3 attempts, ~13s total max */
+    /* Show skeletons immediately so page looks alive */
+    skels();
+    /* Wait for server check before loading real content */
+    const ok=await checkServer(3);
     if(ok){
       toast('Server connected ✓','ok',2000);
+      loadVideos();
     }else{
       showApiDownPopup();
     }
+  }else{
+    /* No server configured — just load (will use whatever direct APIs work) */
+    loadVideos();
   }
 }
 
