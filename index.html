@@ -717,54 +717,66 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
 ══════════════════════════════════════════════════════════ */
 const CFG_PAGE=24;
 
-/* Redtube */
-async function fetchRedtube(q='',page=1,cat='',sort='mostviewed'){
+/* Redtube — API 2 */
+async function fetchRedtube(q='',page=1,cat='',sort='views'){
   const sm={views:'mostviewed',newest:'latest',rating:'rating'};
   const params=new URLSearchParams({
-    data:'redtube.Videos.searchVideos',output:'json',thumbsize:'medium',
-    limit:CFG_PAGE,page,
-    ...(q?{search:q}:{}),
-    ...(cat?{category:cat}:{}),
+    data:'redtube.Videos.searchVideos',
+    output:'json',
+    thumbsize:'medium_6',   /* larger thumbnails */
+    limit:CFG_PAGE,
+    page,
     ordering:sm[sort]||'mostviewed',
   });
+  if(q)params.set('search',q);
+  if(cat)params.set('category',cat);
+
   const r=await fetch(`https://api.redtube.com/?${params}`,{mode:'cors'});
   if(!r.ok)throw new Error(`Redtube ${r.status}`);
   const d=await r.json();
-  if(!d.videos)throw new Error('No Redtube videos');
+  if(!d.videos||!d.videos.length)throw new Error('No Redtube videos');
+
   return{
-    videos:d.videos.map(v=>({
-      id:v.video_id,
-      title:v.title,
-      thumb:v.default_thumb||(v.thumbs&&v.thumbs[0]&&v.thumbs[0].src)||`https://picsum.photos/seed/rt${v.video_id}/640/360`,
-      dur:parseDur(v.duration),
-      views:parseInt(v.views)||0,
-      rating:v.rating?(parseFloat(v.rating)/10).toFixed(1):'—',
-      qual:'720p',
-      tags:(v.tags||[]).map(t=>t.tag_name).slice(0,4),
-      url:`https://embed.redtube.com/?id=${v.video_id}`,
-      useIframe:true,
-      src:'Redtube',
-      bc:'b-hot',
-    })),
+    videos:d.videos.map(v=>{
+      /* Pick largest available thumb; fall back through options */
+      const thumbArr=v.thumbs||[];
+      const bigThumb=thumbArr.find(t=>t.size==='medium_6')||thumbArr.find(t=>t.size==='medium')||thumbArr[thumbArr.length-1];
+      const thumb=bigThumb?.src||v.default_thumb||'';
+      return{
+        id:v.video_id,
+        title:v.title,
+        thumb,
+        dur:parseDur(v.duration),
+        views:parseInt(v.views)||0,
+        rating:v.rating?(parseFloat(v.rating)/10).toFixed(1):'—',
+        qual:'720p',
+        tags:(v.tags||[]).map(t=>t.tag_name).slice(0,4),
+        url:`https://embed.redtube.com/?bgcolor=000000&id=${v.video_id}`,
+        useIframe:true,
+        src:'Redtube',
+        bc:'b-hot',
+      };
+    }),
     total:parseInt(d.count)||CFG_PAGE,
   };
 }
 
-/* Redgifs */
+/* Redgifs — API 3 */
 const RG={token:null,pos:{}};
 async function rgToken(){
   if(RG.token)return RG.token;
   const r=await fetch('https://api.redgifs.com/v2/auth/temporary',{mode:'cors'});
+  if(!r.ok)throw new Error('Redgifs auth failed');
   const d=await r.json();RG.token=d.token;return d.token;
 }
-async function fetchRedgifs(q='',page=1,sort='trending'){
+async function fetchRedgifs(q='',page=1){
   const tok=await rgToken();
   const count=CFG_PAGE;
   const posKey=q||'__trending__';
   const pos=page>1?RG.pos[posKey]:undefined;
-  let url=q
-    ?`https://api.redgifs.com/v2/gifs/search?search_text=${encodeURIComponent(q)}&count=${count}${pos?`&pos=${pos}`:''}&order=trending`
-    :`https://api.redgifs.com/v2/gifs/trending?count=${count}${pos?`&pos=${pos}`:''}`;
+  const url=q
+    ?`https://api.redgifs.com/v2/gifs/search?search_text=${encodeURIComponent(q)}&count=${count}${pos?`&pos=${pos}`:''}&order=trending&type=g`
+    :`https://api.redgifs.com/v2/gifs/trending?count=${count}${pos?`&pos=${pos}`:''}&type=g`;
   const r=await fetch(url,{headers:{Authorization:`Bearer ${tok}`},mode:'cors'});
   if(!r.ok)throw new Error(`Redgifs ${r.status}`);
   const d=await r.json();
@@ -773,10 +785,11 @@ async function fetchRedgifs(q='',page=1,sort='trending'){
     videos:(d.gifs||[]).map(g=>({
       id:g.id,
       title:g.title||g.id,
-      thumb:g.urls?.poster||g.urls?.thumbnail||`https://picsum.photos/seed/rg${g.id}/640/360`,
+      /* poster > thumbnail > mobile preview, in order */
+      thumb:g.urls?.poster||g.urls?.thumbnail||g.urls?.mobilePoster||`https://i.redgifs.com/i/${g.id}.webp`,
       dur:g.duration||0,
       views:g.views||0,
-      rating:g.likes?Math.min(10,g.likes/50).toFixed(1):'—',
+      rating:g.likes?Math.min(10,g.likes/100).toFixed(1):'—',
       qual:'GIF/HD',
       tags:Array.isArray(g.tags)?g.tags.slice(0,4):[],
       url:g.urls?.hd||g.urls?.sd||'',
@@ -833,7 +846,7 @@ function mkCard(v){
   const el=document.createElement('article');el.className='vc';el.setAttribute('role','listitem');el.setAttribute('tabindex','0');
   const tgs=(v.tags||[]).slice(0,3).map(t=>`<span class="vtg">${esc(t)}</span>`).join('');
   const b=v.qual?.includes('GIF')?'<span class="bdg b-rg">GIF</span>':v.qual?.includes('4K')?'<span class="bdg b-4k">4K</span>':v.qual?.includes('1080')||v.qual?.includes('HD')?'<span class="bdg b-hd">HD</span>':v.bc?`<span class="bdg ${v.bc}">${v.bc.replace('b-','').toUpperCase()}</span>`:'';
-  el.innerHTML=`<div class="vth"><img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" onerror="this.src='https://picsum.photos/seed/${esc(v.id)}/640/360'"/>
+  el.innerHTML=`<div class="vth"><img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='https://picsum.photos/seed/${esc(v.id)}/640/360'"/>
     <div class="vov" aria-hidden="true"><div class="pio">▶</div></div>
     <div class="vbg" aria-hidden="true">${b}</div>
     <span class="vdur">${fmtD(v.dur)}</span>
@@ -978,7 +991,7 @@ function renderRGrid(){
     const tLbl=isV?'VIDEO':isG?'GIF':isGal?'GALLERY':'IMAGE';
     const tCls=isV?'rt-v':isG?'rt-g':isGal?'rt-gl':'rt-i';
     const el=document.createElement('article');el.className='rc';el.setAttribute('tabindex','0');
-    el.innerHTML=`<div class="rcm">${post.tUrl?`<img src="${esc(post.tUrl)}" alt="${esc(post.title)}" loading="lazy" onerror="this.style.display='none'"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.22;">${isV?'▶':'🖼'}</div>`}
+    el.innerHTML=`<div class="rcm">${post.tUrl?`<img src="${esc(post.tUrl)}" alt="${esc(post.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.style.display='none'"/>`:`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2rem;opacity:.22;">${isV?'▶':'🖼'}</div>`}
       <div class="rcov"><div class="rcp">${isV||isG?'▶':'🔍'}</div></div>
       <span class="rctb ${tCls}">${tLbl}</span>${post.nsfw?'<span class="rcnsfw">NSFW</span>':''}<span class="rcups">▲ ${fmtV(post.ups)}</span></div>
       <div class="rci"><div class="rct">${esc(post.title)}</div>
@@ -1009,46 +1022,52 @@ async function fetchR34(append=false){
     $('r4state').innerHTML=`<span class="big">⏳</span>Searching Rule34 for: <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';
   }
   try{
-    /* Build tag string: append sort tag */
-    const sortTag=sort==='id:desc'?'sort:id:desc':sort==='score:asc'?'sort:score:asc':'sort:score:desc';
-    const tags=encodeURIComponent(`${rawTag} ${sortTag}`);
+    /* corsproxy.io lets this work with no local server needed */
+    const PROXY='https://corsproxy.io/?url=';
     const limit=40;
-    const url=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${Math.floor(S.r4.pid/limit)}&tags=${tags}`;
-    const res=await fetch(url,{mode:'cors'});
+    const pid=append?Math.floor(S.r4.all.length/limit):0;
+    /* Don't append sort metatags — they cause empty results on r34 API */
+    const cleanTag=rawTag.trim();
+    const apiUrl=`https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${encodeURIComponent(cleanTag)}`;
+    const res=await fetch(PROXY+encodeURIComponent(apiUrl),{mode:'cors'});
     if(!res.ok)throw new Error(`Rule34 returned ${res.status}`);
-    let posts=await res.json();
+    const text=await res.text();
+    /* Rule34 returns [] for no results, 0 for errors, or a JSON array */
+    let posts;
+    try{posts=JSON.parse(text);}catch{throw new Error('Rule34 returned invalid JSON — try different tags');}
+    /* Handle all possible response shapes */
+    if(posts===0||posts===null||posts===false)posts=[];
     if(!Array.isArray(posts)){
-      /* Some responses are wrapped */
-      if(posts.post)posts=posts.post;
-      else throw new Error('Unexpected Rule34 response format');
+      if(Array.isArray(posts?.post))posts=posts.post;
+      else if(posts?.post)posts=[posts.post];
+      else posts=[];
     }
-    S.r4.pid+=(append?0:0)+posts.length;
     S.r4.hasMore=posts.length>=limit;
     const mapped=posts.map(p=>{
-      const ext=(p.file_url||'').split('.').pop().split('?')[0].toLowerCase();
+      const url=String(p.file_url||'');
+      const ext=url.split('?')[0].split('.').pop().toLowerCase();
       const mType=ext==='mp4'||ext==='webm'?'video':ext==='gif'?'gif':'image';
       return{
-        id:p.id,score:p.score||0,
-        tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,8),
-        fileUrl:p.file_url||'',
+        id:p.id,score:parseInt(p.score)||0,
+        tags:String(p.tags||'').split(' ').filter(t=>t&&!t.startsWith('sort:')).slice(0,8),
+        fileUrl:url,
         previewUrl:p.preview_url||p.sample_url||'',
-        width:p.width||0,height:p.height||0,
+        width:parseInt(p.width)||0,height:parseInt(p.height)||0,
         mType,src:'rule34',
       };
     }).filter(p=>p.fileUrl);
     S.r4.all=append?[...S.r4.all,...mapped]:mapped;
     applyR4Filter(S.r4.mf);
-    $('r4si').classList.add('on');$('r4si-n').textContent=rawTag;$('r4si-m').textContent=`${S.r4.all.length} results`;
+    $('r4si').classList.add('on');$('r4si-n').textContent=cleanTag;$('r4si-m').textContent=`${S.r4.all.length} results`;
     $('r4lm').classList.toggle('hidden',!S.r4.hasMore);
     if($('r4-more'))$('r4-more').disabled=false;
     if(S.r4.all.length)$('r4state').style.display='none';
-    else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';}
+    else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span><br/>Try different tags`;$('r4state').style.display='block';}
   }catch(e){
-    let msg=e.message||'Rule34 error';
-    /* Helpful CORS guidance */
-    if(e.message.includes('Failed to fetch')||e.message.includes('CORS'))msg='Rule34 API blocked by CORS — try opening the file via a local server (e.g. VS Code Live Server)';
-    $('r4state').innerHTML=`<span class="big">⚠️</span><span class="hl-p">${esc(msg)}</span>`;$('r4state').style.display='block';
-    toast(msg,'err',6000);
+    const msg=e.message||'Rule34 error';
+    $('r4state').innerHTML=`<span class="big">⚠️</span><span class="hl-p">${esc(msg)}</span>`;
+    $('r4state').style.display='block';
+    toast(msg,'err',5000);
   }finally{S.r4.loading=false;btn.disabled=false;btn.textContent='Search R34';}
 }
 function loadMoreR4(){
@@ -1074,7 +1093,7 @@ function renderR4Grid(){
     const ar=post.width&&post.height?(post.width/post.height>1.5?'r16':'sq'):'r16';
     const el=document.createElement('article');el.className='r4c';el.setAttribute('tabindex','0');
     const tagHtml=post.tags.slice(0,4).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');event.stopPropagation()">${esc(t)}</span>`).join('');
-    el.innerHTML=`<div class="r4m ${ar}">${post.previewUrl?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" onerror="this.src='${esc(post.fileUrl)}'"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.22">${isV?'▶':'🖼'}</div>`}
+    el.innerHTML=`<div class="r4m ${ar}">${post.previewUrl?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='${esc(post.fileUrl)}'"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.22">${isV?'▶':'🖼'}</div>`}
       <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
       <span class="r4tb ${tCls}">${tLbl}</span><span class="r4sc">▲${post.score}</span></div>
       <div class="r4in"><div class="r4tg">${tagHtml}</div>
