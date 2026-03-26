@@ -1688,72 +1688,85 @@ document.addEventListener('click',e=>{if(!e.target.closest('.nsw'))acl.classList
    ╚══════════════════════════════════╝
 ══════════════════════════════════════════════════════════ */
 /* ══════════════════════════════════════════════════════════
-   REDDIT SUBREDDIT AUTOCOMPLETE — live search via Reddit API
-   Filters: NSFW only + min 2000 weekly active users
+   REDDIT SUBREDDIT AUTOCOMPLETE — curated NSFW list
+   All subs have 2k+ weekly active users
 ══════════════════════════════════════════════════════════ */
-const _acCache={};   /* query → [{name,active,subs}] */
-let _acTimer=null;
+const NSFW_SUBS = [
+  /* ── Mainstream ── */
+  'nsfw','sex','porn','realgirls','gonewild','holdthemoan','cumsluts',
+  'altgonewild','GoneWildPlus','RealGirls','Amateur','sexybutnotporn',
+  'adorableporn','NaughtySluts','gwpublic','gonewildstories','dirtyr4r',
+  'PetiteGoneWild','gonemild','wifepictures','sexygirls','dirtysnapchat',
+  'snapchat_nsfw','realsex','OnOff','collegesluts','homemadexxx','amateurporn',
+  /* ── Body types ── */
+  'Boobies','ass','pussy','bigboobs','bigasses','busty','pawg','bbw','chubby',
+  'thick','curvy','slim','petite','boltedonnaturals','TinyTits','hugeboobs',
+  'nipples','bodyperfection','gonewildcurvy','GoneWildPlus','naturalboobs',
+  'titstogether','asshole','labia','innie','nsfwoutfits',
+  /* ── Hair/Appearance ── */
+  'brunette','blonde','redheads','ginger','palegirls','tattoos','pierced',
+  'pokies','midriff','tightshirts','yoga','fitgirls','workoutwomen',
+  /* ── Orientation/Gender ── */
+  'lesbians','lesbian','gay','bisexual','traps','transgender','femboys',
+  'gayporn','freeuse','feminineboys','GayBros','bisexual','queer',
+  'futanari','femboyhentai','gonewildtrans','transadorable','traps',
+  'femboyporn','femboys','sissies','crossdressing','cdsgonewild',
+  /* ── Ethnicity ── */
+  'ebony','asian','latina','realasians','latinasgw','blackchicks',
+  'polishnsfw','ukgonewild','canadagonewild','australiagw','eurogonewild',
+  'AsiansGoneWild','WomenOfColor','indiansgonewild','arabsgonewild',
+  'latinasgonewild','AsianNSFW','BlackGirls','Mixed','exoticgirls',
+  /* ── Age category ── */
+  'milf','teenagers','MatureNSFW','cougars','MILFVideo','over30',
+  'over60','teens','realteens','collegegirls','youngporn',
+  /* ── Acts ── */
+  'blowjobs','anal','creampie','gangbang','threesome','bdsm','bondage',
+  'dominant','squirt','facials','cumshots','deepthroat','doggystyle',
+  'cowgirl','missionary','handjob','footjob','rimjob','fisting','pegging',
+  'spankingforreal','femdom','maledom','roughsex','publicsex','exhibitionism',
+  'PublicFlashing','strangers','dogging','gloryholes','swapping',
+  /* ── Fetish ── */
+  'feet','pantyhose','stockings','latex','leather','lingerie','thongs',
+  'swimwear','sporty','schoolgirl','nurse','maid','cosplay','roleplay',
+  'oilwrestling','massage','wetandmessy','foodporn_nsfw','ballbusting',
+  'cuckolding','wifesharing','hotwife','cuckold','swingers','voyeur',
+  'creepshots','upskirt','flashing','gonewild_pics','NSFWFunny',
+  /* ── Content format ── */
+  'nsfw_gif','nsfwgif','porn_gifs','gifsgonewild','porngifs','nsfwvideos',
+  'nsfw_videos','amateurvideos','homeporn','sextapes','onlyfans',
+  'pornstars','pornhub','xvideos','brazzers','realitykings',
+  /* ── Hentai/Anime ── */
+  'hentai','ecchi','animehentai','rule34','rule34_irl','realhentai',
+  'NSFWart','hentaifemboys','futanari','yaoi','yuri','shoujoai',
+  'hentaiGifs','hentaivideoclips','doujinshi','mangansfw','lewd',
+  'lewdanime','animeboobs','animegirls_nsfw','waifu','ahegao',
+  'femboyhentai','feralhentai','monstergirl','tentacles','inflation',
+  /* ── Gay specific ── */
+  'gayporn','gaynsfw','gaybros','twinks','bears','cubs','daddies',
+  'gaycock','gaycumsluts','gaysex','gayfetish','gaybdsm','asiansgonewild',
+  'blackcock','bbc','Massive_Cock','bigdickproblems','dickpics','cock',
+  /* ── Celeb/Famous-ish ── */
+  'celebnsfw','OnlyFans101','onlyfansreviews','InfluencersGoneWild',
+  'TikTokNSFW','instagramreality','SluttyConfessions','confessions',
+  /* ── Other ── */
+  'Incest_Captions','GILF','voyeur','rape_is_wrong','consensualnonconsent',
+  'solofemalefun','weddingring','wifes_gone_wild','slutwife','hotwife',
+  'slutsgoingwild','Swingers','openrelationships','sexstories',
+  'GWCouples','CoupleGoneWild','wivesgonewild','hubbywatches',
+].map(s=>s.toLowerCase()).filter((s,i,a)=>a.indexOf(s)===i).sort();
+
 let acFocusIdx=-1;
 
-async function searchSubreddits(q){
-  const key=q.toLowerCase();
-  if(_acCache[key])return _acCache[key];
-  /* Reddit has two useful endpoints:
-     1. /subreddits/search.json — full text search, needs &include_over_18=on
-     2. /api/subreddit_autocomplete_v2.json — prefix match, fastest */
-  try{
-    /* Try the autocomplete endpoint first — fastest, prefix-based */
-    const r=await fetch(
-      `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(q)}&include_over_18=true&include_profiles=false&typeahead_active=true&limit=10`,
-      {headers:{Accept:'application/json','User-Agent':'OBSIDIAN/1.0'},
-       signal:AbortSignal.timeout(5000)}
-    );
-    if(r.ok){
-      const d=await r.json();
-      const children=(d?.data?.children||[]).map(c=>c.data);
-      const results=children
-        .filter(s=>s.over18===true && (s.active_user_count||s.accounts_active||0)>=2000)
-        .slice(0,8)
-        .map(s=>({
-          name:s.display_name||s.name,
-          active:s.active_user_count||s.accounts_active||0,
-          subs:s.subscribers||0,
-        }));
-      if(results.length){_acCache[key]=results;return results;}
-    }
-  }catch{}
-  /* Fallback: full search endpoint */
-  try{
-    const r=await fetch(
-      `https://www.reddit.com/subreddits/search.json?q=${encodeURIComponent(q)}&include_over_18=on&limit=20&raw_json=1`,
-      {headers:{Accept:'application/json'},signal:AbortSignal.timeout(6000)}
-    );
-    if(!r.ok)return[];
-    const d=await r.json();
-    const results=(d?.data?.children||[])
-      .map(c=>c.data)
-      .filter(s=>s.over18===true&&(s.accounts_active||0)>=2000)
-      .slice(0,8)
-      .map(s=>({name:s.display_name,active:s.accounts_active||0,subs:s.subscribers||0}));
-    _acCache[key]=results;
-    return results;
-  }catch{return[];}
-}
-
-function fmtActive(n){
-  if(n>=1e6)return(n/1e6).toFixed(1)+'M/wk';
-  if(n>=1e3)return Math.round(n/1e3)+'k/wk';
-  return n+'/wk';
-}
-
-function renderAC(results){
+function showSubAC(val){
   const ac=$('r-sub-ac');
-  if(!results.length){ac.style.display='none';return;}
+  const q=val.trim().replace(/^r\//i,'').toLowerCase();
+  if(q.length<1){ac.style.display='none';return;}
+  const matches=NSFW_SUBS.filter(s=>s.startsWith(q)).slice(0,10);
+  if(!matches.length){ac.style.display='none';return;}
   acFocusIdx=-1;
-  ac.innerHTML=results.map(s=>`
-    <div class="r-ac-item" data-sub="${esc(s.name)}">
-      <span class="r-ac-sub">r/${esc(s.name)}</span>
-      <span class="r-ac-desc">${fmtActive(s.active)} · ${fmtV(s.subs)} members</span>
+  ac.innerHTML=matches.map(s=>`
+    <div class="r-ac-item" data-sub="${s}">
+      <span class="r-ac-sub">r/${s}</span>
     </div>`).join('');
   ac.querySelectorAll('.r-ac-item').forEach(item=>{
     item.addEventListener('mousedown',e=>{
@@ -1766,24 +1779,10 @@ function renderAC(results){
   ac.style.display='block';
 }
 
-function showSubAC(val){
-  const ac=$('r-sub-ac');
-  const q=val.trim().replace(/^r\//,'');
-  if(q.length<2){ac.style.display='none';return;}
-  clearTimeout(_acTimer);
-  /* Show loading state immediately */
-  ac.innerHTML=`<div class="r-ac-item" style="color:var(--tm);pointer-events:none"><span class="r-ac-sub">Searching r/${esc(q)}…</span></div>`;
-  ac.style.display='block';
-  _acTimer=setTimeout(async()=>{
-    const results=await searchSubreddits(q);
-    renderAC(results);
-  },300);
-}
-
 $('r-sub').addEventListener('input',()=>showSubAC($('r-sub').value));
 $('r-sub').addEventListener('keydown',e=>{
   const ac=$('r-sub-ac');
-  const items=[...ac.querySelectorAll('.r-ac-item:not([style*="pointer-events:none"])')];
+  const items=[...ac.querySelectorAll('.r-ac-item')];
   if(e.key==='ArrowDown'){
     e.preventDefault();
     acFocusIdx=Math.min(acFocusIdx+1,items.length-1);
@@ -1803,7 +1802,7 @@ $('r-sub').addEventListener('keydown',e=>{
   }
 });
 $('r-sub').addEventListener('blur',()=>setTimeout(()=>{$('r-sub-ac').style.display='none';acFocusIdx=-1;},160));
-$('r-sub').addEventListener('focus',()=>{if($('r-sub').value.length>=2)showSubAC($('r-sub').value);});
+$('r-sub').addEventListener('focus',()=>{if($('r-sub').value.length>=1)showSubAC($('r-sub').value);});
 
 function qs_r(name){$('r-sub').value=name;$('r-sub-ac').style.display='none';fetchReddit();}
 
