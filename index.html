@@ -366,7 +366,10 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .toggle input:checked+.tslider:before{transform:translateX(18px);background:#080808;}
 
 /* ═══ LIKED TAB ═════════════════════════════════════════════ */
-.liked-empty{text-align:center;padding:4rem 2rem;font-family:'DM Mono',monospace;
+.r-ac-item{padding:.42rem .72rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ts);cursor:pointer;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--bdr);}
+.r-ac-item:hover,.r-ac-item.focused{background:rgba(255,69,0,.1);color:var(--red);}
+.r-ac-item .r-ac-sub{color:var(--red);font-weight:700;}
+.r-ac-item .r-ac-desc{font-size:.55rem;color:var(--tm);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
   font-size:.68rem;color:var(--tm);letter-spacing:.1em;line-height:2;}
 .liked-empty .big{font-size:2.4rem;display:block;margin-bottom:.7rem;opacity:.25;}
 
@@ -616,24 +619,58 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <div id="fbar" role="toolbar">
     <span class="fl">Filter:</span>
     <select class="fsel" id="fc" aria-label="Category">
-      <option value="">All Categories</option>
-      <option value="straight">Straight</option>
-      <option value="lesbian">Lesbian</option>
-      <option value="teen">Teen (18+)</option>
-      <option value="milf">MILF</option>
-      <option value="amateur">Amateur</option>
-      <option value="anal">Anal</option>
+      <option value="">All</option>
+      <optgroup label="Orientation">
+        <option value="straight">Straight</option>
+        <option value="gay">Gay</option>
+        <option value="lesbian">Lesbian</option>
+        <option value="bisexual">Bisexual</option>
+        <option value="trans">Trans</option>
+      </optgroup>
+      <optgroup label="Popular">
+        <option value="amateur">Amateur</option>
+        <option value="milf">MILF</option>
+        <option value="teen">Teen (18+)</option>
+        <option value="bbw">BBW</option>
+        <option value="mature">Mature</option>
+        <option value="interracial">Interracial</option>
+      </optgroup>
+      <optgroup label="Acts">
+        <option value="anal">Anal</option>
+        <option value="oral">Oral</option>
+        <option value="creampie">Creampie</option>
+        <option value="gangbang">Gangbang</option>
+        <option value="threesome">Threesome</option>
+        <option value="bondage">Bondage / BDSM</option>
+        <option value="solo">Solo</option>
+      </optgroup>
+      <optgroup label="Style">
+        <option value="pov">POV</option>
+        <option value="hd">HD / 4K</option>
+        <option value="vr">VR</option>
+        <option value="compilation">Compilation</option>
+        <option value="massage">Massage</option>
+        <option value="squirt">Squirt</option>
+      </optgroup>
     </select>
     <select class="fsel" id="fd" aria-label="Duration">
-      <option value="">Any Duration</option>
-      <option value="short">Under 10 min</option>
-      <option value="medium">10–30 min</option>
-      <option value="long">30+ min</option>
+      <option value="">Any Length</option>
+      <option value="short">Under 5 min</option>
+      <option value="medium">5–20 min</option>
+      <option value="long">20–60 min</option>
+      <option value="vlong">60+ min</option>
+    </select>
+    <select class="fsel" id="fq" aria-label="Quality">
+      <option value="">Any Quality</option>
+      <option value="4k">4K</option>
+      <option value="hd">HD 1080p</option>
+      <option value="720">720p+</option>
     </select>
     <select class="fsel" id="fs" aria-label="Sort">
       <option value="views">Most Viewed</option>
       <option value="newest">Newest</option>
       <option value="rating">Top Rated</option>
+      <option value="trending">Trending</option>
     </select>
     <div class="fdiv"></div>
     <button class="fchip on" data-tag="all" aria-pressed="true">All</button>
@@ -724,17 +761,18 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           <div class="iso-notice r"><span>⚠</span><span><strong>API 1 — Reddit only.</strong> Content here never appears in Featured, Hero, Trending, or any main grid. Reddit NSFW requires the subreddit to allow adult content.</span></div>
           <div class="iso-sp">
             <div class="iso-row">
-              <div class="iso-f" style="flex:2">
+              <div class="iso-f" style="flex:2;position:relative">
                 <label class="iso-lbl" for="r-sub">Subreddit name</label>
-                <input class="iso-inp" id="r-sub" type="text" placeholder="e.g.  gonewild  nsfw  realgirls" autocomplete="off"/>
+                <input class="iso-inp" id="r-sub" type="text" placeholder="e.g.  gonewild  nsfw  realgirls" autocomplete="off" style="border-color:rgba(255,69,0,.25)"/>
+                <div id="r-sub-ac" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:500;background:var(--bg2);border:1px solid rgba(255,69,0,.3);border-top:none;max-height:220px;overflow-y:auto;"></div>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
                 <label class="iso-lbl" for="r-sort">Sort</label>
-                <select class="iso-sel" id="r-sort"><option value="hot">Hot</option><option value="new">New</option><option value="top">Top</option><option value="rising">Rising</option></select>
+                <select class="iso-sel" id="r-sort" style="border-color:rgba(255,69,0,.2)"><option value="hot">Hot</option><option value="new">New</option><option value="top">Top</option><option value="rising">Rising</option></select>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
                 <label class="iso-lbl" for="r-time">Time</label>
-                <select class="iso-sel" id="r-time"><option value="day">Today</option><option value="week">This Week</option><option value="month">This Month</option><option value="all">All Time</option></select>
+                <select class="iso-sel" id="r-time" style="border-color:rgba(255,69,0,.2)"><option value="day">Today</option><option value="week">Week</option><option value="month">Month</option><option value="all">All Time</option></select>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
                 <label class="iso-lbl">&nbsp;</label>
@@ -742,15 +780,23 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               </div>
             </div>
             <div class="iso-quick">
-              <span class="iso-ql">Quick:</span>
-              <button class="iso-qc r" onclick="qs_r('nsfw')">r/nsfw</button>
-              <button class="iso-qc r" onclick="qs_r('gonewild')">r/gonewild</button>
-              <button class="iso-qc r" onclick="qs_r('realgirls')">r/realgirls</button>
-              <button class="iso-qc r" onclick="qs_r('holdthemoan')">r/holdthemoan</button>
-              <button class="iso-qc r" onclick="qs_r('altgonewild')">r/altgonewild</button>
-              <button class="iso-qc r" onclick="qs_r('Amateur')">r/Amateur</button>
-              <button class="iso-qc r" onclick="qs_r('GoneWildPlus')">r/GoneWildPlus</button>
-              <button class="iso-qc r" onclick="qs_r('cumsluts')">r/cumsluts</button>
+              <span class="iso-ql">Popular:</span>
+              <button class="iso-qc r" onclick="qs_r('nsfw')">nsfw</button>
+              <button class="iso-qc r" onclick="qs_r('gonewild')">gonewild</button>
+              <button class="iso-qc r" onclick="qs_r('realgirls')">realgirls</button>
+              <button class="iso-qc r" onclick="qs_r('holdthemoan')">holdthemoan</button>
+              <button class="iso-qc r" onclick="qs_r('altgonewild')">altgonewild</button>
+              <button class="iso-qc r" onclick="qs_r('GoneWildPlus')">GoneWildPlus</button>
+              <button class="iso-qc r" onclick="qs_r('cumsluts')">cumsluts</button>
+              <button class="iso-qc r" onclick="qs_r('sex')">sex</button>
+              <button class="iso-qc r" onclick="qs_r('Boobies')">Boobies</button>
+              <button class="iso-qc r" onclick="qs_r('Amateur')">Amateur</button>
+              <button class="iso-qc r" onclick="qs_r('lesbians')">lesbians</button>
+              <button class="iso-qc r" onclick="qs_r('ass')">ass</button>
+              <button class="iso-qc r" onclick="qs_r('palegirls')">palegirls</button>
+              <button class="iso-qc r" onclick="qs_r('OnOff')">OnOff</button>
+              <button class="iso-qc r" onclick="qs_r('teenagers')">teenagers</button>
+              <button class="iso-qc r" onclick="qs_r('milf')">milf</button>
             </div>
           </div>
           <div class="iso-info r" id="rsi">
@@ -1043,7 +1089,7 @@ function toast(msg,type='ok',ms=3000){
 ══════════════════════════════════════════════════════════ */
 const S={
   page:1,totalPages:1,curVid:null,curView:'home',loading:false,
-  f:{cat:'',dur:'',sort:'views',tag:'all',q:''},
+  f:{cat:'',dur:'',qual:'',sort:'views',tag:'all',q:''},
   rd:{sub:'',after:null,sort:'hot',time:'day',all:[],filtered:[],mf:'all',loading:false,hasMore:false},
   r4:{tag:'',pid:0,all:[],filtered:[],mf:'all',loading:false,hasMore:false,sort:'score:desc'},
   serverUrl: (HARDCODED_SERVER||localStorage.getItem('obs_server')||'').replace(/\/$/,''),
@@ -1394,7 +1440,7 @@ async function fetchYouPorn(q='',page=1,sort='views'){
 }
 
 /* ── Fetch by API name ── */
-function fetchByName(name,q,page,sort){
+function fetchByName(name,q,page,sort,opts={}){
   if(name==='pornhub')  return fetchPornhub(q,page,sort);
   if(name==='redtube')  return fetchRedTube(q,page,sort);
   if(name==='youporn')  return fetchYouPorn(q,page,sort);
@@ -1432,37 +1478,44 @@ async function fetchRedgifs(q='',page=1){
 
 /* ── Combined fetch using settings-selected APIs ── */
 async function fetchMain(params={}){
-  const{q='',page=1,sort='views',tag='all'}=params;
+  const{q='',page=1,sort='views',tag='all',cat='',dur='',qual=''}=params;
   const up=S.serverUrl&&S.serverOk;
 
   /* GIF tab → ALWAYS stay in gif mode, never show PH/RT */
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
     if(up&&ST.gifApi!=='none'){
-      try{return await fetchByName(ST.gifApi,rq,page,sort);}
+      try{return await fetchByName(ST.gifApi,rq,page,sort,{cat,dur,qual});}
       catch(e){
         console.warn('[GIF]',e.message);
         return{videos:[],total:0,notice:'gif-error',error:e.message};
       }
     }
     return{videos:[],total:0,notice:'server-offline'};
-    /* IMPORTANT: never fall through to PH/RT below */
   }
 
+  /* Build effective query — category/tags become part of search */
+  const effQ=buildQuery(q,cat);
+
   /* Primary + Secondary video APIs in parallel */
-  const api1 = ST.api1||'pornhub';
-  const api2 = ST.api2||'redtube';
+  const api1=ST.api1||'pornhub';
+  const api2=ST.api2||'none';
+  const opts={cat,dur,qual};
   const fetches=[
-    fetchByName(api1,q,page,sort),
-    api2!=='none'?fetchByName(api2,q,page,sort):Promise.reject('disabled'),
+    fetchByName(api1,effQ,page,sort,opts),
+    api2!=='none'?fetchByName(api2,effQ,page,sort,opts):Promise.reject('disabled'),
   ];
   const results=await Promise.allSettled(fetches);
-  const v1=results[0].status==='fulfilled'?results[0].value.videos:[];
-  const v2=results[1].status==='fulfilled'?results[1].value.videos:[];
+  let v1=results[0].status==='fulfilled'?results[0].value.videos:[];
+  let v2=results[1].status==='fulfilled'?results[1].value.videos:[];
   if(results[0].status==='rejected')console.warn(`[${api1}]`,results[0].reason);
-  /* api2 failures are silent — it's optional */
 
-  /* Interleave both sources */
+  /* Client-side filter by duration and quality */
+  const durFilter=v=>filterDur(v,dur);
+  const qualFilter=v=>filterQual(v,qual);
+  v1=v1.filter(v=>durFilter(v)&&qualFilter(v));
+  v2=v2.filter(v=>durFilter(v)&&qualFilter(v));
+
   const merged=[];
   const max=Math.max(v1.length,v2.length);
   for(let i=0;i<max;i++){if(v1[i])merged.push(v1[i]);if(v2[i])merged.push(v2[i]);}
@@ -1470,6 +1523,34 @@ async function fetchMain(params={}){
   if(!merged.length)return{videos:[],total:0,notice:up?'no-results':'server-offline'};
   const total=((results[0].status==='fulfilled'?results[0].value.total:0)+(results[1].status==='fulfilled'?results[1].value.total:0))||merged.length*4;
   return{videos:merged,total};
+}
+
+/* Build search query from base query + category */
+function buildQuery(q,cat){
+  if(!cat)return q;
+  /* Append category as search term */
+  return q?`${q} ${cat}`:cat;
+}
+
+/* Client-side duration filter */
+function filterDur(v,dur){
+  if(!dur)return true;
+  const s=v.dur||0;
+  if(dur==='short')return s>0&&s<300;
+  if(dur==='medium')return s>=300&&s<1200;
+  if(dur==='long')return s>=1200&&s<3600;
+  if(dur==='vlong')return s>=3600;
+  return true;
+}
+
+/* Client-side quality filter */
+function filterQual(v,qual){
+  if(!qual)return true;
+  const q=(v.qual||'').toLowerCase();
+  if(qual==='4k')return q.includes('4k')||q.includes('2160');
+  if(qual==='hd')return q.includes('1080')||q.includes('hd');
+  if(qual==='720')return q.includes('720')||q.includes('hd')||q.includes('1080')||q.includes('4k');
+  return true;
 }
 
 /* Mock */
@@ -1519,7 +1600,7 @@ async function loadVideos(append=false){
   if(S.loading)return;S.loading=true;
   if(!append)skels();
   try{
-    const res=await fetchMain({q:S.f.q,page:S.page,sort:S.f.sort,tag:S.f.tag});
+    const res=await fetchMain({q:S.f.q,page:S.page,sort:S.f.sort,tag:S.f.tag,cat:S.f.cat,dur:S.f.dur,qual:S.f.qual});
     const videos=res.videos||[];
     const total=res.total||0;
     S.totalPages=Math.max(1,Math.ceil(total/CFG_PAGE));
@@ -1571,6 +1652,7 @@ function mkPag(){
 /* Filters */
 $('fc').addEventListener('change',()=>{S.f.cat=$('fc').value;S.page=1;loadVideos();});
 $('fd').addEventListener('change',()=>{S.f.dur=$('fd').value;S.page=1;loadVideos();});
+$('fq').addEventListener('change',()=>{S.f.qual=$('fq').value;S.page=1;loadVideos();});
 $('fs').addEventListener('change',()=>{S.f.sort=$('fs').value;S.page=1;loadVideos();});
 document.querySelectorAll('.fchip').forEach(c=>{
   c.addEventListener('click',()=>{
@@ -1579,8 +1661,8 @@ document.querySelectorAll('.fchip').forEach(c=>{
   });
 });
 $('clf').addEventListener('click',()=>{
-  $('fc').value='';$('fs').value='views';
-  Object.assign(S.f,{cat:'',dur:'',sort:'views',tag:'all',q:''});
+  $('fc').value='';$('fd').value='';$('fq').value='';$('fs').value='views';
+  Object.assign(S.f,{cat:'',dur:'',qual:'',sort:'views',tag:'all',q:''});
   $('srch').value='';
   document.querySelectorAll('.fchip').forEach(c=>{c.classList.toggle('on',c.dataset.tag==='all');c.setAttribute('aria-pressed',c.dataset.tag==='all'?'true':'false');});
   S.page=1;loadVideos();toast('Filters cleared','ok',2000);
@@ -1605,8 +1687,81 @@ document.addEventListener('click',e=>{if(!e.target.closest('.nsw'))acl.classList
    ║  API 1 — REDDIT NSFW (isolated)  ║
    ╚══════════════════════════════════╝
 ══════════════════════════════════════════════════════════ */
-$('r-sub').addEventListener('keydown',e=>{if(e.key==='Enter')fetchReddit();});
-function qs_r(name){$('r-sub').value=name;fetchReddit();}
+/* ══════════════════════════════════════════════════════════
+   REDDIT SUBREDDIT AUTOCOMPLETE
+══════════════════════════════════════════════════════════ */
+/* Large curated list of popular NSFW subreddits for instant suggestions */
+const NSFW_SUBS = [
+  'nsfw','gonewild','realgirls','holdthemoan','altgonewild','GoneWildPlus',
+  'cumsluts','sex','Boobies','Amateur','lesbians','ass','palegirls','OnOff',
+  'milf','teenagers','RealGirls','pussy','boobs','nipples','adorableporn',
+  'collegesluts','gwpublic','gonemild','NaughtySluts','sexybutnotporn',
+  'nsfw_gifs','nsfwgif','porn_gifs','gifsgonewild','porngifs','nsfwvideos',
+  'homemadexxx','amateurporn','pawg','bigboobs','bigasses','busty',
+  'brunette','blonde','redheads','ebony','asian','latina','petite',
+  'bbw','chubby','thick','curvy','slim','fitgirls','gonewildcurvy',
+  'gonewildstories','dirtyr4r','sexygirls','boltedonnaturals','tightshirts',
+  'pokies','midriff','yoga','workoutwomen','girlsgonewtf','uncensorship',
+  'nsfwoutfits','PublicFlashing','strangers','dirtysnapchat','snapchat_nsfw',
+  'realsex','lesbian','gay','bisexual','traps','transgender','femboys',
+  'massivecocks','hugeboobs','rule34','hentai','ecchi','animehentai',
+  'rule34_irl','realhentai','NSFWart','realasians','latinasgw','blackchicks',
+  'polishnsfw','ukgonewild','canadagonewild','australiagw','eurogonewild',
+  'wifesharing','cuckold','swingers','hotwife','bdsm','bondage','dominant',
+  'softcore','PetiteGoneWild','TinyTits','AsiansGoneWild','MatureNSFW',
+  'WomenOfColor','crossdressing','ginger','tattoos','pierced','gonewildaudio',
+].sort();
+
+let acFocusIdx=-1;
+
+function showSubAC(val){
+  const ac=$('r-sub-ac');
+  if(!val.trim()){ac.style.display='none';return;}
+  const q=val.toLowerCase().replace(/^r\//,'');
+  const matches=NSFW_SUBS.filter(s=>s.toLowerCase().startsWith(q)).slice(0,8);
+  if(!matches.length){ac.style.display='none';return;}
+  acFocusIdx=-1;
+  ac.innerHTML=matches.map((s,i)=>`
+    <div class="r-ac-item" data-sub="${s}" tabindex="-1">
+      <span class="r-ac-sub">r/${s}</span>
+    </div>`).join('');
+  ac.querySelectorAll('.r-ac-item').forEach(item=>{
+    item.addEventListener('mousedown',e=>{
+      e.preventDefault();
+      $('r-sub').value=item.dataset.sub;
+      ac.style.display='none';
+      fetchReddit();
+    });
+  });
+  ac.style.display='block';
+}
+
+$('r-sub').addEventListener('input',()=>showSubAC($('r-sub').value));
+$('r-sub').addEventListener('keydown',e=>{
+  const ac=$('r-sub-ac');
+  const items=[...ac.querySelectorAll('.r-ac-item')];
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    acFocusIdx=Math.min(acFocusIdx+1,items.length-1);
+    items.forEach((x,i)=>x.classList.toggle('focused',i===acFocusIdx));
+  }else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    acFocusIdx=Math.max(acFocusIdx-1,-1);
+    items.forEach((x,i)=>x.classList.toggle('focused',i===acFocusIdx));
+  }else if(e.key==='Enter'){
+    if(acFocusIdx>=0&&items[acFocusIdx]){
+      $('r-sub').value=items[acFocusIdx].dataset.sub;
+      ac.style.display='none';
+    }
+    fetchReddit();
+  }else if(e.key==='Escape'){
+    ac.style.display='none';
+  }
+});
+$('r-sub').addEventListener('blur',()=>setTimeout(()=>{$('r-sub-ac').style.display='none';},150));
+$('r-sub').addEventListener('focus',()=>{if($('r-sub').value)showSubAC($('r-sub').value);});
+
+function qs_r(name){$('r-sub').value=name;$('r-sub-ac').style.display='none';fetchReddit();}
 
 async function fetchReddit(append=false){
   const sub=$('r-sub').value.trim().replace(/^r\//,'').toLowerCase();
