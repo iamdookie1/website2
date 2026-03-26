@@ -1142,39 +1142,104 @@ async function retryServer(){
 ══════════════════════════════════════════════════════════ */
 function getLiked(){try{return JSON.parse(localStorage.getItem('obs_liked')||'[]');}catch{return[];}}
 function saveLiked(arr){localStorage.setItem('obs_liked',JSON.stringify(arr));}
-function isLiked(id){return getLiked().some(v=>v.id===id);}
 function toggleLike(v){
   const liked=getLiked();
-  const idx=liked.findIndex(x=>x.id===v.id);
-  if(idx>=0){liked.splice(idx,1);saveLiked(liked);toast('Removed from Liked','ok');}
-  else{
-    /* Store minimal data */
-    liked.unshift({id:v.id,title:v.title,thumb:v.thumb,dur:v.dur,views:v.views,rating:v.rating,
-                   qual:v.qual,src:v.src,url:v.url,embedUrl:v.embedUrl,directUrl:v.directUrl,
-                   useIframe:v.useIframe,bc:v.bc,tags:v.tags||[]});
+  const id=String(v.id||'');
+  const idx=liked.findIndex(x=>String(x.id)===id);
+  if(idx>=0){
+    liked.splice(idx,1);saveLiked(liked);toast('Removed from Liked','ok');
+  }else{
+    /* Normalise any content type into a storable shape */
+    const item={
+      id,
+      title:v.title||v.sub||id,
+      thumb:v.thumb||v.tUrl||v.previewUrl||'',
+      dur:v.dur||v.duration||0,
+      views:v.views||v.ups||v.score||0,
+      rating:v.rating||'—',
+      qual:v.qual||v.mType||'',
+      src:v.src||'Unknown',
+      /* playback */
+      url:v.url||v.embedUrl||v.directUrl||v.mUrl||v.fileUrl||'',
+      embedUrl:v.embedUrl||'',
+      directUrl:v.directUrl||v.mUrl||v.fileUrl||'',
+      useIframe:!!v.useIframe,
+      bc:v.bc||'b-hot',
+      tags:v.tags||[],
+      /* reddit-specific */
+      mType:v.mType||'video',
+      mUrl:v.mUrl||v.directUrl||'',
+      tUrl:v.tUrl||v.thumb||'',
+      sub:v.sub||'',
+      author:v.author||'',
+      link:v.link||'',
+      ups:v.ups||0,
+      comments:v.comments||0,
+      nsfw:v.nsfw||false,
+      gallery:v.gallery||[],
+      /* r34-specific */
+      fileUrl:v.fileUrl||v.directUrl||'',
+      previewUrl:v.previewUrl||v.thumb||'',
+      apiSrc:v.apiSrc||'',
+      score:v.score||0,
+    };
+    liked.unshift(item);
     if(liked.length>200)liked.length=200;
-    saveLiked(liked);toast('Added to Liked ♥','ok');
+    saveLiked(liked);
+    toast('Liked ♥','ok');
   }
-  /* Update button if player open */
-  updateLikeBtn(v.id);
+  updateLikeBtn(id);
   if(S.curView==='liked')renderLiked();
 }
+function isLiked(id){return getLiked().some(v=>String(v.id)===String(id));}
 function updateLikeBtn(id){
-  const btn=$('liked-btn');
-  if(!btn)return;
+  const btn=$('liked-btn');if(!btn)return;
   const l=isLiked(id);
   btn.textContent=l?'♥ Liked':'♥ Like';
-  btn.style.background=l?'var(--crim)':'';
-  btn.style.borderColor=l?'var(--crim)':'';
-  btn.style.color=l?'#fff':'';
+  btn.style.cssText=l?'background:var(--crim);border-color:var(--crim);color:#fff':'';
 }
 function clearLiked(){saveLiked([]);if(S.curView==='liked')renderLiked();$('liked-count-label').textContent='0 liked videos saved';toast('Liked cleared','ok');}
 function renderLiked(){
   const liked=getLiked();
   $('liked-count').textContent=liked.length?`${liked.length} videos`:'';
   const g=$('liked-grid');g.innerHTML='';
-  if(!liked.length){$('liked-empty').style.display='block';}
-  else{$('liked-empty').style.display='none';liked.forEach(v=>g.appendChild(mkCard(v)));}
+  if(!liked.length){$('liked-empty').style.display='block';return;}
+  $('liked-empty').style.display='none';
+  liked.forEach(v=>{
+    /* Route to correct player based on what was liked */
+    const isReddit=!!(v.sub||v.link||v.author);
+    const isR34=!!(v.apiSrc||v.fileUrl);
+    const open=()=>{
+      if(isReddit)openRedditPost(v);
+      else if(isR34)openR34Post(v);
+      else openMain(v);
+    };
+    const el=document.createElement('article');
+    el.className='vc';el.setAttribute('tabindex','0');
+    const thumb=v.thumb||v.tUrl||v.previewUrl||'';
+    const srcLabel=v.src||v.sub?(v.sub?`r/${v.sub}`:v.src):'';
+    const durLabel=v.dur?fmtD(v.dur):(v.mType?v.mType.toUpperCase():'');
+    el.innerHTML=`<div class="vth">
+      <img src="${esc(thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer"
+        onerror="this.onerror=null;this.style.opacity='.15';"/>
+      <div class="vov"><div class="pio">▶</div></div>
+      <div class="vbg"><span class="bdg b-hot">♥</span></div>
+      <span class="vdur">${esc(durLabel)}</span>
+      <span class="vapi">${esc(srcLabel)}</span>
+    </div>
+    <div class="vi">
+      <div class="vti">${esc(v.title)}</div>
+      <div class="vm">
+        <span class="vr2">♥</span>
+        <button onclick="event.stopPropagation();toggleLike(this.__v)" style="background:none;border:none;color:var(--crim);cursor:pointer;font-family:'DM Mono',monospace;font-size:.55rem;padding:0;" title="Remove">✕ Remove</button>
+      </div>
+    </div>`;
+    /* Attach the item to the remove button */
+    el.querySelector('button').__v=v;
+    el.addEventListener('click',open);
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open();});
+    g.appendChild(el);
+  });
 }
 
 function redditOnlyMode(){
@@ -1370,14 +1435,18 @@ async function fetchMain(params={}){
   const{q='',page=1,sort='views',tag='all'}=params;
   const up=S.serverUrl&&S.serverOk;
 
-  /* GIF tab → settings gifApi */
+  /* GIF tab → ALWAYS stay in gif mode, never show PH/RT */
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
     if(up&&ST.gifApi!=='none'){
       try{return await fetchByName(ST.gifApi,rq,page,sort);}
-      catch(e){console.warn('[GIF]',e.message);}
+      catch(e){
+        console.warn('[GIF]',e.message);
+        return{videos:[],total:0,notice:'gif-error',error:e.message};
+      }
     }
     return{videos:[],total:0,notice:'server-offline'};
+    /* IMPORTANT: never fall through to PH/RT below */
   }
 
   /* Primary + Secondary video APIs in parallel */
@@ -1463,6 +1532,13 @@ async function loadVideos(append=false){
           Server offline — Pornhub requires the Python server running<br/>
           <span style="color:var(--gold)">Run server.py, start your Cloudflare tunnel, paste URL in ⚙</span><br/>
           <button class="btn g" style="margin-top:.8rem" onclick="retryServer()">↺ Retry Connection</button>
+        </div>`;
+      }else if(res.notice==='gif-error'){
+        g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm);line-height:2.2">
+          <div style="font-size:2rem;margin-bottom:.8rem;opacity:.3">🎞</div>
+          GIF feed error: <span style="color:var(--red)">${esc(res.error||'unknown')}</span><br/>
+          <span style="color:var(--gold)">Make sure your server is running and the tunnel is connected</span><br/>
+          <button class="btn g" style="margin-top:.8rem" onclick="retryServer()">↺ Retry</button>
         </div>`;
       }else{
         g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm)">NO RESULTS</div>`;
@@ -2192,6 +2268,7 @@ function openMain(v){
 }
 
 function openRedditPost(post){
+  S.curVid=post;
   const isVid=post.mType==='video'||post.mType==='gif-v';
   const isGif=post.mType==='gif'||post.mType==='gif-v';
   const isGal=post.mType==='gallery';
@@ -2199,17 +2276,18 @@ function openRedditPost(post){
   const mType=isVid||isGif?'video':'image';
   const src=isImg?(post.gallery?.[0]||post.mUrl):post.mUrl;
   const galItems=isGal&&post.gallery?.length>1?post.gallery:[];
+  const liked=isLiked(post.id);
   launchPlayer({
-    src, title:post.title, accent:'rr',
+    src,title:post.title,accent:'rr',
     meta:`<span style="color:var(--red)">r/${esc(post.sub)}</span><span>u/${esc(post.author)}</span><span>▲ ${fmtV(post.ups)}</span><span>💬 ${fmtV(post.comments)}</span>${post.nsfw?'<span style="color:#f77;font-size:.5rem">NSFW</span>':''}`,
-    actions:`<a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Open Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘ Copy</button>`,
-    extra:`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes<br/><a href="${esc(post.link)}" target="_blank" rel="noopener">${esc(post.link)}</a>`,
-    mediaType:mType, galleryItems:galItems,
-    loop:isGif, showRelated:false,
+    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘</button>`,
+    extra:`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes`,
+    mediaType:mType,galleryItems:galItems,loop:isGif,showRelated:false,
   });
 }
 
 function openR34Post(post){
+  S.curVid=post;
   const isVid=post.mType==='video';
   const isGif=post.mType==='gif';
   const mType=(isVid||isGif)?'video':'image';
@@ -2223,11 +2301,12 @@ function openR34Post(post){
     paheal:`https://rule34.paheal.net/post/view/${post.id}`,
     safebooru:`https://safebooru.org/index.php?page=post&s=view&id=${post.id}`,
   };
-  const viewUrl=boardUrls[post.apiSrc]||`#`;
+  const viewUrl=boardUrls[post.apiSrc]||'#';
+  const liked=isLiked(post.id);
   launchPlayer({
     src:post.fileUrl,title:`${post.src} #${post.id}`,accent:'pr',
     meta:`<span style="color:var(--pur)">${esc(post.src)}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
-    actions:`<a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View on site ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘ Copy</button>`,
+    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘</button>`,
     extra:`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`,
     mediaType:mType,loop:isGif,showRelated:false,
   });
