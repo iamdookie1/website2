@@ -373,7 +373,22 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
   font-size:.68rem;color:var(--tm);letter-spacing:.1em;line-height:2;}
 .liked-empty .big{font-size:2.4rem;display:block;margin-bottom:.7rem;opacity:.25;}
 
-/* ═══ TOAST ═════════════════════════════════════════════════ */
+/* ═══ MEDIA PERFORMANCE ═════════════════════════════════════ */
+/* Thumbnails — fast decode, no smoothing delay on small images */
+.vth img,.r4m img,.rcm img,.rct img{
+  image-rendering:auto;
+  will-change:auto;
+}
+/* Cards — browser skips off-screen paint (huge speed boost on long grids) */
+.vc,.r4c,.rc{
+  content-visibility:auto;
+  contain-intrinsic-size:0 280px; /* approximate card height */
+}
+/* Player image — instant render */
+.pvw-img{
+  image-rendering:auto;
+  will-change:transform; /* promotes to own layer for instant display */
+}
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 @media(max-width:870px){.tbox{bottom:calc(56px + .7rem);right:.7rem;left:.7rem;}}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
@@ -943,7 +958,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
     <!-- Media — fixed, never scrolls -->
     <div class="ps-media">
       <div class="pvw" id="pvw" style="display:none">
-        <video id="mv" playsinline preload="metadata">Your browser does not support video.</video>
+        <video id="mv" playsinline preload="auto" x-webkit-airplay="allow">Your browser does not support video.</video>
         <div class="co">
           <div class="pw" id="pw" role="slider" tabindex="0" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
             <div class="pb" id="pb"></div><div class="pf" id="pf"></div>
@@ -1452,8 +1467,8 @@ async function fetchPornhub(q='',page=1,sort='views'){
   if(!r.ok)throw new Error(`PH server ${r.status}`);
   const d=await r.json();
   if(d.error)throw new Error(d.error);
-  if(!d.videos?.length)throw new Error('PH empty');
-  return{videos:d.videos,total:d.total||d.videos.length*5};
+  /* Return empty gracefully instead of throwing — lets search show "no results" */
+  return{videos:d.videos||[],total:d.total||0};
 }
 
 /* ── API: RedTube via server ── */
@@ -1464,8 +1479,7 @@ async function fetchRedTube(q='',page=1,sort='views'){
   const r=await fetch(`${S.serverUrl}/api/redtube?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw new Error(`RT server ${r.status}`);
   const d=await r.json();
-  if(!d.videos?.length)throw new Error('RT empty');
-  return{videos:d.videos,total:d.total||d.videos.length*5};
+  return{videos:d.videos||[],total:d.total||0};
 }
 
 /* ── API: YouPorn via server ── */
@@ -1476,8 +1490,7 @@ async function fetchYouPorn(q='',page=1,sort='views'){
   const r=await fetch(`${S.serverUrl}/api/youporn?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw new Error(`YP server ${r.status}`);
   const d=await r.json();
-  if(!d.videos?.length)throw new Error('YP empty');
-  return{videos:d.videos,total:d.total||d.videos.length*5};
+  return{videos:d.videos||[],total:d.total||0};
 }
 
 /* ── Fetch by API name ── */
@@ -1611,13 +1624,20 @@ function mockVids(n){
 /* ── Render main grid ── */
 function skels(){const g=$('vgrid');g.innerHTML='';for(let i=0;i<CFG_PAGE;i++)g.innerHTML+=`<div class="skc"><div class="sk skt"></div><div class="ski"><div class="sk sk1"></div><div class="sk sk2"></div></div></div>`;}
 
-function mkCard(v){
+function mkCard(v,idx=0){
   const el=document.createElement('article');el.className='vc';el.setAttribute('role','listitem');el.setAttribute('tabindex','0');
   const tgs=(v.tags||[]).slice(0,3).map(t=>`<span class="vtg">${esc(t)}</span>`).join('');
   const b=v.qual?.includes('GIF')?'<span class="bdg b-rg">GIF</span>':v.qual?.includes('4K')?'<span class="bdg b-4k">4K</span>':v.qual?.includes('1080')||v.qual?.includes('HD')?'<span class="bdg b-hd">HD</span>':v.bc?`<span class="bdg ${v.bc}">${v.bc.replace('b-','').toUpperCase()}</span>`:'';
   const vidUrl=(!v.useIframe&&v.url&&(v.url.match(/\.(mp4|webm)(\?|$)/i)||v.src==='Redgifs'))?v.url:'';
+  /* First 8 cards: eager load + high priority for instant LCP */
+  const isAboveFold=idx<8;
+  const loadAttr=isAboveFold?'eager':'lazy';
+  const fetchAttr=isAboveFold?'high':'auto';
+  const decodingAttr=isAboveFold?'sync':'async';
   el.innerHTML=`<div class="vth">
-    <img src="${esc(v.thumb)}" alt="${esc(v.title)}" loading="lazy" referrerpolicy="no-referrer"
+    <img src="${esc(v.thumb)}" alt="${esc(v.title)}"
+      loading="${loadAttr}" decoding="${decodingAttr}" fetchpriority="${fetchAttr}"
+      referrerpolicy="no-referrer"
       onerror="this.onerror=null;const c=this.closest('.vc');if(c)c.remove();"/>
     ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
     <div class="vov" aria-hidden="true"><div class="pio">▶</div></div>
@@ -1630,8 +1650,8 @@ function mkCard(v){
     <div class="vtgs">${tgs}</div></div>`;
   if(vidUrl){
     const hv=el.querySelector('.hov-vid');
-    el.addEventListener('mouseenter',()=>{if(hv)hv.play().catch(()=>{});});
-    el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}});
+    el.addEventListener('mouseenter',()=>{if(hv)hv.play().catch(()=>{});},{passive:true});
+    el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}},{passive:true});
   }
   el.addEventListener('click',()=>openMain(v));el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openMain(v);});
   return el;
@@ -1666,7 +1686,7 @@ async function loadVideos(append=false){
         g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm)">NO RESULTS</div>`;
       }
     }else{
-      videos.forEach(v=>g.appendChild(mkCard(v)));
+      videos.forEach((v,i)=>g.appendChild(mkCard(v,i)));
     }
     if(!append&&videos.length){$('sec-c').textContent=`${fmtV(total)} results`;mkPag();setHero(videos[0]);}
   }catch(e){toast('Failed to load: '+e.message,'err',5000);}
@@ -2638,16 +2658,46 @@ $('bfs').addEventListener('click',()=>{document.fullscreenElement?document.exitF
 let hlsI=null;
 function loadStream(url){
   const v=$('mv');
-  /* Clear any previous dead notice */
   const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
   if(!url){toast('Stream unavailable','err');return;}
   if(hlsI){hlsI.destroy();hlsI=null;}
-  if(url.endsWith('.m3u8')){
-    if(typeof Hls==='undefined'){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';s.onload=()=>initHls(url);document.head.appendChild(s);}
-    else initHls(url);
-  }else{v.src=url;v.load();v.play().catch(()=>{});}
+  if(url.endsWith('.m3u8')||url.includes('.m3u8?')){
+    if(typeof Hls==='undefined'){
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js';
+      s.onload=()=>initHls(url);
+      document.head.appendChild(s);
+    }else initHls(url);
+  }else{
+    /* Direct mp4/webm — set src, set preload auto, play immediately */
+    v.preload='auto';
+    v.src=url;
+    v.load();
+    /* Play as soon as enough data is buffered — don't wait for full load */
+    const onCanPlay=()=>{v.play().catch(()=>{});v.removeEventListener('canplay',onCanPlay);};
+    v.addEventListener('canplay',onCanPlay,{once:true});
+    /* Fallback: also try playing right away (works if already cached) */
+    v.play().catch(()=>{});
+  }
 }
-function initHls(url){const v=$('mv');if(Hls.isSupported()){hlsI=new Hls({enableWorker:true});hlsI.loadSource(url);hlsI.attachMedia(v);hlsI.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));hlsI.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)toast('Stream error','err');});}else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=url;v.play().catch(()=>{});}}
+function initHls(url){
+  const v=$('mv');
+  if(Hls.isSupported()){
+    hlsI=new Hls({
+      enableWorker:true,
+      lowLatencyMode:false,
+      startLevel:-1,        /* auto quality */
+      maxBufferLength:30,
+      maxBufferSize:60*1000*1000,
+    });
+    hlsI.loadSource(url);
+    hlsI.attachMedia(v);
+    hlsI.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+    hlsI.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)toast('Stream error','err');});
+  }else if(v.canPlayType('application/vnd.apple.mpegurl')){
+    v.src=url;v.play().catch(()=>{});
+  }
+}
 
 function closePlayer(){
   vidPause();if(hlsI){hlsI.destroy();hlsI=null;}
