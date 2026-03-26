@@ -245,7 +245,11 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .spinner.p{border-top-color:var(--pur);}
 
 /* ═══ RULE34 CARDS ══════════════════════════════════════════ */
-.r4c{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .22s,border-color .22s,box-shadow .22s;}
+.r4-masonry{columns:2 160px;column-gap:.6rem;}.r4-masonry .r4c{break-inside:avoid;margin-bottom:.6rem;display:inline-block;width:100%;}
+@media(min-width:600px){.r4-masonry{columns:3 160px;}}
+@media(min-width:900px){.r4-masonry{columns:4 160px;}}
+@media(min-width:1200px){.r4-masonry{columns:5 160px;}}
+.r4-masonry .r4m{aspect-ratio:unset;}.r4-masonry .r4m img{height:auto;max-height:420px;object-fit:cover;}
 .r4c:hover{transform:translateY(-3px);border-color:rgba(155,89,182,.4);box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 0 1px rgba(155,89,182,.28);}
 .r4m{position:relative;background:var(--bg2);overflow:hidden;}
 .r4m.sq{aspect-ratio:1/1;}
@@ -645,48 +649,56 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           <div class="iso-hdr p">
             <span class="iso-hdr-ico">🔞</span>
             <div>
-              <h2>Rule34 Browser — <span style="color:var(--pur)">API 4</span></h2>
-              <p>Search Rule34.xxx by tags — images, videos &amp; GIFs. <span class="hlp">Isolated — never shown in main feeds.</span></p>
+              <h2>Booru Browser — <span style="color:var(--pur)">API 4</span></h2>
+              <p>Search image boards by tags. <span class="hlp">Isolated — never shown in main feeds.</span></p>
             </div>
           </div>
-          <div class="iso-notice p"><span>⚠</span><span><strong>API 4 — Rule34 only.</strong> All content sourced directly from rule34.xxx API. Content here never appears in Featured, Hero, Trending, or any main grid. Explicit hentai/adult art content.</span></div>
+          <div class="iso-notice p"><span>⚠</span><span><strong>API 4 — Booru boards only.</strong> Content never appears in main feeds. Tag syntax: separate tags with spaces. Prefix <code style="color:var(--pur)">-tag</code> to exclude.</span></div>
           <div class="iso-sp">
             <div class="iso-row">
               <div class="iso-f" style="flex:2">
-                <label class="iso-lbl" for="r4-tag">Tags (space-separated)</label>
-                <input class="iso-inp" id="r4-tag" type="text" placeholder="e.g.  naruto  overwatch  animated" autocomplete="off" style="border-color:rgba(155,89,182,.25);"/>
+                <label class="iso-lbl" for="r4-tag">Tags</label>
+                <input class="iso-inp" id="r4-tag" type="text" placeholder="naruto animated 1girl  (space-separated)" autocomplete="off" style="border-color:rgba(155,89,182,.25);"/>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
                 <label class="iso-lbl" for="r4-sort">Sort</label>
                 <select class="iso-sel" id="r4-sort" style="border-color:rgba(155,89,182,.2);">
                   <option value="score:desc">Top Score</option>
                   <option value="id:desc">Newest</option>
-                  <option value="score:asc">Low Score</option>
+                  <option value="rating:explicit">Explicit Only</option>
                 </select>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
-                <label class="iso-lbl" for="r4-api">API Source</label>
+                <label class="iso-lbl" for="r4-api">Board</label>
                 <select class="iso-sel" id="r4-api" style="border-color:rgba(155,89,182,.2);">
-                  <option value="rule34xxx">rule34.xxx</option>
-                  <option value="paheal">rule34.paheal</option>
+                  <option value="gelbooru">Gelbooru ★</option>
                   <option value="e621">e621 (furry)</option>
+                  <option value="danbooru">Danbooru</option>
+                  <option value="konachan">Konachan</option>
+                  <option value="yandere">Yande.re</option>
+                  <option value="paheal">Paheal</option>
+                  <option value="safebooru">Safebooru (SFW)</option>
                 </select>
               </div>
               <div class="iso-f" style="flex:0 0 auto">
                 <label class="iso-lbl">&nbsp;</label>
-                <button class="iso-btn p" id="r4-go" onclick="fetchR34()">Search R34</button>
+                <button class="iso-btn p" id="r4-go" onclick="fetchR34()">Search</button>
               </div>
             </div>
             <div class="iso-quick">
               <span class="iso-ql">Quick:</span>
               <button class="iso-qc p" onclick="qs_r4('naruto')">naruto</button>
               <button class="iso-qc p" onclick="qs_r4('overwatch')">overwatch</button>
-              <button class="iso-qc p" onclick="qs_r4('my_hero_academia')">my hero academia</button>
-              <button class="iso-qc p" onclick="qs_r4('genshin_impact')">genshin impact</button>
+              <button class="iso-qc p" onclick="qs_r4('my_hero_academia')">MHA</button>
+              <button class="iso-qc p" onclick="qs_r4('genshin_impact')">genshin</button>
               <button class="iso-qc p" onclick="qs_r4('animated')">animated</button>
-              <button class="iso-qc p" onclick="qs_r4('3d')">3D</button>
-              <button class="iso-qc p" onclick="qs_r4('league_of_legends')">league of legends</button>
+              <button class="iso-qc p" onclick="qs_r4('league_of_legends')">league</button>
               <button class="iso-qc p" onclick="qs_r4('pokemon')">pokemon</button>
+              <button class="iso-qc p" onclick="qs_r4('hololive')">hololive</button>
+              <button class="iso-qc p" onclick="qs_r4('demon_slayer')">demon slayer</button>
+              <button class="iso-qc p" onclick="qs_r4('jujutsu_kaisen')">JJK</button>
+              <button class="iso-qc p" onclick="qs_r4('one_piece')">one piece</button>
+              <button class="iso-qc p" onclick="qs_r4('street_fighter')">street fighter</button>
             </div>
           </div>
           <div class="iso-info p" id="r4si">
@@ -699,8 +711,8 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               <button class="iso-fc p" data-r4m="gif" onclick="setR4F(this,'gif')">GIF</button>
             </div>
           </div>
-          <div class="iso-grid" id="r4grid"></div>
-          <div id="r4state" class="iso-state"><span class="big">🔞</span>Enter tags and press <span class="hl-p">Search R34</span></div>
+          <div class="iso-grid r4-masonry" id="r4grid"></div>
+          <div id="r4state" class="iso-state"><span class="big">🔞</span>Pick a board, enter tags, hit <span class="hl-p">Search</span></div>
           <div id="r4-autoload" class="auto-loading hidden"></div>
           <div class="scroll-sentinel" id="r4-sentinel"></div>
         </div>
@@ -1044,6 +1056,17 @@ function switchView(name){
   S.curView=name;
   const iso=name==='reddit'||name==='r34';
   const isLikedView=name==='liked';
+  /* Reset gif tag when going back to main views */
+  if(!iso&&!isLikedView&&name!=='rg-trending'&&name!=='rg-new'){
+    if(S.f.tag==='gif'&&!name.startsWith('rg')){
+      S.f.tag='all';
+      S.f.q='';
+      document.querySelectorAll('.fchip').forEach(c=>{
+        c.classList.toggle('on',c.dataset.tag==='all');
+        c.setAttribute('aria-pressed',c.dataset.tag==='all'?'true':'false');
+      });
+    }
+  }
   $('fbar').classList.toggle('off',iso||isLikedView);
   $('nsw').style.display=(iso||isLikedView)?'none':'';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
@@ -1547,106 +1570,244 @@ function renderRGrid(append=false){
 }
 
 /* ══════════════════════════════════════════════════════════
-   ╔══════════════════════════════════╗
-   ║  API 4 — RULE34 (isolated)       ║
-   ╚══════════════════════════════════╝
+   API 4 — BOORU BROWSER
+   Sources: Gelbooru, e621, Danbooru, Konachan, Yande.re,
+            Paheal (server), Safebooru
 ══════════════════════════════════════════════════════════ */
 $('r4-tag').addEventListener('keydown',e=>{if(e.key==='Enter')fetchR34();});
 function qs_r4(tag){$('r4-tag').value=tag;fetchR34();}
+
+/* Board display names */
+const R4_NAMES={
+  gelbooru:'Gelbooru',e621:'e621',danbooru:'Danbooru',
+  konachan:'Konachan',yandere:'Yande.re',paheal:'Paheal',safebooru:'Safebooru'
+};
+
+async function _fetchBooru(apiSrc,tags,limit,pid){
+  /* All except paheal work via proxy/direct */
+  const page=pid+1;
+  const tag=encodeURIComponent(tags);
+
+  if(apiSrc==='gelbooru'){
+    /* Gelbooru v2 JSON API — fully public */
+    const url=`https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${tag}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const d=await r.json();
+        const posts=d?.post||d?.posts||[];
+        if(!Array.isArray(posts)||!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:parseInt(p.score)||0,
+          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
+          file_url:p.file_url||p.source||'',
+          preview_url:p.preview_url||p.sample_url||'',
+          sample_url:p.sample_url||'',
+          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('Gelbooru: all proxies failed');
+  }
+
+  if(apiSrc==='e621'){
+    const url=`https://e621.net/posts.json?tags=${tag}&limit=${limit}&page=${page}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const d=await r.json();
+        const posts=d?.posts||[];
+        if(!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:p.score?.total||0,
+          tags:Object.values(p.tags||{}).flat().slice(0,10),
+          file_url:p.file?.url||'',
+          preview_url:p.preview?.url||'',
+          sample_url:p.sample?.url||'',
+          width:p.file?.width||0,height:p.file?.height||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('e621: all proxies failed');
+  }
+
+  if(apiSrc==='danbooru'){
+    /* Danbooru API — max 2 tags on free tier */
+    const twoTags=tags.split(' ').slice(0,2).join('+');
+    const url=`https://danbooru.donmai.us/posts.json?tags=${encodeURIComponent(twoTags)}&limit=${limit}&page=${page}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const posts=await r.json();
+        if(!Array.isArray(posts)||!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:parseInt(p.score)||0,
+          tags:(p.tag_string||'').split(' ').filter(Boolean).slice(0,10),
+          file_url:p.file_url||p.large_file_url||'',
+          preview_url:p.preview_file_url||'',
+          sample_url:p.large_file_url||p.file_url||'',
+          width:parseInt(p.image_width)||0,height:parseInt(p.image_height)||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('Danbooru: proxy failed (max 2 tags on free tier)');
+  }
+
+  if(apiSrc==='konachan'){
+    const url=`https://konachan.com/post.json?tags=${tag}&limit=${limit}&page=${page}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const posts=await r.json();
+        if(!Array.isArray(posts)||!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:parseInt(p.score)||0,
+          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
+          file_url:p.file_url||'',
+          preview_url:p.preview_url||'',
+          sample_url:p.sample_url||'',
+          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('Konachan: proxy failed');
+  }
+
+  if(apiSrc==='yandere'){
+    const url=`https://yande.re/post.json?tags=${tag}&limit=${limit}&page=${page}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const posts=await r.json();
+        if(!Array.isArray(posts)||!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:parseInt(p.score)||0,
+          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
+          file_url:p.file_url||'',
+          preview_url:p.preview_url||'',
+          sample_url:p.sample_url||'',
+          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('Yande.re: proxy failed');
+  }
+
+  if(apiSrc==='safebooru'){
+    const url=`https://safebooru.org/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${tag}`;
+    for(const mkP of PROXY_LIST){
+      try{
+        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
+        if(!r.ok)continue;
+        const posts=await r.json();
+        if(!Array.isArray(posts)||!posts.length)continue;
+        return posts.map(p=>({
+          id:p.id,score:0,
+          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
+          file_url:p.file_url?`https://safebooru.org/images/${p.directory}/${p.image}`:'',
+          preview_url:p.preview_url||`https://safebooru.org/thumbnails/${p.directory}/thumbnail_${p.image}`,
+          sample_url:'',
+          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
+        }));
+      }catch{continue;}
+    }
+    throw new Error('Safebooru: proxy failed');
+  }
+
+  if(apiSrc==='paheal'){
+    if(!S.serverUrl||!S.serverOk)throw new Error('Paheal requires the Python server');
+    const p=new URLSearchParams({tags,limit,pid,source:'paheal'});
+    const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
+    if(!r.ok)throw new Error(`Paheal server ${r.status}`);
+    return await r.json();
+  }
+
+  throw new Error(`Unknown source: ${apiSrc}`);
+}
 
 async function fetchR34(append=false){
   const rawTag=$('r4-tag').value.trim();
   const sort=$('r4-sort').value;
   const apiSrc=$('r4-api').value;
   if(!rawTag){toast('Enter at least one tag','err');return;}
-  if(S.r4.loading)return;S.r4.loading=true;
+  if(S.r4.loading)return;
+  S.r4.loading=true;
   const btn=$('r4-go');btn.disabled=true;btn.textContent='Searching…';
+  const boardName=R4_NAMES[apiSrc]||apiSrc;
   if(!append){
     Object.assign(S.r4,{tag:rawTag,sort,apiSrc,pid:0,all:[],filtered:[],mf:'all'});
     document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m==='all'));
     $('r4grid').innerHTML='';
-    $('r4state').innerHTML=`<span class="big">⏳</span>Searching ${apiSrc} for: <span class="hl-p">${esc(rawTag)}</span>`;$('r4state').style.display='block';
+    $('r4state').innerHTML=`<span class="big">⏳</span>Searching <span class="hl-p">${boardName}</span> for: <span style="color:var(--gold)">${esc(rawTag)}</span>`;
+    $('r4state').style.display='block';
   }
   try{
     const limit=40;
     const pid=append?Math.floor(S.r4.all.length/limit):0;
-    const cleanTag=rawTag.trim();
-    let posts=[];
-
-    if(apiSrc==='e621'){
-      /* ── e621 works via proxy ── */
-      const url=`https://e621.net/posts.json?tags=${encodeURIComponent(cleanTag)}&limit=${limit}&page=${pid+1}`;
-      for(const mkP of PROXY_LIST){
-        try{
-          const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(12000)});
-          if(!r.ok)continue;
-          const d=JSON.parse(await r.text());
-          posts=(d?.posts||[]).map(p=>({
-            id:p.id,score:p.score?.total||0,
-            tags:Object.values(p.tags||{}).flat().slice(0,8),
-            file_url:p.file?.url||'',
-            preview_url:p.preview?.url||'',
-            sample_url:p.sample?.url||'',
-            width:p.file?.width||0,height:p.file?.height||0,
-          }));
-          if(posts.length)break;
-        }catch{continue;}
-      }
-    } else if(apiSrc==='rule34xxx'||apiSrc==='paheal'){
-      /* ── .xxx and .paheal: server only ── */
-      if(S.serverUrl&&S.serverOk){
-        try{
-          const p=new URLSearchParams({tags:cleanTag,limit,pid,source:apiSrc});
-          const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
-          if(r.ok){
-            posts=await r.json();
-            if(!Array.isArray(posts))posts=[];
-          }else if(r.status===403){
-            throw new Error(`rule34.xxx is protected by Cloudflare WAF and blocked the server request.\nTry switching to e621 in the source dropdown — it always works ✓`);
-          }else{
-            throw new Error(`Server returned ${r.status}`);
-          }
-        }catch(e){throw new Error(e.message);}
-      } else {
-        throw new Error(`${apiSrc} requires your Python server to be running`);
-      }
-    }
-
+    const rawPosts=await _fetchBooru(apiSrc,rawTag,limit,pid);
+    const posts=Array.isArray(rawPosts)?rawPosts:[];
     S.r4.hasMore=posts.length>=limit;
     const mapped=posts.map(p=>{
       const url=String(p.file_url||'');
       const ext=url.split('?')[0].split('.').pop().toLowerCase();
       const mType=ext==='mp4'||ext==='webm'?'video':ext==='gif'?'gif':'image';
       return{
-        id:p.id,score:parseInt(p.score)||0,
-        tags:(Array.isArray(p.tags)?p.tags:String(p.tags||'').split(' ')).filter(t=>t&&!t.startsWith('sort:')).slice(0,8),
-        fileUrl:url,previewUrl:p.preview_url||p.sample_url||'',
+        id:String(p.id),score:parseInt(p.score)||0,
+        tags:(Array.isArray(p.tags)?p.tags:String(p.tags||'').split(' ')).filter(t=>t&&!t.startsWith('sort:')),
+        fileUrl:url,previewUrl:p.preview_url||p.sample_url||url,
+        sampleUrl:p.sample_url||url,
         width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        mType,src:'rule34',apiSrc,
+        mType,src:boardName,apiSrc,
       };
     }).filter(p=>p.fileUrl);
     S.r4.all=append?[...S.r4.all,...mapped]:mapped;
     if(append){
-      let f=S.r4.all;
-      if(S.r4.mf==='image')f=f.filter(p=>p.mType==='image');
-      if(S.r4.mf==='video')f=f.filter(p=>p.mType==='video');
-      if(S.r4.mf==='gif')f=f.filter(p=>p.mType==='gif');
+      let f=applyR4FilterData(S.r4.all,S.r4.mf);
       S.r4.filtered=f;renderR4Grid(true);
-      $('r4si-m').textContent=`${S.r4.all.length} results · ${f.length} shown`;
+      $('r4si-m').textContent=`${S.r4.all.length} posts · ${f.length} shown`;
     }else{
       applyR4Filter(S.r4.mf);
     }
-    $('r4si').classList.add('on');$('r4si-n').textContent=`${cleanTag} (${apiSrc})`;$('r4si-m').textContent=`${S.r4.all.length} results`;
+    $('r4si').classList.add('on');
+    $('r4si-n').textContent=`${esc(rawTag)} — ${boardName}`;
+    $('r4si-m').textContent=`${S.r4.all.length} posts`;
     if(S.r4.all.length)$('r4state').style.display='none';
-    else{$('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span> on ${apiSrc}<br/>Try different tags or source`;$('r4state').style.display='block';}
+    else{
+      $('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span> on ${boardName}<br/><span style="font-size:.6rem;color:var(--tm)">Try fewer or different tags</span>`;
+      $('r4state').style.display='block';
+    }
   }catch(e){
-    const msg=e.message||'R34 error';
-    $('r4state').innerHTML=`<span class="big">⚠️</span><span class="hl-p">${esc(msg)}</span>`;
+    const msg=e.message||'Search error';
+    $('r4state').innerHTML=`<span class="big">⚠️</span><b>${boardName}</b><br/><span style="color:var(--tm);font-size:.65rem">${esc(msg)}</span>`;
     $('r4state').style.display='block';
     toast(msg,'err',5000);
-  }finally{S.r4.loading=false;btn.disabled=false;btn.textContent='Search R34';hideAutoLoad('r4-autoload');}
+  }finally{
+    S.r4.loading=false;
+    btn.disabled=false;
+    btn.textContent='Search';
+    hideAutoLoad('r4-autoload');
+  }
 }
-function loadMoreR4(){if(!S.r4.hasMore||S.r4.loading)return;$('r4-tag').value=S.r4.tag;$('r4-sort').value=S.r4.sort;if($('r4-api'))$('r4-api').value=S.r4.apiSrc||'rule34xxx';fetchR34(true);}
+
+function applyR4FilterData(all,type){
+  if(type==='image')return all.filter(p=>p.mType==='image');
+  if(type==='video')return all.filter(p=>p.mType==='video');
+  if(type==='gif')return all.filter(p=>p.mType==='gif');
+  return all;
+}
+
+function loadMoreR4(){
+  if(!S.r4.hasMore||S.r4.loading)return;
+  $('r4-tag').value=S.r4.tag;
+  $('r4-sort').value=S.r4.sort;
+  if($('r4-api'))$('r4-api').value=S.r4.apiSrc||'gelbooru';
+  fetchR34(true);
+}
 function loadMoreR(){if(!S.rd.after||S.rd.loading)return;$('r-sub').value=S.rd.sub;$('r-sort').value=S.rd.sort;$('r-time').value=S.rd.time;fetchReddit(true);}
 
 /* ══════════════════════════════════════════════════════════
@@ -1700,12 +1861,9 @@ if(r4Sentinel){
 
 function setR4F(btn,type){document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m===type));S.r4.mf=type;applyR4Filter(type);}
 function applyR4Filter(type){
-  let f=S.r4.all;
-  if(type==='image')f=f.filter(p=>p.mType==='image');
-  if(type==='video')f=f.filter(p=>p.mType==='video');
-  if(type==='gif')f=f.filter(p=>p.mType==='gif');
+  const f=applyR4FilterData(S.r4.all,type);
   S.r4.filtered=f;renderR4Grid(false);
-  $('r4si-m').textContent=`${S.r4.all.length} results · ${f.length} shown`;
+  $('r4si-m').textContent=`${S.r4.all.length} posts · ${f.length} shown`;
 }
 function renderR4Grid(append=false){
   const g=$('r4grid');
@@ -1884,19 +2042,23 @@ function openR34Post(post){
   const isVid=post.mType==='video';
   const isGif=post.mType==='gif';
   const mType=(isVid||isGif)?'video':'image';
-  const tagLinks=post.tags.map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');closePlayer()" style="cursor:pointer">${esc(t)}</span>`).join('');
-  const srcLabel=post.apiSrc==='e621'?'e621.net':post.apiSrc==='paheal'?'rule34.paheal.net':'rule34.xxx';
-  const viewUrl=post.apiSrc==='e621'
-    ?`https://e621.net/posts/${post.id}`
-    :post.apiSrc==='paheal'
-    ?`https://rule34.paheal.net/post/view/${post.id}`
-    :`https://rule34.xxx/index.php?page=post&s=view&id=${post.id}`;
+  const tagLinks=post.tags.slice(0,12).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');closePlayer()" style="cursor:pointer">${esc(t)}</span>`).join('');
+  const boardUrls={
+    gelbooru:`https://gelbooru.com/index.php?page=post&s=view&id=${post.id}`,
+    e621:`https://e621.net/posts/${post.id}`,
+    danbooru:`https://danbooru.donmai.us/posts/${post.id}`,
+    konachan:`https://konachan.com/post/show/${post.id}`,
+    yandere:`https://yande.re/post/show/${post.id}`,
+    paheal:`https://rule34.paheal.net/post/view/${post.id}`,
+    safebooru:`https://safebooru.org/index.php?page=post&s=view&id=${post.id}`,
+  };
+  const viewUrl=boardUrls[post.apiSrc]||`#`;
   launchPlayer({
-    src:post.fileUrl, title:`${srcLabel} #${post.id}`, accent:'pr',
-    meta:`<span style="color:var(--pur)">${srcLabel}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
+    src:post.fileUrl,title:`${post.src} #${post.id}`,accent:'pr',
+    meta:`<span style="color:var(--pur)">${esc(post.src)}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
     actions:`<a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View on site ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘ Copy</button>`,
     extra:`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`,
-    mediaType:mType, loop:isGif, showRelated:false,
+    mediaType:mType,loop:isGif,showRelated:false,
   });
 }
 
