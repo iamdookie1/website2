@@ -372,6 +372,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 
 /* ═══ TOAST ═════════════════════════════════════════════════ */
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
+@media(max-width:870px){.tbox{bottom:calc(56px + .7rem);right:.7rem;left:.7rem;}}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
 .tst.err{border-left-color:#C0392B;}.tst.ok{border-left-color:#4CAF50;}.tst.info{border-left-color:var(--red);}.tst.pur{border-left-color:var(--pur);}
 
@@ -414,8 +415,134 @@ body.reddit-only #nsw{opacity:.2;pointer-events:none;}
 body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 /* ═══ RESPONSIVE ════════════════════════════════════════════ */
-@media(max-width:870px){.ml{grid-template-columns:1fr;}.sb{display:none;}.ca{padding:1.05rem;}}
-@media(max-width:560px){.topbar{padding:.65rem .82rem;}.hero-b{padding:1.25rem;}.iso-row{flex-direction:column;}.pinfo{grid-template-columns:1fr;}}
+/* ═══ BOTTOM NAV (mobile only) ══════════════════════════════ */
+#bnav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:810;
+  background:var(--bg1);border-top:1px solid var(--bdr);
+  height:56px;
+  grid-template-columns:repeat(5,1fr);
+  align-items:stretch;
+  backdrop-filter:blur(14px);
+}
+.bn{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.14rem;background:none;border:none;color:var(--tm);cursor:pointer;
+  font-family:'DM Mono',monospace;font-size:.46rem;letter-spacing:.07em;
+  padding:.3rem 0;transition:color .18s;}
+.bn.on{color:var(--gold);}
+.bn .bni{font-size:1.1rem;line-height:1;}
+.bn.r.on{color:var(--red);}
+.bn.p.on{color:var(--pur);}
+
+/* ═══ RESPONSIVE ════════════════════════════════════════════ */
+
+/* ── Tablet (≤1024px) ── */
+@media(max-width:1024px){
+  .ml{grid-template-columns:180px 1fr;}
+  .vg{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
+  .hero{height:250px;}
+}
+
+/* ── Hide sidebar, show bottom nav (≤870px) ── */
+@media(max-width:870px){
+  .ml{grid-template-columns:1fr;}
+  .sb{display:none;}
+  .ca{padding:.85rem;}
+  #bnav{display:grid;}
+  /* Add bottom padding so content isn't hidden behind bottom nav */
+  #app{padding-bottom:56px;}
+  .vg{grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.65rem;}
+  .hero{height:220px;}
+  .hero-b{padding:1.1rem 1.25rem;}
+  .vc{font-size:.92em;}
+}
+
+/* ── Phone (≤600px) ── */
+@media(max-width:600px){
+  /* Topbar */
+  .topbar{padding:.6rem .85rem;gap:.5rem;}
+  .nav-logo{font-size:.75rem;letter-spacing:.18em;}
+  #nsw{max-width:none;flex:1;}
+  .ni{font-size:.7rem;padding:.38rem .75rem .38rem 1.9rem;}
+  /* Filter bar wraps nicely */
+  #fbar{padding:.42rem .85rem;gap:.35rem;}
+  .fl{display:none;} /* hide "Filter:" label on mobile */
+  .fsel{font-size:.58rem;padding:.22rem .4rem;}
+  .fchip{font-size:.52rem;padding:.18rem .55rem;}
+  /* Cards — 2 columns */
+  .vg{grid-template-columns:repeat(2,1fr);gap:.5rem;}
+  .vti{font-size:.68rem;}
+  .vm{font-size:.55rem;}
+  /* Hero compact */
+  .hero{height:180px;}
+  .hero-b{padding:.85rem 1rem;}
+  .hero-t{font-size:clamp(1rem,4vw,1.5rem);}
+  .hero-pill,.hero-m{display:none;}
+  .hero-a .btn:last-child{display:none;}
+  /* Player */
+  .pm{padding:.3rem;}
+  .ps{max-height:100dvh;border-radius:0;}
+  .ps-scroll{max-height:42vh;}
+  .pinfo{padding:.7rem .9rem;grid-template-columns:1fr;}
+  .ptitle{font-size:.88rem;}
+  .pmeta{gap:.4rem;font-size:.54rem;}
+  .par .btn{font-size:.58rem;padding:.28rem .6rem;}
+  .pxtra{padding:.4rem .9rem .6rem;font-size:.55rem;}
+  .prl{padding:.6rem .9rem;}
+  .rlg{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
+  /* Settings panel full screen */
+  .sm-panel{width:100vw;}
+  /* Iso pages (Reddit/R34) */
+  .iso-page{padding:0;}
+  .iso-row{flex-direction:column;}
+  .iso-f{min-width:unset;}
+  .iso-quick{gap:.3rem;}
+  .iso-qc{font-size:.54rem;padding:.16rem .5rem;}
+  /* Reddit grid */
+  #rgrid{grid-template-columns:repeat(2,1fr);gap:.5rem;}
+  /* R34 masonry */
+  .r4-masonry{columns:2 120px;column-gap:.4rem;}
+  /* Bottom nav text even smaller */
+  .bn{font-size:.42rem;}
+  .bn .bni{font-size:1rem;}
+  /* Toast */
+  .tbox{bottom:.7rem;right:.7rem;left:.7rem;}
+  .tst{min-width:unset;font-size:.6rem;}
+  /* Offline banner */
+  #offline-banner{font-size:.56rem;padding:.35rem .85rem;}
+}
+
+/* ── Very small phones (≤380px) ── */
+@media(max-width:380px){
+  .vg{grid-template-columns:repeat(2,1fr);gap:.4rem;}
+  .vti{font-size:.63rem;}
+  #rgrid{grid-template-columns:repeat(2,1fr);}
+  .r4-masonry{columns:2 100px;}
+  .hero{height:155px;}
+}
+
+/* ── Landscape phone (short viewport) ── */
+@media(max-height:500px) and (max-width:870px){
+  .hero{height:130px;}
+  .hero-m,.hero-pill,.hero-a .btn:last-child{display:none;}
+  #bnav{height:48px;}
+  #app{padding-bottom:48px;}
+}
+
+/* Touch targets — all tappable elements min 44×44px */
+@media(pointer:coarse){
+  .sb-lnk{padding:.6rem .5rem;}
+  .fchip,.fsel{min-height:36px;}
+  .btn{min-height:36px;}
+  .bico{width:40px;height:40px;}
+  .iso-btn{min-height:40px;}
+  .r4-go,.iso-btn{padding:.5rem 1rem;}
+  .cb{min-width:36px;min-height:36px;}
+  .pclose{width:36px;height:36px;}
+  /* Easier tap on cards */
+  .vc,.rc,.r4c{cursor:pointer;}
+}
+
 .hidden{display:none!important;}
 </style>
 </head>
@@ -861,6 +988,25 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 <div class="tbox" id="tbox" role="status" aria-live="polite"></div>
 
+<!-- ══ BOTTOM NAV (mobile) ══════════════════════════════════ -->
+<nav id="bnav" aria-label="Mobile navigation">
+  <button class="bn on" id="bn-home" onclick="bnav('home')">
+    <span class="bni">◈</span><span>Home</span>
+  </button>
+  <button class="bn" id="bn-trending" onclick="bnav('trending')">
+    <span class="bni">▲</span><span>Trending</span>
+  </button>
+  <button class="bn" id="bn-gif" onclick="bnav('gif')">
+    <span class="bni">🎞</span><span>GIFs</span>
+  </button>
+  <button class="bn r" id="bn-reddit" onclick="bnav('reddit')">
+    <span class="bni">👽</span><span>Reddit</span>
+  </button>
+  <button class="bn p" id="bn-r34" onclick="bnav('r34')">
+    <span class="bni">🔞</span><span>Booru</span>
+  </button>
+</nav>
+
 <script>
 /* ══════════════════════════════════════════════════════════
    ★  PASTE YOUR CLOUDFLARE TUNNEL URL HERE  ★
@@ -1046,8 +1192,32 @@ function exitRedditOnly(){
   $('offline-banner').classList.remove('show');
 }
 
-function showApiDownPopup(){$('api-down').classList.add('show');}
-function hideApiDownPopup(){$('api-down').classList.remove('show');}
+/* ══════════════════════════════════════════════════════════
+   BOTTOM NAV (mobile)
+══════════════════════════════════════════════════════════ */
+function bnav(name){
+  /* Map gif tab */
+  if(name==='gif'){
+    S.f.tag='gif';S.f.q='';S.page=1;
+    document.querySelectorAll('.fchip').forEach(c=>{
+      c.classList.toggle('on',c.dataset.tag==='gif');
+      c.setAttribute('aria-pressed',c.dataset.tag==='gif'?'true':'false');
+    });
+    switchView('home');
+    syncBnav('gif');
+    return;
+  }
+  switchView(name);
+  syncBnav(name);
+}
+function syncBnav(name){
+  const map={home:'bn-home',trending:'bn-trending',gif:'bn-gif',reddit:'bn-reddit',r34:'bn-r34',liked:'bn-home',new:'bn-home',top:'bn-home'};
+  document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
+  const active=$(map[name]||'bn-home');
+  if(active)active.classList.add('on');
+}
+
+
 
 /* ══════════════════════════════════════════════════════════
    VIEW SWITCHING
@@ -1073,6 +1243,7 @@ function switchView(name){
   const map={reddit:'view-reddit',r34:'view-r34',liked:'view-liked'};
   $(map[name]||'view-main').classList.add('on');
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.toggle('on',l.dataset.nav===name));
+  syncBnav(name);
   if(isLikedView){renderLiked();return;}
   if(!iso)loadVideos();
 }
