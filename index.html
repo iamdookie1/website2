@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>OBSIDIAN — Premium Streaming</title>
 <meta name="robots" content="noindex,nofollow"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -525,11 +525,52 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 }
 
 /* ── Landscape phone (short viewport) ── */
-@media(max-height:500px) and (max-width:870px){
-  .hero{height:130px;}
-  .hero-m,.hero-pill,.hero-a .btn:last-child{display:none;}
-  #bnav{height:48px;}
-  #app{padding-bottom:48px;}
+@media(max-height:500px) and (max-width:900px){
+  /* Hide bottom nav in landscape — use swipe/back instead */
+  #bnav{display:none !important;}
+  #app{padding-bottom:0 !important;}
+  /* Compact topbar */
+  .topbar{padding:.3rem .7rem;}
+  /* Hide hero in landscape — wastes vertical space */
+  .hero{display:none;}
+  /* Tighter grid */
+  .vg{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.4rem;}
+  .ca{padding:.5rem .7rem;}
+  /* Player in landscape — video takes full width, info scrolls beside it */
+  .pm{padding:0;}
+  .ps{max-height:100dvh;max-height:100vh;border-radius:0;flex-direction:row !important;align-items:stretch;}
+  .ps-media{flex:0 0 60vw;max-width:60vw;}
+  .pvw{aspect-ratio:unset !important;height:100dvh;height:100vh;}
+  #mf{aspect-ratio:unset !important;height:100dvh;height:100vh;}
+  .ps-scroll{flex:1;min-width:0;overflow-y:auto;height:100dvh;height:100vh;}
+  .pclose{top:.4rem;right:.4rem;}
+  /* Iso pages tighter */
+  .iso-page{padding:0 .5rem;}
+  .iso-hdr{padding:.5rem .7rem;}
+  /* Filter bar compact */
+  #fbar{padding:.3rem .7rem;}
+  /* Bottom nav hidden so no padding needed */
+  .tbox{bottom:.5rem;}
+}
+
+/* ── Safe area for notched phones (iPhone X+) ── */
+@supports(padding: max(0px)){
+  .topbar{
+    padding-left: max(.8rem, env(safe-area-inset-left));
+    padding-right: max(.8rem, env(safe-area-inset-right));
+  }
+  #bnav{
+    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(56px + env(safe-area-inset-bottom));
+  }
+  #app{padding-bottom: calc(56px + env(safe-area-inset-bottom));}
+  @media(max-height:500px) and (max-width:900px){
+    #app{padding-bottom:0;}
+    .pm .ps{
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
 }
 
 /* Touch targets — all tappable elements min 44×44px */
