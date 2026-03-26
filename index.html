@@ -655,7 +655,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
     <a href="#" class="nav-logo" onclick="goHome();return false;">OBSIDIAN</a>
     <div class="nsw" id="nsw" role="search">
       <input class="ni" id="srch" type="search" placeholder="Search titles, tags, studios…" autocomplete="off" aria-label="Search"/>
-      <span class="ni-ico" aria-hidden="true">⌕</span>
+      <button class="ni-ico" id="srch-btn" aria-label="Search" style="background:none;border:none;cursor:pointer;position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--tm);font-size:.9rem;padding:.2rem;transition:color .2s;" onmouseenter="this.style.color='var(--gold)'" onmouseleave="this.style.color='var(--tm)'">⌕</button>
       <div class="acl" id="acl" role="listbox"></div>
     </div>
     <nav class="nav-acts">
@@ -1015,6 +1015,13 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <span class="tslider"></span>
           </label>
         </div>
+        <div class="sm-row">
+          <span>Autoplay videos</span>
+          <label class="toggle">
+            <input type="checkbox" id="st-autoplay" onchange="ST.autoplay=this.checked;saveSettings()"/>
+            <span class="tslider"></span>
+          </label>
+        </div>
       </div>
 
       <div class="sm-sec">
@@ -1156,7 +1163,7 @@ const S={
 /* ══════════════════════════════════════════════════════════
    SETTINGS
 ══════════════════════════════════════════════════════════ */
-const DEF_SETTINGS={theme:'dark',api1:'pornhub',api2:'none',gifApi:'redgifs'};
+const DEF_SETTINGS={theme:'dark',api1:'pornhub',api2:'none',gifApi:'redgifs',autoplay:true};
 let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
 ST={...DEF_SETTINGS,...ST};
 
@@ -1172,6 +1179,7 @@ function saveApiSettings(){
 function openSM(){
   /* Sync controls */
   $('st-dark').checked=ST.theme==='dark';
+  const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
   $('sm-url').value=S.serverUrl;
   $('sm-status').style.display='none';
   $('st-api1').value=ST.api1;
@@ -1731,16 +1739,19 @@ $('clf').addEventListener('click',()=>{
 
 /* Search */
 const SUGG=['amateur','milf','lesbian','hentai','animated','teen','blowjob','creampie','solo','threesome'];
-const doS=dbn(()=>{S.f.q=$('srch').value.trim();S.page=1;loadVideos();},500);
+const doS=dbn(()=>{S.f.q=$('srch').value.trim();S.page=1;loadVideos();},400);
+function execSearch(){acl.classList.remove('open');S.f.q=$('srch').value.trim();S.page=1;loadVideos();}
 const acl=$('acl');
 $('srch').addEventListener('input',()=>{
   const v=$('srch').value.trim().toLowerCase();if(v.length<2){acl.classList.remove('open');return;}
   const m=SUGG.filter(s=>s.includes(v)).slice(0,6);if(!m.length){acl.classList.remove('open');return;}
   acl.innerHTML=m.map(s=>`<div class="aci" data-v="${esc(s)}"><span>⌕</span>${esc(s)}</div>`).join('');
   acl.classList.add('open');
-  acl.querySelectorAll('.aci').forEach(el=>{el.addEventListener('mousedown',e=>{e.preventDefault();$('srch').value=el.dataset.v;acl.classList.remove('open');doS();});});
+  acl.querySelectorAll('.aci').forEach(el=>{el.addEventListener('mousedown',e=>{e.preventDefault();$('srch').value=el.dataset.v;acl.classList.remove('open');execSearch();});});
   doS();
 });
+$('srch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();execSearch();}});
+$('srch-btn').addEventListener('click',()=>execSearch());
 document.addEventListener('click',e=>{if(!e.target.closest('.nsw'))acl.classList.remove('open');});
 
 /* ══════════════════════════════════════════════════════════
@@ -2525,16 +2536,21 @@ function launchPlayer(opts){
   if(mediaType==='iframe'){
     $('pvw').style.display='none';
     $('pfw').style.display='block';
+    $('pvw').querySelector('.co').style.display='';
     vidPause();
     $('mf').src=src;
   } else if(mediaType==='image'){
-    $('pvw').style.display='block';  /* show pvw as image container */
+    $('pvw').style.display='block';
     $('pfw').style.display='none';
     vidPause();
+    /* Hide video controls — they don't apply to images */
+    $('pvw').querySelector('.co').style.display='none';
     if(galleryItems.length>1)setGallery(galleryItems);
     else setPlayerImage(src,title);
     $('ctime').textContent='— / —';pf.style.width='0%';
   } else {
+    /* video/gif — show controls */
+    $('pvw').querySelector('.co').style.display='';
     /* video or gif → native <video> */
     vidPause();
     const v=$('mv');
@@ -2673,11 +2689,11 @@ function loadStream(url){
     v.preload='auto';
     v.src=url;
     v.load();
-    /* Play as soon as enough data is buffered — don't wait for full load */
-    const onCanPlay=()=>{v.play().catch(()=>{});v.removeEventListener('canplay',onCanPlay);};
-    v.addEventListener('canplay',onCanPlay,{once:true});
-    /* Fallback: also try playing right away (works if already cached) */
-    v.play().catch(()=>{});
+    if(ST.autoplay!==false){
+      const onCanPlay=()=>{v.play().catch(()=>{});v.removeEventListener('canplay',onCanPlay);};
+      v.addEventListener('canplay',onCanPlay,{once:true});
+      v.play().catch(()=>{});
+    }
   }
 }
 function initHls(url){
@@ -2692,7 +2708,7 @@ function initHls(url){
     });
     hlsI.loadSource(url);
     hlsI.attachMedia(v);
-    hlsI.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
+    hlsI.on(Hls.Events.MANIFEST_PARSED,()=>{if(ST.autoplay!==false)v.play().catch(()=>{});});
     hlsI.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal)toast('Stream error','err');});
   }else if(v.canPlayType('application/vnd.apple.mpegurl')){
     v.src=url;v.play().catch(()=>{});
