@@ -1698,26 +1698,43 @@ let acFocusIdx=-1;
 async function searchSubreddits(q){
   const key=q.toLowerCase();
   if(_acCache[key])return _acCache[key];
+  /* Reddit has two useful endpoints:
+     1. /subreddits/search.json — full text search, needs &include_over_18=on
+     2. /api/subreddit_autocomplete_v2.json — prefix match, fastest */
+  try{
+    /* Try the autocomplete endpoint first — fastest, prefix-based */
+    const r=await fetch(
+      `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(q)}&include_over_18=true&include_profiles=false&typeahead_active=true&limit=10`,
+      {headers:{Accept:'application/json','User-Agent':'OBSIDIAN/1.0'},
+       signal:AbortSignal.timeout(5000)}
+    );
+    if(r.ok){
+      const d=await r.json();
+      const children=(d?.data?.children||[]).map(c=>c.data);
+      const results=children
+        .filter(s=>s.over18===true && (s.active_user_count||s.accounts_active||0)>=2000)
+        .slice(0,8)
+        .map(s=>({
+          name:s.display_name||s.name,
+          active:s.active_user_count||s.accounts_active||0,
+          subs:s.subscribers||0,
+        }));
+      if(results.length){_acCache[key]=results;return results;}
+    }
+  }catch{}
+  /* Fallback: full search endpoint */
   try{
     const r=await fetch(
-      `https://www.reddit.com/subreddits/search.json?q=${encodeURIComponent(q)}&include_over_18=1&limit=20&type=sr`,
+      `https://www.reddit.com/subreddits/search.json?q=${encodeURIComponent(q)}&include_over_18=on&limit=20&raw_json=1`,
       {headers:{Accept:'application/json'},signal:AbortSignal.timeout(6000)}
     );
     if(!r.ok)return[];
     const d=await r.json();
     const results=(d?.data?.children||[])
       .map(c=>c.data)
-      .filter(s=>
-        s.over18===true &&                        /* NSFW only */
-        (s.accounts_active||0)>=2000              /* min 2k weekly active */
-      )
+      .filter(s=>s.over18===true&&(s.accounts_active||0)>=2000)
       .slice(0,8)
-      .map(s=>({
-        name:s.display_name,
-        active:s.accounts_active||0,
-        subs:s.subscribers||0,
-        title:s.title||s.display_name,
-      }));
+      .map(s=>({name:s.display_name,active:s.accounts_active||0,subs:s.subscribers||0}));
     _acCache[key]=results;
     return results;
   }catch{return[];}
@@ -1994,6 +2011,13 @@ function renderRGrid(append=false){
     }
     el.addEventListener('click',()=>openRedditPost(post));
     el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openRedditPost(post);});
+    /* Preload media on hover */
+    if((post.mType==='image'||post.mType==='gallery')&&post.mUrl){
+      let preloaded=false;
+      el.addEventListener('mouseenter',()=>{
+        if(!preloaded){preloaded=true;const i=new Image();i.referrerPolicy='no-referrer';i.src=post.mUrl;}
+      },{passive:true});
+    }
     g.appendChild(el);
   });
 }
@@ -2329,6 +2353,13 @@ function renderR4Grid(append=false){
     }
     el.addEventListener('click',()=>openR34Post(post));
     el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openR34Post(post);});
+    /* Preload full image on hover so it's ready when clicked */
+    if(post.mType==='image'&&post.fileUrl){
+      let preloaded=false;
+      el.addEventListener('mouseenter',()=>{
+        if(!preloaded){preloaded=true;const i=new Image();i.referrerPolicy='no-referrer';i.src=post.fileUrl;}
+      },{passive:true});
+    }
     g.appendChild(el);
   });
 }
@@ -2338,17 +2369,37 @@ function renderR4Grid(append=false){
 
 /* Shared image overlay inside pvw — for images shown in video wrap */
 function setPlayerImage(src,alt=''){
+  if(!src)return;
   const pvw=$('pvw');
   let img=pvw.querySelector('.pvw-img');
   if(!img){
     img=document.createElement('img');
     img.className='pvw-img';
-    img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2;';
+    img.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2;transition:opacity .15s;';
     pvw.insertBefore(img,pvw.firstChild);
   }
-  img.src=src;img.alt=alt;img.style.display='block';
+  img.alt=alt;
   img.referrerPolicy='no-referrer';
-  img.onerror=()=>{ img.style.display='none'; };
+  img.decoding='async';
+  /* Preload into a hidden Image() first — when decoded, swap src instantly */
+  const preload=new Image();
+  preload.referrerPolicy='no-referrer';
+  preload.src=src;
+  img.style.opacity='0.4'; /* dim during load */
+  preload.onload=()=>{
+    img.src=src;
+    img.style.display='block';
+    img.style.opacity='1';
+  };
+  preload.onerror=()=>{
+    /* Try direct src as fallback anyway */
+    img.src=src;
+    img.style.display='block';
+    img.style.opacity='1';
+  };
+  /* Show immediately too (for fast connections) */
+  img.src=src;
+  img.style.display='block';
 }
 function clearPlayerImage(){
   const img=$('pvw').querySelector('.pvw-img');
