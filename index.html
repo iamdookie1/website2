@@ -1928,33 +1928,36 @@ async function respondRequest(fromUser, action){
 }
 
 async function loadFriendRequests(){
-  const s=getSession();if(!s)return;
-  const r=await fetch(`${API()}/api/users/${s.username}/requests?password=${encodeURIComponent(s.password)}`,
-    {mode:'cors',signal:AbortSignal.timeout(6000)});
-  if(!r.ok)return;
-  const d=await safeJson(r)||{};
-  const reqs=d.requests||[];
-  /* Update badge */
-  const badge=$('fr-req-badge');
-  if(badge){badge.textContent=reqs.length||'';badge.style.display=reqs.length?'flex':'none';}
-  /* Render panel */
-  const body=$('frp-body');if(!body)return;
-  if(!reqs.length){
-    body.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem">No pending requests</div>`;
-    return;
+  const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/users/${s.username}/requests?password=${encodeURIComponent(s.password)}`,
+      {mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const d=await safeJson(r)||{};
+    const reqs=d.requests||[];
+    const badge=$('fr-req-badge');
+    if(badge){badge.textContent=reqs.length||'';badge.style.display=reqs.length?'flex':'none';}
+    const body=$('frp-body');if(!body)return;
+    if(!reqs.length){
+      body.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem">No pending requests</div>`;
+      return;
+    }
+    body.innerHTML=reqs.map(r=>`
+      <div class="frp-item">
+        <div class="frp-av" style="background:${r.fromPfpColor||'#C9A84C'};color:${isLight(r.fromPfpColor||'#C9A84C')?'#080808':'#fff'}">${r.fromPfpLetter||'?'}</div>
+        <div class="frp-info">
+          <div class="frp-name">${esc(r.fromDisplay||r.from)}</div>
+          <div class="frp-user">@${esc(r.from)}</div>
+        </div>
+        <div class="frp-btns">
+          <button class="btn g" onclick="respondRequest('${esc(r.from)}','accept')" style="font-size:.58rem;padding:.26rem .6rem">✓ Accept</button>
+          <button class="btn" onclick="respondRequest('${esc(r.from)}','decline')" style="font-size:.58rem;padding:.26rem .6rem;border-color:#8b2222;color:#999">✕</button>
+        </div>
+      </div>`).join('');
+  }catch(e){
+    /* Network error (tunnel down etc.) — silently ignore, will retry on next poll */
+    console.warn('[loadFriendRequests]',e.message);
   }
-  body.innerHTML=reqs.map(r=>`
-    <div class="frp-item">
-      <div class="frp-av" style="background:${r.fromPfpColor||'#C9A84C'};color:${isLight(r.fromPfpColor||'#C9A84C')?'#080808':'#fff'}">${r.fromPfpLetter||'?'}</div>
-      <div class="frp-info">
-        <div class="frp-name">${esc(r.fromDisplay||r.from)}</div>
-        <div class="frp-user">@${esc(r.from)}</div>
-      </div>
-      <div class="frp-btns">
-        <button class="btn g" onclick="respondRequest('${esc(r.from)}','accept')" style="font-size:.58rem;padding:.26rem .6rem">✓ Accept</button>
-        <button class="btn" onclick="respondRequest('${esc(r.from)}','decline')" style="font-size:.58rem;padding:.26rem .6rem;border-color:#8b2222;color:#999">✕</button>
-      </div>
-    </div>`).join('');
 }
 function openFrReqPanel(){$('fr-req-panel').classList.add('on');loadFriendRequests();}
 function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
@@ -1962,6 +1965,7 @@ function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
 /* ── Chat system ── */
 let _chatWith=null,_chatPoll=null,_chatLastTs=0,_unread={};
 let _replyTo=null,_editingId=null;
+let _notifTimer=null;
 const QUICK_REACTS=['👍','❤️','😂','😮','😢','🔥','💯','👀'];
 window._msgCache={};window._friendCache=null;
 
