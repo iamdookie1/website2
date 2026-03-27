@@ -505,9 +505,12 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .react-chip .react-n{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm);}
 
 /* media in chat */
-.chat-img,.chat-vid{max-width:100%;max-height:260px;display:block;border-radius:6px;
-  margin-top:.3rem;border:1px solid var(--bdr);}
-.chat-img{cursor:pointer;}
+.chat-img{max-width:100%;max-height:260px;display:block;border-radius:6px;margin-top:.3rem;border:1px solid var(--bdr);cursor:pointer;transition:opacity .15s;}
+.chat-img:hover{opacity:.88;}
+.chat-vid{max-width:100%;max-height:260px;display:block;border-radius:6px;margin-top:.3rem;border:1px solid var(--bdr);}
+.chat-vid-thumb{position:relative;display:inline-block;margin-top:.3rem;cursor:pointer;max-width:100%;}
+.chat-vid-thumb:hover>div:last-child{background:rgba(0,0,0,.15);}
+.chat-vid-thumb:hover div>div{transform:scale(1.08);}
 .msg-bubble h1,.msg-bubble h2,.msg-bubble h3{color:var(--tp);}
 .msg-bubble h1{font-size:1rem;font-weight:900;margin:.18rem 0;}
 .msg-bubble h2{font-size:.86rem;font-weight:700;margin:.14rem 0;}
@@ -1038,7 +1041,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
            ondrop="handleMediaDrop(event)">
         <div style="font-size:1.8rem;margin-bottom:.4rem" id="media-drop-icon">🖼</div>
         <div id="media-drop-label">Click to choose a file or drag & drop</div>
-        <div style="font-size:.55rem;margin-top:.3rem;opacity:.6" id="media-drop-sub">PNG, JPG, GIF, WEBP up to 25MB</div>
+        <div style="font-size:.55rem;margin-top:.3rem;opacity:.6" id="media-drop-sub">PNG, JPG, GIF, WEBP up to 50MB</div>
       </div>
       <input type="file" id="media-file-inp" style="display:none" onchange="handleMediaFile(event)"/>
       <div style="text-align:center;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:.6rem">— or paste a URL —</div>
@@ -2255,9 +2258,16 @@ function renderMsg(msg,myUsername,_,friendData){
   const deleted=msg.deleted===1||msg.content==='[Message deleted]';
   let content='';
   if(deleted)content='<em style="opacity:.5">[Message deleted]</em>';
-  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="window.open(this.src)" referrerpolicy="no-referrer"/>`;
-  else if(msg.mtype==='gif')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" referrerpolicy="no-referrer"/>`;
-  else if(msg.mtype==='video'){const u=msg.content;content=u.match(/\.(mp4|webm|mov)(\?|$)/i)?`<video class="chat-vid" src="${esc(u)}" controls playsinline preload="metadata"></video>`:`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--gold);font-size:.65rem">${esc(u)}</a>`;}
+  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia('${esc(msg.content)}','image')" referrerpolicy="no-referrer"/>`;
+  else if(msg.mtype==='gif')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia('${esc(msg.content)}','gif')" style="cursor:pointer" referrerpolicy="no-referrer"/>`;
+  else if(msg.mtype==='video'){const u=msg.content;content=u.match(/\.(mp4|webm|mov|m3u8)(\?|$)/i)
+      ?`<div class="chat-vid-thumb" onclick="openChatMedia('${esc(u)}','video')" title="Play video">
+          <video src="${esc(u)}" preload="metadata" style="max-width:100%;max-height:220px;display:block;border-radius:6px;pointer-events:none;border:1px solid var(--bdr)"></video>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(0,0,0,.3)">
+            <div style="width:48px;height:48px;border-radius:50%;background:rgba(201,168,76,.9);display:flex;align-items:center;justify-content:center;font-size:1.4rem;padding-left:4px">▶</div>
+          </div>
+        </div>`
+      :`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--gold);font-size:.65rem;word-break:break-all">${esc(u)}</a>`;}
   else content=renderMarkdown(msg.content);
 
   const editedHtml=(!deleted&&msg.edited)?'<span class="msg-edited">(edited)</span>':'';
@@ -2469,7 +2479,7 @@ function handleMediaFile(e){
   e.target.value=''; /* reset so same file can be picked again */
   if(!file)return;
   closeAttachMenu();
-  if(file.size>25*1024*1024){toast('Max 25MB','err');return;}
+  if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
   /* Compress images before sending */
   if(file.type.startsWith('image/')&&file.type!=='image/gif'){
     _compressAndSend(file);
@@ -2893,7 +2903,7 @@ function switchMediaTab(t){
   const mt=$('mt-'+t);if(mt)mt.classList.add('on');
   const icons={image:'🖼',gif:'🎞',video:'🎬'};
   const labels={image:'Click to choose an image or drag & drop',gif:'Choose a GIF file or paste URL',video:'Paste a video URL below'};
-  const subs={image:'PNG, JPG, WEBP up to 25MB',gif:'GIF or animated WebP',video:'MP4, WebM or video link'};
+  const subs={image:'PNG, JPG, WEBP up to 50MB',gif:'GIF or animated WebP',video:'MP4, WebM or video link'};
   const di=$('media-drop-icon'),dl=$('media-drop-label'),ds=$('media-drop-sub'),dd=$('media-drop');
   if(di)di.textContent=icons[t];
   if(dl)dl.textContent=labels[t];
@@ -4350,6 +4360,24 @@ function clearGallery(){
 }
 
 /* Core player launcher */
+
+/* ── Open chat media in the full player/lightbox ── */
+function openChatMedia(src, type, title){
+  /* For base64 images, just use image lightbox mode */
+  launchPlayer({
+    src,
+    title: title||'',
+    mediaType: type==='gif' ? 'video'   /* gifs play as looped video */
+             : type==='video' ? 'video'
+             : 'image',
+    loop: type==='gif',
+    accent: 'go',
+    meta: '',
+    actions: '',
+    showRelated: false,
+  });
+}
+
 function launchPlayer(opts){
   /* opts: {src, title, meta (html), actions (html), accent, extra (html),
             showRelated, mediaType, galleryItems, loop, thumb} */
