@@ -762,6 +762,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="sb-lnk r4" data-nav="r34"><span>🔞</span> Rule34 Browser <span class="sb-bdg p">R34</span></div>
         <div style="padding:.25rem .5rem;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm);line-height:1.7;">Search by tags.<br/>Isolated from main feed.</div>
       </div>
+      <div class="sb-sec">
+        <div class="sb-ttl" style="color:rgba(100,200,150,.5)">Social</div>
+        <div class="sb-lnk" data-nav="friends" style="--lc:rgba(100,200,150,.7)"><span>👥</span> Friends <span class="sb-bdg" style="background:rgba(100,200,150,.25);color:rgb(100,200,150)" id="sb-friend-count"></span></div>
+      </div>
     </aside>
 
     <main class="ca">
@@ -947,6 +951,57 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
+      <!-- ── FRIENDS VIEW ── -->
+      <div id="view-friends" class="view">
+        <div class="iso-page" style="max-width:700px">
+          <div class="iso-hdr" style="border-color:rgba(100,200,150,.3)">
+            <span class="iso-hdr-ico">👥</span>
+            <div>
+              <h2>Friends — <span style="color:rgb(100,200,150)">Social</span></h2>
+              <p>Add friends and see their liked content.</p>
+            </div>
+          </div>
+
+          <!-- Not logged in -->
+          <div id="fr-no-account" style="text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);line-height:2.2;display:none">
+            <div style="font-size:2.5rem;margin-bottom:.8rem">👤</div>
+            Create an account in <strong style="color:var(--gold)">⚙ Settings</strong> to use Friends.
+            <br/>
+            <button class="btn g" onclick="openSM()" style="margin-top:.8rem">Open Settings</button>
+          </div>
+
+          <!-- Logged in -->
+          <div id="fr-main" style="display:none">
+            <!-- User card -->
+            <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
+              <div id="fr-avatar" style="width:46px;height:46px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#080808;flex-shrink:0"></div>
+              <div>
+                <div id="fr-username" style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--tp)"></div>
+                <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);margin-top:.2rem" id="fr-liked-count"></div>
+              </div>
+              <button class="btn" onclick="openSM()" style="margin-left:auto;font-size:.58rem">⚙ Account</button>
+            </div>
+
+            <!-- Add friend -->
+            <div style="margin-bottom:1.2rem">
+              <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Add Friend</div>
+              <div style="display:flex;gap:.4rem">
+                <input class="cfg-inp" id="fr-add-inp" type="text" placeholder="Username" autocomplete="off" style="flex:1"/>
+                <button class="btn g" onclick="addFriend()">Add</button>
+              </div>
+              <div id="fr-add-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;margin-top:.3rem;display:none"></div>
+            </div>
+
+            <!-- Friends list -->
+            <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Friends (<span id="fr-count">0</span>)</div>
+            <div id="fr-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
+            <div id="fr-empty" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem;display:none">
+              No friends yet. Add someone by their username!
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div>
@@ -1010,17 +1065,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="sm-sec-title">Appearance</div>
         <div class="sm-row">
           <span>Dark Mode</span>
-          <label class="toggle">
-            <input type="checkbox" id="st-dark" onchange="applyTheme(this.checked?'dark':'light')"/>
-            <span class="tslider"></span>
-          </label>
+          <label class="toggle"><input type="checkbox" id="st-dark" onchange="applyTheme(this.checked?'dark':'light')"/><span class="tslider"></span></label>
         </div>
         <div class="sm-row">
           <span>Autoplay videos</span>
-          <label class="toggle">
-            <input type="checkbox" id="st-autoplay" onchange="ST.autoplay=this.checked;saveSettings()"/>
-            <span class="tslider"></span>
-          </label>
+          <label class="toggle"><input type="checkbox" id="st-autoplay" onchange="ST.autoplay=this.checked;saveSettings()"/><span class="tslider"></span></label>
         </div>
       </div>
 
@@ -1038,56 +1087,39 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       </div>
 
       <div class="sm-sec">
-        <div class="sm-sec-title">Main Feed API Sources</div>
-        <p style="font-family:'DM Mono',monospace;font-size:.57rem;color:var(--tm);margin-bottom:.7rem;line-height:1.7">
-          Choose which APIs power Home, Trending, New &amp; Top Rated.
-          ★ = requires server &nbsp; ◉ = works direct
-        </p>
-        <div class="sm-row">
-          <span>Primary Video API</span>
-          <select id="st-api1" onchange="saveApiSettings()">
-            <option value="pornhub">★ Pornhub</option>
-            <option value="redtube">★ RedTube</option>
-            <option value="youporn">★ YouPorn</option>
-          </select>
-        </div>
-        <div class="sm-row">
-          <span>Secondary Video API</span>
-          <select id="st-api2" onchange="saveApiSettings()">
-            <option value="redtube">★ RedTube</option>
-            <option value="pornhub">★ Pornhub</option>
-            <option value="youporn">★ YouPorn</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-        <div class="sm-row">
-          <span>GIF Tab API</span>
-          <select id="st-gifapi" onchange="saveApiSettings()">
-            <option value="redgifs">★ Redgifs</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="sm-sec">
-        <div class="sm-sec-title">Available APIs</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);line-height:2.2">
-          <div>★ <strong style="color:var(--tp)">Pornhub</strong> — server required</div>
-          <div>★ <strong style="color:var(--tp)">RedTube</strong> — server required</div>
-          <div>★ <strong style="color:var(--tp)">YouPorn</strong> — server required</div>
-          <div>★ <strong style="color:var(--tp)">Reddit GIFs</strong> — server required (pulls r/nsfwgif etc.)</div>
-          <div>◉ <strong style="color:var(--tp)">Reddit NSFW</strong> — works direct</div>
-          <div>◉ <strong style="color:var(--tp)">e621</strong> — works direct (proxy)</div>
-          <div>★ <strong style="color:var(--tp)">Rule34.xxx</strong> — server required</div>
-          <div>★ <strong style="color:var(--tp)">Rule34.paheal</strong> — server required</div>
-        </div>
-      </div>
-
-      <div class="sm-sec">
         <div class="sm-sec-title">Liked Videos</div>
         <div class="sm-row">
           <span id="liked-count-label">— liked videos saved</span>
           <button class="btn" onclick="clearLiked()" style="font-size:.58rem">Clear All</button>
+        </div>
+      </div>
+
+      <div class="sm-sec" id="sm-account-sec">
+        <div class="sm-sec-title">Account</div>
+        <div id="sm-logged-out">
+          <p style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:.8rem;line-height:1.7">Create a local account to add friends and share liked content.</p>
+          <div style="display:flex;flex-direction:column;gap:.5rem">
+            <input class="cfg-inp" id="sm-user" type="text" placeholder="Username" autocomplete="off" style="width:100%"/>
+            <input class="cfg-inp" id="sm-pass" type="password" placeholder="Password" autocomplete="new-password" style="width:100%"/>
+            <div style="display:flex;gap:.4rem;justify-content:flex-end">
+              <button class="btn" onclick="accLogin()">Log In</button>
+              <button class="btn g" onclick="accCreate()">Create Account</button>
+            </div>
+            <div id="sm-acc-err" style="font-family:'DM Mono',monospace;font-size:.58rem;color:#C0392B;display:none"></div>
+          </div>
+        </div>
+        <div id="sm-logged-in" style="display:none">
+          <div class="sm-row" style="margin-bottom:.6rem">
+            <span id="sm-acc-name" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700"></span>
+            <button class="btn" onclick="accLogout()" style="font-size:.58rem">Log Out</button>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:.5rem">Share your username so friends can add you.</div>
+          <div style="display:flex;gap:.4rem;margin-bottom:.6rem">
+            <input class="cfg-inp" id="sm-add-friend" type="text" placeholder="Friend's username" autocomplete="off" style="flex:1"/>
+            <button class="btn g" onclick="addFriend()">Add</button>
+          </div>
+          <div id="sm-acc-err2" style="font-family:'DM Mono',monospace;font-size:.58rem;color:#C0392B;display:none;margin-bottom:.4rem"></div>
+          <div id="sm-friends-list" style="display:flex;flex-direction:column;gap:.3rem;max-height:180px;overflow-y:auto"></div>
         </div>
       </div>
 
@@ -1105,14 +1137,14 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <button class="bn" id="bn-trending" onclick="bnav('trending')">
     <span class="bni">▲</span><span>Trending</span>
   </button>
-  <button class="bn" id="bn-gif" onclick="bnav('gif')">
-    <span class="bni">🎞</span><span>GIFs</span>
-  </button>
   <button class="bn r" id="bn-reddit" onclick="bnav('reddit')">
     <span class="bni">👽</span><span>Reddit</span>
   </button>
   <button class="bn p" id="bn-r34" onclick="bnav('r34')">
     <span class="bni">🔞</span><span>Booru</span>
+  </button>
+  <button class="bn" id="bn-friends" onclick="bnav('friends')" style="--bon:rgb(100,200,150)">
+    <span class="bni">👥</span><span>Friends</span>
   </button>
 </nav>
 
@@ -1168,24 +1200,14 @@ let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
 ST={...DEF_SETTINGS,...ST};
 
 function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));}
-function saveApiSettings(){
-  ST.api1=$('st-api1').value;
-  ST.api2=$('st-api2').value;
-  ST.gifApi=$('st-gifapi').value;
-  saveSettings();
-  toast('API settings saved','ok',2000);
-}
 
 function openSM(){
-  /* Sync controls */
   $('st-dark').checked=ST.theme==='dark';
   const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
   $('sm-url').value=S.serverUrl;
   $('sm-status').style.display='none';
-  $('st-api1').value=ST.api1;
-  $('st-api2').value=ST.api2;
-  $('st-gifapi').value=ST.gifApi;
   $('liked-count-label').textContent=`${getLiked().length} liked videos saved`;
+  refreshAccountUI();
   $('settings-modal').classList.add('on');
 }
 function closeSM(){$('settings-modal').classList.remove('on');}
@@ -1244,6 +1266,165 @@ async function retryServer(){
     loadVideos();
   }else{
     toast('Still offline','err',2500);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ACCOUNT & FRIENDS SYSTEM
+   Accounts stored locally. Friends stored per-account.
+   No server needed — each user exports/shares their liked list.
+══════════════════════════════════════════════════════════ */
+function getAccounts(){try{return JSON.parse(localStorage.getItem('obs_accounts')||'{}');}catch{return{};}}
+function saveAccounts(a){localStorage.setItem('obs_accounts',JSON.stringify(a));}
+function getCurrentUser(){return localStorage.getItem('obs_current_user')||null;}
+function setCurrentUser(u){if(u)localStorage.setItem('obs_current_user',u);else localStorage.removeItem('obs_current_user');}
+
+function accCreate(){
+  const user=$('sm-user').value.trim();
+  const pass=$('sm-pass').value;
+  const err=$('sm-acc-err');err.style.display='none';
+  if(!user||user.length<2){err.textContent='Username must be at least 2 characters';err.style.display='block';return;}
+  if(!pass||pass.length<4){err.textContent='Password must be at least 4 characters';err.style.display='block';return;}
+  if(!/^[a-zA-Z0-9_]+$/.test(user)){err.textContent='Only letters, numbers and _ allowed';err.style.display='block';return;}
+  const accounts=getAccounts();
+  if(accounts[user.toLowerCase()]){err.textContent='Username already taken';err.style.display='block';return;}
+  /* Simple hash — not cryptographic but fine for local storage */
+  accounts[user.toLowerCase()]={username:user,passHash:simpleHash(pass),friends:[],created:Date.now()};
+  saveAccounts(accounts);
+  setCurrentUser(user.toLowerCase());
+  toast(`Welcome, ${user}!`,'ok',3000);
+  refreshAccountUI();
+}
+function accLogin(){
+  const user=$('sm-user').value.trim().toLowerCase();
+  const pass=$('sm-pass').value;
+  const err=$('sm-acc-err');err.style.display='none';
+  const accounts=getAccounts();
+  const acc=accounts[user];
+  if(!acc){err.textContent='Account not found';err.style.display='block';return;}
+  if(acc.passHash!==simpleHash(pass)){err.textContent='Wrong password';err.style.display='block';return;}
+  setCurrentUser(user);
+  toast(`Welcome back, ${acc.username}!`,'ok',2500);
+  refreshAccountUI();
+}
+function accLogout(){
+  setCurrentUser(null);
+  refreshAccountUI();
+  toast('Logged out','ok',2000);
+}
+function simpleHash(s){
+  /* djb2 — good enough for local-only storage */
+  let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i)|0;
+  return(h>>>0).toString(36);
+}
+function getCurrentAccount(){
+  const u=getCurrentUser();if(!u)return null;
+  const a=getAccounts();return a[u]||null;
+}
+function addFriend(){
+  const acc=getCurrentAccount();
+  if(!acc){toast('Log in first','err');return;}
+  /* Try both places the input might be */
+  const inp=$('fr-add-inp')||$('sm-add-friend');
+  const name=(inp?.value||'').trim().toLowerCase();
+  const err=$('fr-add-err')||$('sm-acc-err2');
+  if(err)err.style.display='none';
+  if(!name){if(err){err.textContent='Enter a username';err.style.display='block';}return;}
+  const accounts=getAccounts();
+  if(!accounts[name]){if(err){err.textContent=`User "${name}" not found`;err.style.display='block';}return;}
+  if(name===getCurrentUser()){if(err){err.textContent="You can't add yourself";err.style.display='block';}return;}
+  const u=getCurrentUser();
+  if(!accounts[u].friends)accounts[u].friends=[];
+  if(accounts[u].friends.includes(name)){if(err){err.textContent='Already friends';err.style.display='block';}return;}
+  accounts[u].friends.push(name);
+  saveAccounts(accounts);
+  if(inp)inp.value='';
+  toast(`Added ${accounts[name].username}!`,'ok');
+  renderFriendsList();
+  updateFriendCount();
+}
+function removeFriend(name){
+  const u=getCurrentUser();if(!u)return;
+  const accounts=getAccounts();
+  if(!accounts[u])return;
+  accounts[u].friends=(accounts[u].friends||[]).filter(f=>f!==name);
+  saveAccounts(accounts);
+  renderFriendsList();
+  updateFriendCount();
+}
+function renderFriendsList(){
+  const acc=getCurrentAccount();
+  const list=$('fr-list');const empty=$('fr-empty');
+  if(!list||!acc)return;
+  const friends=acc.friends||[];
+  const accounts=getAccounts();
+  if(!friends.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty)empty.style.display='none';
+  list.innerHTML=friends.map(f=>{
+    const fa=accounts[f];
+    const fname=fa?.username||f;
+    const initial=fname[0].toUpperCase();
+    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .8rem;background:var(--bg2);border:1px solid var(--bdr);border-radius:0">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(100,200,150,.2);border:1px solid rgba(100,200,150,.3);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:rgb(100,200,150);font-size:.9rem;flex-shrink:0">${initial}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Playfair Display',serif;font-size:.85rem;color:var(--tp)">${esc(fname)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm)">@${esc(f)}</div>
+      </div>
+      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:none;color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;padding:.2rem .4rem;transition:color .15s" onmouseenter="this.style.color='#C0392B'" onmouseleave="this.style.color='var(--tm)'">Remove</button>
+    </div>`;
+  }).join('');
+}
+function updateFriendCount(){
+  const acc=getCurrentAccount();
+  const n=(acc?.friends||[]).length;
+  const el=$('sb-friend-count');if(el)el.textContent=n||'';
+  const fc=$('fr-count');if(fc)fc.textContent=n;
+}
+function refreshAccountUI(){
+  const acc=getCurrentAccount();
+  /* Settings panel */
+  const lo=$('sm-logged-out');const li=$('sm-logged-in');
+  if(lo&&li){
+    lo.style.display=acc?'none':'block';
+    li.style.display=acc?'block':'none';
+    if(acc){
+      const el=$('sm-acc-name');if(el)el.textContent=acc.username;
+    }
+  }
+  /* Friends view */
+  const fno=$('fr-no-account');const fm=$('fr-main');
+  if(fno&&fm){
+    fno.style.display=acc?'none':'block';
+    fm.style.display=acc?'block':'none';
+    if(acc){
+      const av=$('fr-avatar');if(av)av.textContent=acc.username[0].toUpperCase();
+      const un=$('fr-username');if(un)un.textContent=acc.username;
+      const lc=$('fr-liked-count');if(lc)lc.textContent=`${getLiked().length} liked videos`;
+    }
+  }
+  renderFriendsList();
+  updateFriendCount();
+}
+
+/* Auto-fetch server URL from GitHub on every boot */
+async function fetchServerUrlFromGithub(){
+  try{
+    /* raw.githubusercontent.com gives plain text content */
+    const r=await fetch(
+      'https://raw.githubusercontent.com/iamdookie1/website2/main/website-api-link',
+      {signal:AbortSignal.timeout(8000),cache:'no-store'}
+    );
+    if(!r.ok)return;
+    const url=(await r.text()).trim().split('\n')[0].trim().replace(/\/$/,'');
+    if(!url||!url.startsWith('http'))return;
+    if(url!==S.serverUrl){
+      S.serverUrl=url;
+      localStorage.setItem('obs_server',url);
+      const inp=$('sm-url');if(inp)inp.value=url;
+      console.log('[GitHub] Server URL updated to:',url);
+    }
+  }catch(e){
+    console.warn('[GitHub URL]',e.message);
   }
 }
 
@@ -1386,7 +1567,7 @@ function bnav(name){
   syncBnav(name);
 }
 function syncBnav(name){
-  const map={home:'bn-home',trending:'bn-trending',gif:'bn-gif',reddit:'bn-reddit',r34:'bn-r34',liked:'bn-home',new:'bn-home',top:'bn-home'};
+  const map={home:'bn-home',trending:'bn-trending',gif:'bn-gif',reddit:'bn-reddit',r34:'bn-r34',friends:'bn-friends',liked:'bn-home',new:'bn-home',top:'bn-home'};
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const active=$(map[name]||'bn-home');
   if(active)active.classList.add('on');
@@ -1401,25 +1582,26 @@ function switchView(name){
   S.curView=name;
   const iso=name==='reddit'||name==='r34';
   const isLikedView=name==='liked';
-  /* Reset gif tag when going back to main views */
-  if(!iso&&!isLikedView&&name!=='rg-trending'&&name!=='rg-new'){
+  const isFriendsView=name==='friends';
+  const isSpecial=iso||isLikedView||isFriendsView;
+  if(!isSpecial&&name!=='rg-trending'&&name!=='rg-new'){
     if(S.f.tag==='gif'&&!name.startsWith('rg')){
-      S.f.tag='all';
-      S.f.q='';
+      S.f.tag='all';S.f.q='';
       document.querySelectorAll('.fchip').forEach(c=>{
         c.classList.toggle('on',c.dataset.tag==='all');
         c.setAttribute('aria-pressed',c.dataset.tag==='all'?'true':'false');
       });
     }
   }
-  $('fbar').classList.toggle('off',iso||isLikedView);
-  $('nsw').style.display=(iso||isLikedView)?'none':'';
+  $('fbar').classList.toggle('off',isSpecial);
+  $('nsw').style.display=isSpecial?'none':'';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
-  const map={reddit:'view-reddit',r34:'view-r34',liked:'view-liked'};
+  const map={reddit:'view-reddit',r34:'view-r34',liked:'view-liked',friends:'view-friends'};
   $(map[name]||'view-main').classList.add('on');
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.toggle('on',l.dataset.nav===name));
   syncBnav(name);
   if(isLikedView){renderLiked();return;}
+  if(isFriendsView){refreshAccountUI();return;}
   if(!iso)loadVideos();
 }
 function goHome(){switchView('home');}
@@ -1428,6 +1610,7 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
     const n=l.dataset.nav;
     if(n==='reddit'){switchView('reddit');return;}
     if(n==='r34'){switchView('r34');return;}
+    if(n==='friends'){switchView('friends');return;}
     const cm={'cat-amateur':'amateur','cat-milf':'milf','cat-teen':'teen','cat-lesbian':'lesbian'};
     const rgmap={'rg-trending':'__rg_trending__','rg-new':'__rg_new__'};
     if(rgmap[n]){S.f.q=rgmap[n];S.f.tag='gif';}
@@ -2551,11 +2734,26 @@ function launchPlayer(opts){
   } else {
     /* video/gif — show controls */
     $('pvw').querySelector('.co').style.display='';
-    /* video or gif → native <video> */
     vidPause();
     const v=$('mv');
     v.loop=loop||mediaType==='gif';
-    loadStream(src);
+    /* Set src synchronously here to keep user gesture context for autoplay */
+    v.preload='auto';
+    if(src){
+      v.src=src;
+      v.load();
+      if(ST.autoplay!==false){
+        /* play() must be called in the same synchronous call stack as the user gesture */
+        v.play().catch(()=>{
+          /* If blocked (e.g. no audio unlock yet), retry on canplay */
+          v.addEventListener('canplay',()=>v.play().catch(()=>{}),{once:true});
+        });
+      }
+    }
+    /* Still call loadStream for HLS detection */
+    if(src&&(src.includes('.m3u8')||src.includes('m3u8?'))){
+      loadStream(src);
+    }
   }
 
   $('pm').classList.add('on');
@@ -2748,10 +2946,17 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
+  /* Init account system */
+  refreshAccountUI();
+
+  /* Fetch latest server URL from GitHub (non-blocking) */
+  fetchServerUrlFromGithub().then(()=>{
+    /* After GitHub fetch, re-check if URL changed */
+    if(S.serverUrl&&!S.serverOk)checkServer(1).then(ok=>{if(ok)loadVideos();});
+  });
+
   if(S.serverUrl){
-    /* Show skeletons immediately so page looks alive */
     skels();
-    /* Wait for server check before loading real content */
     const ok=await checkServer(3);
     if(ok){
       toast('Server connected ✓','ok',2000);
@@ -2760,7 +2965,6 @@ async function bootApp(){
       showApiDownPopup();
     }
   }else{
-    /* No server configured — just load (will use whatever direct APIs work) */
     loadVideos();
   }
 }
