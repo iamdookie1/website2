@@ -5,8 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <title>OBSIDIAN — Premium Streaming</title>
 <meta name="robots" content="noindex,nofollow"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/>
+<link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/>
+<link rel="dns-prefetch" href="https://www.reddit.com"/>
+<link rel="dns-prefetch" href="https://i.redd.it"/>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/></noscript>
 <style>
 /* ═══ TOKENS ═══════════════════════════════════════════════ */
 :root{
@@ -512,7 +518,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 #bell-badge.on{display:flex;}
 
 /* ═══ CUSTOM EMOJI PICKER ═══════════════════════════════════ */
-#emoji-picker{position:fixed;z-index:2000;background:var(--bg1);border:1px solid var(--gold-d);
+#emoji-picker{position:fixed;z-index:9800;background:var(--bg1);border:1px solid var(--gold-d);
   width:320px;display:none;flex-direction:column;animation:mIn .16s ease;
   box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 0 1px rgba(201,168,76,.12);}
 #emoji-picker.on{display:flex;}
@@ -925,7 +931,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
            ondrop="handleMediaDrop(event)">
         <div style="font-size:1.8rem;margin-bottom:.4rem" id="media-drop-icon">🖼</div>
         <div id="media-drop-label">Click to choose a file or drag & drop</div>
-        <div style="font-size:.55rem;margin-top:.3rem;opacity:.6" id="media-drop-sub">PNG, JPG, GIF, WEBP up to 5MB</div>
+        <div style="font-size:.55rem;margin-top:.3rem;opacity:.6" id="media-drop-sub">PNG, JPG, GIF, WEBP up to 25MB</div>
       </div>
       <input type="file" id="media-file-inp" style="display:none" onchange="handleMediaFile(event)"/>
       <div style="text-align:center;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:.6rem">— or paste a URL —</div>
@@ -1511,7 +1517,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button class="chat-plus" id="chat-plus-btn" onclick="openMediaModal()" title="Add media">＋</button>
         <textarea class="chat-inp" id="chat-inp" placeholder="Message… (*italic* **bold** # heading)"
           onkeydown="chatKeyDown(event)" rows="1" oninput="autoResizeChatInp(this)"></textarea>
-        <button class="chat-plus" onclick="openChatEmoji()" title="Emoji" style="font-size:1.1rem" data-ep-trigger>😊</button>
+        <button class="chat-plus" onclick="openChatEmoji(this)" title="Emoji" style="font-size:1.1rem" data-ep-trigger>😊</button>
         <button class="chat-send" id="chat-send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
       </div>
     </div>
@@ -2386,7 +2392,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ── Emoji button in chat footer ── */
-function openChatEmoji(){openEmojiPicker('message',null,$('chat-send-btn'));}
+function openChatEmoji(btn){openEmojiPicker('message',null,btn||$('chat-send-btn'));}
 
 /* ══════════════════════════════════════════════════════════
    NOTIFICATION CENTER
@@ -2527,7 +2533,7 @@ function switchMediaTab(t){
   const mt=$('mt-'+t);if(mt)mt.classList.add('on');
   const icons={image:'🖼',gif:'🎞',video:'🎬'};
   const labels={image:'Click to choose an image or drag & drop',gif:'Choose a GIF file or paste URL',video:'Paste a video URL below'};
-  const subs={image:'PNG, JPG, WEBP up to 5MB',gif:'GIF or animated WebP',video:'MP4, WebM or video link'};
+  const subs={image:'PNG, JPG, WEBP up to 25MB',gif:'GIF or animated WebP',video:'MP4, WebM or video link'};
   const di=$('media-drop-icon'),dl=$('media-drop-label'),ds=$('media-drop-sub'),dd=$('media-drop');
   if(di)di.textContent=icons[t];
   if(dl)dl.textContent=labels[t];
@@ -2545,7 +2551,7 @@ function handleMediaDrop(e){
 function handleMediaFile(e){processMediaFile(e.target.files?.[0]);}
 function processMediaFile(file){
   if(!file)return;
-  if(file.size>5*1024*1024){toast('File too large (max 5MB)','err');return;}
+  if(file.size>25*1024*1024){toast('File too large (max 25MB)','err');return;}
   const reader=new FileReader();
   reader.onload=ev=>{
     const type=file.type.startsWith('image/gif')?'gif':file.type.startsWith('video/')?'video':'image';
