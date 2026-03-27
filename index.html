@@ -1792,6 +1792,58 @@ async function removeFriend(name){
   renderFriendsList();updateFriendCount();
 }
 
+function updateFriendCount(){
+  const s=getSession();
+  const n=(s?.friends||[]).length;
+  const el=$('sb-friend-count');if(el)el.textContent=n||'';
+  const fc=$('fr-count');if(fc)fc.textContent=n;
+}
+
+/* ── Fetch and render the friends list ── */
+/* Stores fetched profiles for chat opening */
+window._friendProfileCache={};
+
+async function renderFriendsList(){
+  const s=getSession();
+  const list=$('fr-list');const empty=$('fr-empty');
+  if(!list||!s)return;
+  const friends=s.friends||[];
+  if(!friends.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
+  if(empty)empty.style.display='none';
+  /* Fetch all friend profiles in parallel */
+  const profiles={};
+  await Promise.allSettled(friends.map(async f=>{
+    try{
+      const r=await fetch(`${API()}/api/users/${f}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      if(r.ok){const p=await safeJson(r);if(p){profiles[f]=p;window._friendProfileCache[f]=p;}}
+    }catch{}
+  }));
+  list.innerHTML=friends.map(f=>{
+    const p=profiles[f]||{};
+    const display=p.display||f;
+    const color=p.pfpColor||'#555';
+    const letter=p.pfpLetter||display[0].toUpperCase();
+    const lightText=isLight(color)?'#080808':'#fff';
+    const unread=_unread[f]||0;
+    const bio=p.bio?`<div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);margin-top:.18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">${esc(p.bio)}</div>`:'';
+    const pStr=JSON.stringify(p).replace(/"/g,'&quot;');
+    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem .8rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.35rem">
+      <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;color:${lightText};font-size:1rem;flex-shrink:0;cursor:pointer" onclick="viewProfile('${esc(f)}')">${esc(letter)}</div>
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="viewProfile('${esc(f)}')">
+        <div style="font-family:'Playfair Display',serif;font-size:.88rem;color:var(--tp)">${esc(display)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.53rem;color:var(--tm)">@${esc(f)}</div>
+        ${bio}
+      </div>
+      <div style="position:relative;cursor:pointer" onclick="openChat('${esc(f)}',${pStr})">
+        <div class="fr-chat-btn" title="Message ${esc(display)}">💬</div>
+        <div class="fr-unread${unread>0?' on':''}" data-chat-unread="${esc(f)}">${unread>9?'9+':unread||''}</div>
+      </div>
+      <button onclick="viewProfile('${esc(f)}')" style="background:none;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;padding:.18rem .45rem;transition:all .15s" onmouseenter="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Profile</button>
+      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;padding:.18rem .45rem;transition:all .15s" onmouseenter="this.style.borderColor='#C0392B';this.style.color='#C0392B'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Remove</button>
+    </div>`;
+  }).join('');
+}
+
 /* ── Markdown renderer (safe subset, no links) ── */
 function renderMarkdown(raw){
   let s=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
