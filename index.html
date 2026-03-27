@@ -1515,7 +1515,17 @@ function setSession(data){
 
 const API = ()=>S.serverUrl;
 
+/* Safe JSON parse — returns null instead of throwing on HTML error pages */
+async function safeJson(response){
+  try{
+    const ct=response.headers.get('content-type')||'';
+    if(!ct.includes('application/json'))return null;
+    return await response.json();
+  }catch{return null;}
+}
+
 async function apiCall(path,body=null,method='POST'){
+  if(!S.serverUrl||!S.serverOk)return{error:'Server offline — start your server and reconnect'};
   const url=`${API()}${path}`;
   try{
     const r=await fetch(url,{
@@ -1524,8 +1534,20 @@ async function apiCall(path,body=null,method='POST'){
       ...(body?{body:JSON.stringify(body)}:{}),
       signal:AbortSignal.timeout(8000),
     });
-    return await r.json();
+    /* Check Content-Type before parsing — HTML means server returned an error page */
+    const ct=r.headers.get('content-type')||'';
+    if(!ct.includes('application/json')){
+      const text=await r.text().catch(()=>'');
+      console.warn('[apiCall] Non-JSON response from',path,'status',r.status,text.slice(0,120));
+      return{error:`Server error (${r.status}) — check your tunnel is running`};
+    }
+    const d=await r.json();
+    return d;
   }catch(e){
+    if(e.name==='TimeoutError'||e.name==='AbortError')
+      return{error:'Request timed out — server may be offline'};
+    if(e instanceof SyntaxError)
+      return{error:'Server returned invalid response — check tunnel connection'};
     return{error:e.message||'Network error'};
   }
 }
@@ -1540,11 +1562,11 @@ async function accCreate(){
   err.textContent='Creating…';err.style.color='var(--tm)';err.style.display='block';
   const d=await apiCall('/api/users/register',{username:user,password:pass,display:user});
   err.style.color='#C0392B';
-  if(d.error){err.textContent=d.error;return;}
+  if(d.error||!d.user){err.textContent=d.error||'Registration failed — check server connection';return;}
   setSession({...d.user,password:pass});
   $('sm-user').value='';$('sm-pass').value='';
   err.style.display='none';
-  toast(`Welcome, ${d.user.display||user}! 🎉`,'ok',3000);
+  toast(`Welcome, ${d.user?.display||user}! 🎉`,'ok',3000);
   refreshAccountUI();
 }
 
@@ -1556,16 +1578,16 @@ async function accLogin(){
   err.textContent='Logging in…';err.style.color='var(--tm)';err.style.display='block';
   const d=await apiCall('/api/users/login',{username:user,password:pass});
   err.style.color='#C0392B';
-  if(d.error){err.textContent=d.error;return;}
+  if(d.error||!d.user){err.textContent=d.error||'Login failed — check server connection';return;}
   /* Also fetch public profile to get bio, pfpColor, etc. */
   try{
     const r=await fetch(`${API()}/api/users/${user}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-    if(r.ok){const full=await r.json();setSession({...d.user,...full,password:pass});}
+    if(r.ok){const full=await safeJson(r);if(full)setSession({...d.user,...full,password:pass});else setSession({...d.user,password:pass});}
     else{setSession({...d.user,password:pass});}
   }catch{setSession({...d.user,password:pass});}
   $('sm-user').value='';$('sm-pass').value='';
   err.style.display='none';
-  toast(`Welcome back, ${d.user.display||user}!`,'ok',2500);
+  toast(`Welcome back, ${d.user?.display||user}!`,'ok',2500);
   refreshAccountUI();
 }
 
@@ -1710,7 +1732,7 @@ async function loadFriendRequests(){
   const r=await fetch(`${API()}/api/users/${s.username}/requests?password=${encodeURIComponent(s.password)}`,
     {mode:'cors',signal:AbortSignal.timeout(6000)});
   if(!r.ok)return;
-  const d=await r.json();
+  const d=await safeJson(r)||{};
   const reqs=d.requests||[];
   /* Update badge */
   const badge=$('fr-req-badge');
@@ -1892,7 +1914,7 @@ async function openChat(friendUsername,friendData){
   $('chat-modal').classList.add('on');document.body.style.overflow='hidden';
   try{
     const r=await fetch(`${API()}/api/chat/history?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}&limit=80`,{mode:'cors',signal:AbortSignal.timeout(8000)});
-    const d=await r.json();
+    const d=await safeJson(r)||{};
     const msgs=d.messages||[];
     _chatLastTs=msgs.length?msgs[msgs.length-1].ts:0;
     renderChatHistory(msgs,s.username,friendData);
@@ -1919,7 +1941,7 @@ async function pollNewMessages(friendUsername,friendData){
   const s=getSession();if(!s||_chatWith!==friendUsername)return;
   try{
     const r=await fetch(`${API()}/api/chat/messages?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}&since=${_chatLastTs}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-    const d=await r.json();const msgs=d.messages||[];if(!msgs.length)return;
+    const d=await safeJson(r)||{};const msgs=d.messages||[];if(!msgs.length)return;
     _chatLastTs=msgs[msgs.length-1].ts;
     const el=$('chat-msgs');if(!el)return;
     const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
@@ -2007,7 +2029,8 @@ async function viewProfile(username){
   try{
     const r=await fetch(`${API()}/api/users/${username}`,{mode:'cors',signal:AbortSignal.timeout(6000)});
     if(!r.ok){$('pv-display').textContent='User not found';return;}
-    const u=await r.json();
+    const u=await safeJson(r);
+    if(!u){$("pv-display").textContent="User not found";return;}
     const color=u.pfpColor||'#C9A84C';const letter=u.pfpLetter||'?';
     const av=$('pv-avatar');
     av.style.background=color;av.textContent=letter;
@@ -2045,7 +2068,7 @@ async function renderFriendsList(){
   await Promise.allSettled(friends.map(async f=>{
     try{
       const r=await fetch(`${API()}/api/users/${f}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-      if(r.ok)profiles[f]=await r.json();
+      if(r.ok)profiles[f]=await safeJson(r)||{};
     }catch{}
   }));
   list.innerHTML=friends.map(f=>{
@@ -2098,7 +2121,7 @@ async function syncSessionFromServer(){
     const r=await fetch(`${API()}/api/users/${s.username}`,
       {mode:'cors',signal:AbortSignal.timeout(6000)});
     if(!r.ok)return;
-    const fresh=await r.json();
+    const fresh=await safeJson(r);
     /* Merge fresh server data into session — keep password locally */
     setSession({...s,...fresh,password:s.password});
   }catch{}
@@ -2117,7 +2140,7 @@ async function pollUnreadCounts(){
         `${API()}/api/chat/messages?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${f}&since=${since}&limit=50`,
         {mode:'cors',signal:AbortSignal.timeout(5000)});
       if(!r.ok)return;
-      const d=await r.json();
+      const d=await safeJson(r)||{};
       const msgs=d.messages||[];
       const newFromThem=msgs.filter(m=>m.sender===f);
       if(newFromThem.length){
@@ -2145,7 +2168,7 @@ async function checkNotifications(){
     const r=await fetch(`${API()}/api/users/${s.username}/notifications?password=${encodeURIComponent(s.password)}`,
       {mode:'cors',signal:AbortSignal.timeout(5000)});
     if(!r.ok)return;
-    const d=await r.json();
+    const d=await safeJson(r)||{};
     const notifs=d.notifications||[];
     if(notifs.length){
       const badge=$('bell-badge');
@@ -2226,7 +2249,8 @@ async function fetchServerUrlFromGithub(){
       'https://raw.githubusercontent.com/iamdookie1/website2/main/website-api-link',
       {signal:AbortSignal.timeout(8000),cache:'no-store'}
     );
-    if(!r.ok)return;
+    const ct=r.headers.get('content-type')||'';
+    if(!r.ok||ct.includes('text/html'))return;  /* got an error page, not the URL file */
     const url=(await r.text()).trim().split('\n')[0].trim().replace(/\/$/,'');
     if(!url||!url.startsWith('http'))return;
     if(url!==S.serverUrl){
