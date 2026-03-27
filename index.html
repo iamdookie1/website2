@@ -659,7 +659,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       <div class="acl" id="acl" role="listbox"></div>
     </div>
     <nav class="nav-acts">
-      <button class="bico" aria-label="Notifications">🔔</button>
+      <button class="bico" id="bell-btn" aria-label="Notifications" onclick="openNotifications()" title="Notifications">🔔</button>
       <button class="bico" onclick="openSM()" aria-label="Settings" title="Settings">⚙</button>
     </nav>
   </header>
@@ -1113,8 +1113,19 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <span id="sm-acc-name" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700"></span>
             <button class="btn" onclick="accLogout()" style="font-size:.58rem">Log Out</button>
           </div>
+          <!-- Edit account -->
+          <details style="margin-bottom:.6rem">
+            <summary style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);cursor:pointer;padding:.3rem 0;letter-spacing:.06em">Edit Account ▾</summary>
+            <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
+              <input class="cfg-inp" id="sm-new-display" type="text" placeholder="New display name (optional)" style="width:100%"/>
+              <input class="cfg-inp" id="sm-old-pass" type="password" placeholder="Current password ✱" style="width:100%"/>
+              <input class="cfg-inp" id="sm-new-pass" type="password" placeholder="New password (optional)" style="width:100%"/>
+              <div id="sm-edit-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;display:none"></div>
+              <button class="btn g" onclick="saveAccountChanges()" style="align-self:flex-end">Save Changes</button>
+            </div>
+          </details>
           <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:.5rem">Share your username so friends can add you.</div>
-          <div style="display:flex;gap:.4rem;margin-bottom:.6rem">
+          <div style="display:flex;gap:.4rem;margin-bottom:.3rem">
             <input class="cfg-inp" id="sm-add-friend" type="text" placeholder="Friend's username" autocomplete="off" style="flex:1"/>
             <button class="btn g" onclick="addFriend()">Add</button>
           </div>
@@ -1270,140 +1281,219 @@ async function retryServer(){
 }
 
 /* ══════════════════════════════════════════════════════════
-   ACCOUNT & FRIENDS SYSTEM
-   Accounts stored locally. Friends stored per-account.
-   No server needed — each user exports/shares their liked list.
+   ACCOUNT & FRIENDS — backed by Python server /api/users/*
+   Session cached in localStorage for offline use.
 ══════════════════════════════════════════════════════════ */
-function getAccounts(){try{return JSON.parse(localStorage.getItem('obs_accounts')||'{}');}catch{return{};}}
-function saveAccounts(a){localStorage.setItem('obs_accounts',JSON.stringify(a));}
-function getCurrentUser(){return localStorage.getItem('obs_current_user')||null;}
-function setCurrentUser(u){if(u)localStorage.setItem('obs_current_user',u);else localStorage.removeItem('obs_current_user');}
 
-function accCreate(){
+/* Session storage — password kept only in memory for API calls */
+let _SESSION = null; /* { username, display, friends, password (plaintext for API) } */
+
+function getSession(){
+  if(_SESSION)return _SESSION;
+  try{const s=localStorage.getItem('obs_session');return s?JSON.parse(s):null;}catch{return null;}
+}
+function setSession(data){
+  _SESSION=data;
+  if(data)localStorage.setItem('obs_session',JSON.stringify(data));
+  else localStorage.removeItem('obs_session');
+}
+
+const API = ()=>S.serverUrl;
+
+async function apiCall(path,body=null,method='POST'){
+  const url=`${API()}${path}`;
+  try{
+    const r=await fetch(url,{
+      method,mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      ...(body?{body:JSON.stringify(body)}:{}),
+      signal:AbortSignal.timeout(8000),
+    });
+    return await r.json();
+  }catch(e){
+    return{error:e.message||'Network error'};
+  }
+}
+
+async function accCreate(){
   const user=$('sm-user').value.trim();
   const pass=$('sm-pass').value;
   const err=$('sm-acc-err');err.style.display='none';
-  if(!user||user.length<2){err.textContent='Username must be at least 2 characters';err.style.display='block';return;}
-  if(!pass||pass.length<4){err.textContent='Password must be at least 4 characters';err.style.display='block';return;}
-  if(!/^[a-zA-Z0-9_]+$/.test(user)){err.textContent='Only letters, numbers and _ allowed';err.style.display='block';return;}
-  const accounts=getAccounts();
-  if(accounts[user.toLowerCase()]){err.textContent='Username already taken';err.style.display='block';return;}
-  /* Simple hash — not cryptographic but fine for local storage */
-  accounts[user.toLowerCase()]={username:user,passHash:simpleHash(pass),friends:[],created:Date.now()};
-  saveAccounts(accounts);
-  setCurrentUser(user.toLowerCase());
-  toast(`Welcome, ${user}!`,'ok',3000);
+  if(!user||user.length<2){err.textContent='Username must be at least 2 chars';err.style.display='block';return;}
+  if(!pass||pass.length<4){err.textContent='Password must be at least 4 chars';err.style.display='block';return;}
+  if(!S.serverUrl||!S.serverOk){err.textContent='Server required to create accounts';err.style.display='block';return;}
+  err.textContent='Creating…';err.style.color='var(--tm)';err.style.display='block';
+  const d=await apiCall('/api/users/register',{username:user,password:pass,display:user});
+  err.style.color='#C0392B';
+  if(d.error){err.textContent=d.error;return;}
+  setSession({...d.user,password:pass});
+  $('sm-user').value='';$('sm-pass').value='';
+  err.style.display='none';
+  toast(`Welcome, ${d.user.display||user}! 🎉`,'ok',3000);
   refreshAccountUI();
 }
-function accLogin(){
+
+async function accLogin(){
   const user=$('sm-user').value.trim().toLowerCase();
   const pass=$('sm-pass').value;
   const err=$('sm-acc-err');err.style.display='none';
-  const accounts=getAccounts();
-  const acc=accounts[user];
-  if(!acc){err.textContent='Account not found';err.style.display='block';return;}
-  if(acc.passHash!==simpleHash(pass)){err.textContent='Wrong password';err.style.display='block';return;}
-  setCurrentUser(user);
-  toast(`Welcome back, ${acc.username}!`,'ok',2500);
+  if(!S.serverUrl||!S.serverOk){err.textContent='Server required to log in';err.style.display='block';return;}
+  err.textContent='Logging in…';err.style.color='var(--tm)';err.style.display='block';
+  const d=await apiCall('/api/users/login',{username:user,password:pass});
+  err.style.color='#C0392B';
+  if(d.error){err.textContent=d.error;return;}
+  setSession({...d.user,password:pass});
+  $('sm-user').value='';$('sm-pass').value='';
+  err.style.display='none';
+  toast(`Welcome back, ${d.user.display||user}!`,'ok',2500);
   refreshAccountUI();
 }
+
 function accLogout(){
-  setCurrentUser(null);
+  setSession(null);refreshAccountUI();toast('Logged out','ok');
+}
+
+async function saveAccountChanges(){
+  const s=getSession();if(!s)return;
+  const nd=$('sm-new-display').value.trim();
+  const op=$('sm-old-pass').value;
+  const np=$('sm-new-pass').value;
+  const err=$('sm-edit-err');err.style.display='none';
+  if(!op){err.textContent='Enter your current password';err.style.display='block';return;}
+  const body={oldPassword:op};
+  if(nd)body.display=nd;
+  if(np){if(np.length<4){err.textContent='New password must be 4+ chars';err.style.display='block';return;}body.newPassword=np;}
+  if(!body.display&&!body.newPassword){err.textContent='Nothing to change';err.style.display='block';return;}
+  err.textContent='Saving…';err.style.color='var(--tm)';err.style.display='block';
+  const d=await apiCall(`/api/users/${s.username}/update`,body);
+  err.style.color='#C0392B';
+  if(d.error){err.textContent=d.error;return;}
+  /* Update session */
+  const ns={...s,...d.user,password:np||op};
+  setSession(ns);
+  $('sm-old-pass').value='';$('sm-new-pass').value='';$('sm-new-display').value='';
+  err.style.display='none';
+  toast('Account updated ✓','ok');
   refreshAccountUI();
-  toast('Logged out','ok',2000);
 }
-function simpleHash(s){
-  /* djb2 — good enough for local-only storage */
-  let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h)+s.charCodeAt(i)|0;
-  return(h>>>0).toString(36);
-}
-function getCurrentAccount(){
-  const u=getCurrentUser();if(!u)return null;
-  const a=getAccounts();return a[u]||null;
-}
-function addFriend(){
-  const acc=getCurrentAccount();
-  if(!acc){toast('Log in first','err');return;}
-  /* Try both places the input might be */
+
+async function addFriend(){
+  const s=getSession();
+  if(!s){toast('Log in first','err');return;}
   const inp=$('fr-add-inp')||$('sm-add-friend');
   const name=(inp?.value||'').trim().toLowerCase();
   const err=$('fr-add-err')||$('sm-acc-err2');
   if(err)err.style.display='none';
   if(!name){if(err){err.textContent='Enter a username';err.style.display='block';}return;}
-  const accounts=getAccounts();
-  if(!accounts[name]){if(err){err.textContent=`User "${name}" not found`;err.style.display='block';}return;}
-  if(name===getCurrentUser()){if(err){err.textContent="You can't add yourself";err.style.display='block';}return;}
-  const u=getCurrentUser();
-  if(!accounts[u].friends)accounts[u].friends=[];
-  if(accounts[u].friends.includes(name)){if(err){err.textContent='Already friends';err.style.display='block';}return;}
-  accounts[u].friends.push(name);
-  saveAccounts(accounts);
+  const d=await apiCall(`/api/users/${s.username}/friends/add`,{password:s.password,friend:name});
+  if(d.error){if(err){err.textContent=d.error;err.style.display='block';}return;}
+  /* Update local session */
+  const ns={...s,friends:d.friends};setSession(ns);
   if(inp)inp.value='';
-  toast(`Added ${accounts[name].username}!`,'ok');
-  renderFriendsList();
-  updateFriendCount();
+  toast(`Added ${name}!`,'ok');
+  renderFriendsList();updateFriendCount();
 }
-function removeFriend(name){
-  const u=getCurrentUser();if(!u)return;
-  const accounts=getAccounts();
-  if(!accounts[u])return;
-  accounts[u].friends=(accounts[u].friends||[]).filter(f=>f!==name);
-  saveAccounts(accounts);
-  renderFriendsList();
-  updateFriendCount();
+
+async function removeFriend(name){
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/users/${s.username}/friends/remove`,{password:s.password,friend:name});
+  if(d.error){toast(d.error,'err');return;}
+  const ns={...s,friends:d.friends};setSession(ns);
+  renderFriendsList();updateFriendCount();
 }
-function renderFriendsList(){
-  const acc=getCurrentAccount();
+
+async function renderFriendsList(){
+  const s=getSession();
   const list=$('fr-list');const empty=$('fr-empty');
-  if(!list||!acc)return;
-  const friends=acc.friends||[];
-  const accounts=getAccounts();
+  if(!list||!s)return;
+  const friends=s.friends||[];
   if(!friends.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
   if(empty)empty.style.display='none';
+  /* Fetch display names for all friends */
+  const userData={};
+  await Promise.allSettled(friends.map(async f=>{
+    try{const r=await fetch(`${API()}/api/users/${f}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      if(r.ok)userData[f]=await r.json();}catch{}
+  }));
   list.innerHTML=friends.map(f=>{
-    const fa=accounts[f];
-    const fname=fa?.username||f;
-    const initial=fname[0].toUpperCase();
-    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .8rem;background:var(--bg2);border:1px solid var(--bdr);border-radius:0">
-      <div style="width:36px;height:36px;border-radius:50%;background:rgba(100,200,150,.2);border:1px solid rgba(100,200,150,.3);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:rgb(100,200,150);font-size:.9rem;flex-shrink:0">${initial}</div>
+    const fd=userData[f];
+    const display=fd?.display||f;
+    const initial=display[0].toUpperCase();
+    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem .8rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.35rem">
+      <div style="width:38px;height:38px;border-radius:50%;background:rgba(100,200,150,.15);border:1px solid rgba(100,200,150,.3);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;color:rgb(100,200,150);font-size:1rem;flex-shrink:0">${initial}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-family:'Playfair Display',serif;font-size:.85rem;color:var(--tp)">${esc(fname)}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm)">@${esc(f)}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:.88rem;color:var(--tp)">${esc(display)}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.53rem;color:var(--tm)">@${esc(f)}</div>
       </div>
-      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:none;color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.58rem;padding:.2rem .4rem;transition:color .15s" onmouseenter="this.style.color='#C0392B'" onmouseleave="this.style.color='var(--tm)'">Remove</button>
+      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:none;color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.56rem;padding:.18rem .45rem;border:1px solid var(--bdr);transition:all .15s" onmouseenter="this.style.borderColor='#C0392B';this.style.color='#C0392B'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Remove</button>
     </div>`;
   }).join('');
 }
+
 function updateFriendCount(){
-  const acc=getCurrentAccount();
-  const n=(acc?.friends||[]).length;
+  const s=getSession();
+  const n=(s?.friends||[]).length;
   const el=$('sb-friend-count');if(el)el.textContent=n||'';
   const fc=$('fr-count');if(fc)fc.textContent=n;
 }
+
+/* Check notifications and show on bell */
+let _notifTimer=null;
+async function checkNotifications(){
+  const s=getSession();
+  if(!s||!S.serverUrl||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/users/${s.username}/notifications?password=${encodeURIComponent(s.password)}`,
+      {mode:'cors',signal:AbortSignal.timeout(5000)});
+    if(!r.ok)return;
+    const d=await r.json();
+    if(d.notifications?.length){
+      showNotifications(d.notifications);
+    }
+  }catch{}
+}
+function showNotifications(notifs){
+  const bell=$('bell-btn');
+  if(bell){bell.style.color='var(--gold)';bell.textContent='🔔';}
+  notifs.forEach(n=>{
+    if(n.type==='friend_request'){
+      toast(`${n.fromDisplay||n.from} added you as a friend!`,'ok',5000);
+    }
+  });
+}
+function openNotifications(){
+  /* Just poll now and show any pending */
+  checkNotifications();
+}
+
 function refreshAccountUI(){
-  const acc=getCurrentAccount();
-  /* Settings panel */
+  const s=getSession();
+  /* Settings: logged-out / logged-in panels */
   const lo=$('sm-logged-out');const li=$('sm-logged-in');
   if(lo&&li){
-    lo.style.display=acc?'none':'block';
-    li.style.display=acc?'block':'none';
-    if(acc){
-      const el=$('sm-acc-name');if(el)el.textContent=acc.username;
-    }
+    lo.style.display=s?'none':'block';
+    li.style.display=s?'block':'none';
+    if(s){const el=$('sm-acc-name');if(el)el.textContent=s.display||s.username;}
   }
   /* Friends view */
   const fno=$('fr-no-account');const fm=$('fr-main');
   if(fno&&fm){
-    fno.style.display=acc?'none':'block';
-    fm.style.display=acc?'block':'none';
-    if(acc){
-      const av=$('fr-avatar');if(av)av.textContent=acc.username[0].toUpperCase();
-      const un=$('fr-username');if(un)un.textContent=acc.username;
+    fno.style.display=s?'none':'block';
+    fm.style.display=s?'block':'none';
+    if(s){
+      const av=$('fr-avatar');if(av)av.textContent=(s.display||s.username)[0].toUpperCase();
+      const un=$('fr-username');if(un)un.textContent=s.display||s.username;
       const lc=$('fr-liked-count');if(lc)lc.textContent=`${getLiked().length} liked videos`;
+      renderFriendsList();
     }
   }
-  renderFriendsList();
   updateFriendCount();
+  /* Start notification polling if logged in */
+  clearInterval(_notifTimer);
+  if(s&&S.serverOk){
+    checkNotifications();
+    _notifTimer=setInterval(checkNotifications,60000); /* check every minute */
+  }
 }
 
 /* Auto-fetch server URL from GitHub on every boot */
