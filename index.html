@@ -1947,6 +1947,19 @@ async function removeFriend(name){
 
 /* ── Notifications ── */
 let _notifTimer=null;
+/* ── Sync session friends list from server ── */
+async function syncSessionFromServer(){
+  const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/users/${s.username}`,
+      {mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const fresh=await r.json();
+    /* Merge fresh server data into session — keep password locally */
+    setSession({...s,...fresh,password:s.password});
+  }catch{}
+}
+
 async function checkNotifications(){
   const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
   try{
@@ -1958,12 +1971,22 @@ async function checkNotifications(){
     if(notifs.length){
       const badge=$('bell-badge');
       if(badge){badge.textContent=notifs.length;badge.classList.add('on');}
+      let needsSync=false;
       notifs.forEach(n=>{
-        if(n.type==='request_accepted')toast(`${n.fromDisplay||n.from} accepted your friend request!`,'ok',5000);
-        else if(n.type==='friend_request')toast(`${n.fromDisplay||n.from} sent you a friend request!`,'ok',5000);
+        if(n.type==='request_accepted'){
+          toast(`${n.fromDisplay||n.from} accepted your friend request!`,'ok',5000);
+          needsSync=true; /* Their accept added us to their friends AND us to ours */
+        }else if(n.type==='friend_request'){
+          toast(`${n.fromDisplay||n.from} sent you a friend request!`,'ok',5000);
+        }
       });
+      /* Re-fetch session from server so friends list is current */
+      if(needsSync){
+        await syncSessionFromServer();
+        renderFriendsList();
+        updateFriendCount();
+      }
     }
-    /* Also poll for pending friend requests to update badge */
     loadFriendRequests();
   }catch{}
 }
@@ -2207,7 +2230,12 @@ function switchView(name){
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.toggle('on',l.dataset.nav===name));
   syncBnav(name);
   if(isLikedView){renderLiked();return;}
-  if(isFriendsView){refreshAccountUI();return;}
+  if(isFriendsView){
+    refreshAccountUI();
+    /* Always re-fetch friends list from server when opening Friends view */
+    syncSessionFromServer().then(()=>{refreshAccountUI();});
+    return;
+  }
   if(!iso)loadVideos();
 }
 function goHome(){switchView('home');}
