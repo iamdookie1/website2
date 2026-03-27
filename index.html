@@ -1466,6 +1466,26 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
+<!-- ══ CUSTOM DIALOG ══════════════════════════════════════════ -->
+<div id="obs-dialog" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(4,4,4,.88);align-items:center;justify-content:center;backdrop-filter:blur(6px)">
+  <div style="background:var(--bg1);border:1px solid var(--gold-d);width:min(380px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.8);animation:mIn .18s ease">
+    <div style="padding:.7rem 1rem;border-bottom:1px solid var(--bdr);background:var(--bg0);display:flex;align-items:center;gap:.6rem">
+      <span id="obs-dialog-icon" style="font-size:1.1rem"></span>
+      <span id="obs-dialog-title" style="font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;color:var(--gold)"></span>
+    </div>
+    <div style="padding:.9rem 1rem">
+      <div id="obs-dialog-msg" style="font-family:'DM Mono',monospace;font-size:.68rem;color:var(--ts);line-height:1.8;margin-bottom:.8rem"></div>
+      <div id="obs-dialog-input-wrap" style="display:none;margin-bottom:.8rem">
+        <input id="obs-dialog-inp" class="cfg-inp" type="text" style="width:100%" onkeydown="if(event.key==='Enter')_dialogConfirm()"/>
+      </div>
+      <div style="display:flex;gap:.5rem;justify-content:flex-end">
+        <button id="obs-dialog-cancel" class="btn" onclick="_dialogCancel()" style="font-size:.65rem">Cancel</button>
+        <button id="obs-dialog-ok" class="btn g" onclick="_dialogConfirm()" style="font-size:.65rem">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ CHAT MODAL ════════════════════════════════════════════ -->
 <div id="chat-modal" onclick="if(event.target===$('chat-modal'))closeChat()">
   <div class="chat-box">
@@ -2013,7 +2033,8 @@ function cancelEdit(){
 }
 async function deleteMsg(id){
   const s=getSession();if(!s)return;
-  if(!confirm('Delete this message?'))return;
+  const confirmed=await _obsDialog({title:'Delete Message',msg:'This will be deleted for everyone.',icon:'🗑',okLabel:'Delete',danger:true});
+  if(!confirmed)return;
   const d=await apiCall('/api/chat/delete',{id,from:s.username,password:s.password});
   if(d.error){toast(d.error,'err');return;}
   const el=document.querySelector(`[data-msg-id="${id}"]`);
@@ -2137,7 +2158,7 @@ function renderMsg(msg,myUsername,_,friendData){
 
 async function openChat(friendUsername,friendData){
   const s=getSession();if(!s){toast('Log in to chat','err');return;}
-  _chatWith=friendUsername;_chatLastTs=0;_lastUpdateTs=0;
+  _chatWith=friendUsername;_chatLastTs=0;_lastUpdateTs=Date.now();
   window._msgCache={};window._friendCache=friendData;
   _unread[friendUsername]=0;updateFriendUnread(friendUsername);
   cancelEdit();clearReply();
@@ -2231,8 +2252,9 @@ function handleImgUpload(e){
   const file=e.target.files?.[0];if(!file)return;
   processMediaFile(file);
 }
-function promptGif(){
-  const url=prompt('Paste GIF or video URL:');if(!url)return;
+async function promptGif(){
+  const url=await _obsDialog({title:'Add GIF or Video',msg:'Paste a URL below:',icon:'🎞',okLabel:'Send',input:true,cancelLabel:'Cancel'});
+  if(!url||typeof url!=='string')return;
   const isVid=url.match(/\.(mp4|webm|mov)(\?|$)/i);
   sendMediaMsg(url.trim(),isVid?'video':'gif');
 }
@@ -2324,7 +2346,41 @@ async function pollUnreadCounts(){
   }));
 }
 
-/* ── K shortcut to open emoji picker in chat ── */
+/* ══════════════════════════════════════════════════════════
+   CUSTOM DIALOG — replaces confirm() prompt() alert()
+══════════════════════════════════════════════════════════ */
+let _dialogResolve=null;
+
+function _obsDialog({title,msg,icon='⚠️',okLabel='OK',cancelLabel='Cancel',input=false,danger=false,defaultVal=''}){
+  return new Promise(resolve=>{
+    _dialogResolve=resolve;
+    $('obs-dialog-title').textContent=title;
+    $('obs-dialog-msg').textContent=msg;
+    $('obs-dialog-icon').textContent=icon;
+    $('obs-dialog-ok').textContent=okLabel;
+    $('obs-dialog-ok').style.cssText=danger?'font-size:.65rem;background:#C0392B;border-color:#C0392B;color:#fff':'font-size:.65rem';
+    $('obs-dialog-cancel').textContent=cancelLabel;
+    $('obs-dialog-cancel').style.display=cancelLabel?'':'none';
+    const wrap=$('obs-dialog-input-wrap');
+    const inp=$('obs-dialog-inp');
+    if(input){wrap.style.display='block';inp.value=defaultVal;setTimeout(()=>inp.focus(),50);}
+    else{wrap.style.display='none';}
+    const d=$('obs-dialog');d.style.display='flex';
+  });
+}
+function _dialogConfirm(){
+  const inp=$('obs-dialog-inp');
+  const val=$('obs-dialog-input-wrap').style.display!=='none'?inp.value:true;
+  $('obs-dialog').style.display='none';
+  if(_dialogResolve){_dialogResolve(val);_dialogResolve=null;}
+}
+function _dialogCancel(){
+  $('obs-dialog').style.display='none';
+  if(_dialogResolve){_dialogResolve(null);_dialogResolve=null;}
+}
+/* Close on backdrop click */
+$('obs-dialog').addEventListener('click',e=>{if(e.target===$('obs-dialog'))_dialogCancel();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('obs-dialog').style.display!=='none')_dialogCancel();});
 document.addEventListener('keydown',e=>{
   if(e.key==='n'&&!e.target.closest('input,textarea'))openNotifPanel();
 });
@@ -2555,18 +2611,22 @@ async function pollChatUpdates(friendUsername,friendData){
     const r=await fetch(`${API()}/api/chat/updates?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}&since=${_lastUpdateTs}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
     const d=await safeJson(r)||{};
     const updates=d.updates||[];
-    if(!updates.length)return;
     updates.forEach(msg=>{
+      /* Always advance the watermark */
+      const lm=msg.last_modified||msg.ts||0;
+      if(lm>_lastUpdateTs)_lastUpdateTs=lm;
       window._msgCache[msg.id]=msg;
       const el=document.querySelector(`[data-msg-id="${msg.id}"]`);
       if(!el)return;
       const bubble=el.querySelector('.msg-bubble');if(!bubble)return;
       if(msg.deleted===1){
-        el.classList.add('msg-deleted');
-        bubble.innerHTML='<em style="opacity:.5">[Message deleted]</em>';
-        el.querySelector('.msg-actions')?.remove();
+        if(!el.classList.contains('msg-deleted')){
+          el.classList.add('msg-deleted');
+          bubble.innerHTML='<em style="opacity:.5">[Message deleted]</em>';
+          el.querySelector('.msg-actions')?.remove();
+          el.querySelector('.msg-reacts')?.remove();
+        }
       }else{
-        /* Update text content if not media */
         if(msg.mtype==='text'&&msg.edited){
           const rp=bubble.querySelector('.msg-reply-preview');
           const reacts=bubble.querySelector('.msg-reacts');
@@ -2575,7 +2635,6 @@ async function pollChatUpdates(friendUsername,friendData){
           rp?rp.after(span):bubble.prepend(span);
           if(!bubble.querySelector('.msg-edited')){const ed=document.createElement('span');ed.className='msg-edited';ed.textContent='(edited)';span.after(ed);}
         }
-        /* Reactions */
         let reacts=bubble.querySelector('.msg-reacts');
         const rh=renderReactions(msg.reactions,msg.id,s.username);
         if(rh){
@@ -2583,7 +2642,6 @@ async function pollChatUpdates(friendUsername,friendData){
           reacts.innerHTML=rh;
           reacts.querySelectorAll('.react-chip').forEach(c=>c.addEventListener('click',()=>toggleReact(msg.id,c.dataset.emoji)));
         }else if(reacts){reacts.innerHTML='';}
-        if(msg.last_modified>_lastUpdateTs)_lastUpdateTs=msg.last_modified;
       }
     });
   }catch{}
