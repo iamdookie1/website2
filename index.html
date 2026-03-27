@@ -1070,12 +1070,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           <!-- Logged in -->
           <div id="fr-main" style="display:none">
             <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
-              <div id="fr-avatar" style="width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:#080808;flex-shrink:0"></div>
-              <div>
-                <div id="fr-username" style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--tp)"></div>
-                <div style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);margin-top:.2rem" id="fr-liked-count"></div>
+              <div id="fr-avatar" style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;flex-shrink:0"></div>
+              <div style="flex:1;min-width:0">
+                <div id="fr-username" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--tp)"></div>
+                <div id="fr-bio" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-top:.25rem;line-height:1.6;max-width:360px"></div>
               </div>
-              <!-- Friend requests button top right -->
               <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
                 <button class="btn" onclick="openFrReqPanel()" style="position:relative;font-size:.62rem;padding:.3rem .7rem">
                   Requests
@@ -1178,14 +1177,13 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
       <div class="sm-sec">
         <div class="sm-sec-title">Server Connection</div>
-        <div class="sm-row" style="flex-direction:column;align-items:stretch;gap:.4rem">
-          <span style="font-size:.6rem;color:var(--tm)">Tunnel URL (Cloudflare / ngrok)</span>
-          <div style="display:flex;gap:.4rem">
-            <input class="cfg-inp" id="sm-url" type="url" placeholder="https://your-tunnel.trycloudflare.com" style="flex:1"/>
-            <button class="btn" onclick="smTestServer()" id="sm-test">Test</button>
-          </div>
-          <div id="sm-status" style="font-family:'DM Mono',monospace;font-size:.58rem;display:none"></div>
-          <button class="btn g" onclick="smSaveServer()" style="align-self:flex-end;margin-top:.2rem">Save &amp; Connect</button>
+        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);line-height:1.9;padding:.2rem 0">
+          Server URL is fetched automatically from GitHub on every load.<br/>
+          Update <code style="color:var(--gold)">website-api-link</code> on your repo and it updates for everyone.<br/>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin-top:.5rem">
+          <div id="sm-server-status" style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm)">Checking…</div>
+          <button class="btn" onclick="retryServer()" style="font-size:.56rem;padding:.22rem .55rem">↺ Retry</button>
         </div>
       </div>
 
@@ -1235,6 +1233,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <summary style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);cursor:pointer;padding:.3rem 0;letter-spacing:.06em">Edit Account ▾</summary>
             <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem">
               <input class="cfg-inp" id="sm-new-display" type="text" placeholder="New display name (optional)" style="width:100%"/>
+              <textarea class="cfg-inp" id="sm-bio" placeholder="Bio (max 200 chars)" style="width:100%;min-height:60px;resize:vertical" maxlength="200"></textarea>
               <input class="cfg-inp" id="sm-old-pass" type="password" placeholder="Current password ✱" style="width:100%"/>
               <input class="cfg-inp" id="sm-new-pass" type="password" placeholder="New password (optional)" style="width:100%"/>
               <div id="sm-edit-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;display:none"></div>
@@ -1251,6 +1250,28 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFILE VIEWER ════════════════════════════════════════ -->
+<div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(4,4,4,.88);align-items:center;justify-content:center;backdrop-filter:blur(8px)" onclick="if(event.target===$('profile-modal'))closeProfile()">
+  <div style="width:min(440px,94vw);background:var(--bg1);border:1px solid var(--bdr);box-shadow:0 24px 60px rgba(0,0,0,.7);">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.1rem;border-bottom:1px solid var(--bdr);background:var(--bg0)">
+      <span style="font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--tp)">Profile</span>
+      <button class="bico" onclick="closeProfile()" style="width:28px;height:28px;font-size:.8rem">✕</button>
+    </div>
+    <div style="padding:1.4rem 1.5rem">
+      <div style="display:flex;align-items:center;gap:1.1rem;margin-bottom:1.1rem">
+        <div id="pv-avatar" style="width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1.6rem;flex-shrink:0"></div>
+        <div>
+          <div id="pv-display" style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--tp)"></div>
+          <div id="pv-username" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-top:.2rem"></div>
+        </div>
+      </div>
+      <div id="pv-bio" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ts);line-height:1.8;padding:.7rem .9rem;background:var(--bg2);border-left:2px solid var(--bdr);margin-bottom:1rem;display:none"></div>
+      <div id="pv-stats" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-bottom:1rem"></div>
+      <div id="pv-actions" style="display:flex;gap:.5rem"></div>
     </div>
   </div>
 </div>
@@ -1369,30 +1390,18 @@ function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));
 function openSM(){
   $('st-dark').checked=ST.theme==='dark';
   const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
-  $('sm-url').value=S.serverUrl;
-  $('sm-status').style.display='none';
-  $('liked-count-label').textContent=`${getLiked().length} liked videos saved`;
+  const ss=$('sm-server-status');
+  if(ss)ss.textContent=S.serverOk
+    ?`✓ Connected — ${S.serverUrl}`
+    :`✕ Offline — ${S.serverUrl||'No URL fetched yet'}`;
+  const lc=$('liked-count-label');if(lc)lc.textContent=`${getLiked().length} liked videos saved`;
   refreshAccountUI();
   $('settings-modal').classList.add('on');
 }
 function closeSM(){$('settings-modal').classList.remove('on');}
-
-async function smTestServer(){
-  const url=$('sm-url').value.trim().replace(/\/$/,'');
-  const st=$('sm-status');st.style.display='block';
-  if(!url){st.style.color='#C0392B';st.textContent='✕ Enter a URL first';return;}
-  st.style.color='var(--tm)';st.textContent='Checking…';
-  try{
-    const r=await fetch(`${url}/health`,{mode:'cors',signal:AbortSignal.timeout(8000)});
-    if(r.ok){st.style.color='#4CAF50';st.textContent='✓ Server is online';}
-    else{st.style.color='#C0392B';st.textContent=`✕ Server returned ${r.status}`;}
-  }catch{st.style.color='#C0392B';st.textContent='✕ Cannot reach server';}
-}
-function smSaveServer(){
-  const url=$('sm-url').value.trim().replace(/\/$/,'');
-  S.serverUrl=url;localStorage.setItem('obs_server',url);
-  closeSM();if(url)checkServer().then(ok=>ok&&loadVideos());
-  toast(url?'Server URL saved':'Server URL cleared','ok');
+function retryServer(){
+  if(S.serverUrl)checkServer(2).then(ok=>{if(ok){S.serverOk=true;loadVideos();toast('Server connected ✓','ok');}else toast('Still offline','err');});
+  else fetchServerUrlFromGithub().then(()=>checkServer(2));
 }
 
 /* ── Theme (inside settings) ── */
@@ -1496,7 +1505,12 @@ async function accLogin(){
   const d=await apiCall('/api/users/login',{username:user,password:pass});
   err.style.color='#C0392B';
   if(d.error){err.textContent=d.error;return;}
-  setSession({...d.user,password:pass});
+  /* Also fetch public profile to get bio, pfpColor, etc. */
+  try{
+    const r=await fetch(`${API()}/api/users/${user}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+    if(r.ok){const full=await r.json();setSession({...d.user,...full,password:pass});}
+    else{setSession({...d.user,password:pass});}
+  }catch{setSession({...d.user,password:pass});}
   $('sm-user').value='';$('sm-pass').value='';
   err.style.display='none';
   toast(`Welcome back, ${d.user.display||user}!`,'ok',2500);
@@ -1510,19 +1524,19 @@ function accLogout(){
 async function saveAccountChanges(){
   const s=getSession();if(!s)return;
   const nd=$('sm-new-display').value.trim();
+  const bioEl=$('sm-bio');const bio=bioEl?bioEl.value.slice(0,200):'';
   const op=$('sm-old-pass').value;
   const np=$('sm-new-pass').value;
   const err=$('sm-edit-err');err.style.display='none';
   if(!op){err.textContent='Enter your current password';err.style.display='block';return;}
   const body={oldPassword:op};
   if(nd)body.display=nd;
+  body.bio=bio;
   if(np){if(np.length<4){err.textContent='New password must be 4+ chars';err.style.display='block';return;}body.newPassword=np;}
-  if(!body.display&&!body.newPassword){err.textContent='Nothing to change';err.style.display='block';return;}
   err.textContent='Saving…';err.style.color='var(--tm)';err.style.display='block';
   const d=await apiCall(`/api/users/${s.username}/update`,body);
   err.style.color='#C0392B';
   if(d.error){err.textContent=d.error;return;}
-  /* Update session */
   const ns={...s,...d.user,password:np||op};
   setSession(ns);
   $('sm-old-pass').value='';$('sm-new-pass').value='';$('sm-new-display').value='';
@@ -1622,11 +1636,21 @@ async function respondRequest(fromUser, action){
     {password:s.password,from:fromUser,action});
   if(d.error){toast(d.error,'err');return;}
   if(action==='accept'){
-    setSession({...s,friends:d.friends});
-    toast('Friend added!','ok');
-  }else{toast('Request declined','ok');}
-  renderFriendsList();updateFriendCount();
-  loadFriendRequests();
+    /* Refresh full profile from server so we get the updated friends list */
+    try{
+      const r=await fetch(`${API()}/api/users/${s.username}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      if(r.ok){
+        const fresh=await r.json();
+        setSession({...s,friends:fresh.friends||d.friends||[]});
+      }else{
+        setSession({...s,friends:d.friends||[]});
+      }
+    }catch{setSession({...s,friends:d.friends||[]});}
+    toast(`You and ${fromUser} are now friends!`,'ok',3000);
+  }else{
+    toast('Request declined','ok');
+  }
+  renderFriendsList();updateFriendCount();loadFriendRequests();
 }
 
 async function loadFriendRequests(){
@@ -1830,6 +1854,41 @@ function updateFriendUnread(username){
   badge.classList.toggle('on',n>0);
 }
 
+/* ── Profile viewer ── */
+async function viewProfile(username){
+  const modal=$('profile-modal');modal.style.display='flex';
+  $('pv-avatar').textContent='…';$('pv-display').textContent='Loading…';
+  $('pv-username').textContent='';$('pv-bio').style.display='none';
+  $('pv-stats').textContent='';$('pv-actions').innerHTML='';
+  try{
+    const r=await fetch(`${API()}/api/users/${username}`,{mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(!r.ok){$('pv-display').textContent='User not found';return;}
+    const u=await r.json();
+    const color=u.pfpColor||'#C9A84C';const letter=u.pfpLetter||'?';
+    const av=$('pv-avatar');
+    av.style.background=color;av.textContent=letter;
+    av.style.color=isLight(color)?'#080808':'#fff';
+    $('pv-display').textContent=u.display||u.username;
+    $('pv-username').textContent=`@${u.username}`;
+    if(u.bio){$('pv-bio').textContent=u.bio;$('pv-bio').style.display='block';}
+    const joined=u.created?new Date(u.created*1000).toLocaleDateString([],{year:'numeric',month:'long'}):'—';
+    $('pv-stats').textContent=`${(u.friends||[]).length} friends · Joined ${joined}`;
+    /* Actions */
+    const s=getSession();
+    const acts=$('pv-actions');
+    if(s&&s.username!==username){
+      const isFriend=(s.friends||[]).includes(username);
+      if(isFriend){
+        acts.innerHTML=`<button class="btn g" onclick="openChat('${esc(username)}',${JSON.stringify(u).replace(/"/g,'&quot;')});closeProfile()">💬 Message</button>
+          <button class="btn" onclick="removeFriend('${esc(username)}');closeProfile()">Remove Friend</button>`;
+      }else{
+        acts.innerHTML=`<button class="btn g" onclick="$('fr-add-inp').value='${esc(username)}';sendFriendRequest();closeProfile()">+ Add Friend</button>`;
+      }
+    }
+  }catch{$('pv-display').textContent='Failed to load profile';}
+}
+function closeProfile(){$('profile-modal').style.display='none';}
+
 /* ── renderFriendsList ── */
 async function renderFriendsList(){
   const s=getSession();
@@ -1838,7 +1897,6 @@ async function renderFriendsList(){
   const friends=s.friends||[];
   if(!friends.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
   if(empty)empty.style.display='none';
-  /* Fetch all friend profiles in parallel */
   const profiles={};
   await Promise.allSettled(friends.map(async f=>{
     try{
@@ -1853,18 +1911,21 @@ async function renderFriendsList(){
     const letter=p.pfpLetter||display[0].toUpperCase();
     const lightText=isLight(color)?'#080808':'#fff';
     const unread=_unread[f]||0;
+    const bio=p.bio?`<div style="font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);margin-top:.18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">${esc(p.bio)}</div>`:'';
+    const pStr=JSON.stringify(p).replace(/"/g,'&quot;');
     return`<div style="display:flex;align-items:center;gap:.75rem;padding:.7rem .8rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.35rem">
-      <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;color:${lightText};font-size:1rem;flex-shrink:0">${esc(letter)}</div>
-      <div style="flex:1;min-width:0">
+      <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;color:${lightText};font-size:1rem;flex-shrink:0;cursor:pointer" onclick="viewProfile('${esc(f)}')" title="View profile">${esc(letter)}</div>
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="viewProfile('${esc(f)}')">
         <div style="font-family:'Playfair Display',serif;font-size:.88rem;color:var(--tp)">${esc(display)}</div>
         <div style="font-family:'DM Mono',monospace;font-size:.53rem;color:var(--tm)">@${esc(f)}</div>
+        ${bio}
       </div>
-      <!-- Chat bubble with unread count -->
-      <div style="position:relative" onclick="openChat('${esc(f)}',${JSON.stringify(p).replace(/"/g,'&quot;')})">
-        <div class="fr-chat-btn" title="Chat with ${esc(display)}">💬</div>
-        <div class="fr-unread" data-chat-unread="${esc(f)}" ${unread>0?'class="fr-unread on"':''}>${unread>9?'9+':unread||''}</div>
+      <div style="position:relative;cursor:pointer" onclick="openChat('${esc(f)}',${pStr})">
+        <div class="fr-chat-btn" title="Message ${esc(display)}">💬</div>
+        <div class="fr-unread${unread>0?' on':''}" data-chat-unread="${esc(f)}">${unread>9?'9+':unread||''}</div>
       </div>
-      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:none;color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.56rem;padding:.18rem .45rem;border:1px solid var(--bdr);transition:all .15s;margin-left:.2rem" onmouseenter="this.style.borderColor='#C0392B';this.style.color='#C0392B'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Remove</button>
+      <button onclick="viewProfile('${esc(f)}')" style="background:none;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;padding:.18rem .45rem;transition:all .15s;margin-left:.15rem" onmouseenter="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Profile</button>
+      <button onclick="removeFriend('${esc(f)}')" style="background:none;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;padding:.18rem .45rem;transition:all .15s" onmouseenter="this.style.borderColor='#C0392B';this.style.color='#C0392B'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Remove</button>
     </div>`;
   }).join('');
 }
@@ -1915,24 +1976,22 @@ function openNotifications(){
 /* ── refreshAccountUI ── */
 function refreshAccountUI(){
   const s=getSession();
-  /* Settings panel */
   const lo=$('sm-logged-out');const li=$('sm-logged-in');
   if(lo&&li){
     lo.style.display=s?'none':'block';
     li.style.display=s?'block':'none';
     if(s){
       const el=$('sm-acc-name');if(el)el.textContent=s.display||s.username;
-      /* Profile preview */
-      const color=s.pfpColor||'#C9A84C';
-      const letter=s.pfpLetter||'?';
+      const color=s.pfpColor||'#C9A84C';const letter=s.pfpLetter||'?';
       const pc=$('sm-pfp-color');if(pc)pc.value=color;
       const pl=$('sm-pfp-letter');if(pl)pl.value=letter;
       const prev=$('sm-pfp-preview');
       if(prev){prev.style.background=color;prev.textContent=letter;
         prev.style.color=isLight(color)?'#080808':'#fff';}
+      /* Pre-fill bio field */
+      const bioEl=$('sm-bio');if(bioEl&&s.bio!==undefined)bioEl.value=s.bio||'';
     }
   }
-  /* Friends view */
   const fno=$('fr-no-account');const fm=$('fr-main');
   if(fno&&fm){
     fno.style.display=s?'none':'block';
@@ -1942,17 +2001,15 @@ function refreshAccountUI(){
       const av=$('fr-avatar');if(av){av.style.background=color;av.textContent=letter;
         av.style.color=isLight(color)?'#080808':'#fff';}
       const un=$('fr-username');if(un)un.textContent=s.display||s.username;
-      const lc=$('fr-liked-count');if(lc)lc.textContent=`${getLiked().length} liked videos`;
+      /* Show bio on friends page */
+      const bio=$('fr-bio');if(bio)bio.textContent=s.bio||'';
       renderFriendsList();
       loadFriendRequests();
     }
   }
   updateFriendCount();
   clearInterval(_notifTimer);
-  if(s&&S.serverOk){
-    checkNotifications();
-    _notifTimer=setInterval(checkNotifications,60000);
-  }
+  if(s&&S.serverOk){checkNotifications();_notifTimer=setInterval(checkNotifications,60000);}
 }
 
 /* Auto-fetch server URL from GitHub on every boot */
