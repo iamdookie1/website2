@@ -427,7 +427,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-row{display:flex;align-items:flex-end;gap:.45rem;max-width:78%;animation:mIn .15s ease;position:relative;}
 .msg-row.mine{align-self:flex-end;flex-direction:row-reverse;}
 .msg-row.theirs{align-self:flex-start;}
-.msg-row:hover .msg-actions,.msg-row.touch-active .msg-actions{opacity:1;pointer-events:all;}
+.msg-row:hover .msg-actions,.msg-row.dbl-active .msg-actions{opacity:1;pointer-events:all;}
 .msg-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-family:'Playfair Display',serif;font-weight:900;
   font-size:.6rem;flex-shrink:0;margin-bottom:2px;}
@@ -436,7 +436,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-row.theirs .msg-bubble{background:var(--bg2);border:1px solid var(--bdr);border-radius:4px 14px 14px 4px;}
 .msg-row.mine .msg-bubble{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.22);border-radius:14px 4px 4px 14px;}
 .msg-deleted .msg-bubble{opacity:.45;font-style:italic;}
-.msg-actions{position:absolute;top:-30px;display:flex;gap:2px;opacity:0;pointer-events:none;transition:opacity .14s;z-index:10;}
+.msg-actions{position:absolute;top:-38px;display:flex;gap:2px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;padding-bottom:12px;margin-bottom:-12px;}
 .msg-row.mine .msg-actions{right:0;}
 .msg-row.theirs .msg-actions{left:36px;}
 .msg-act{background:var(--bg2);border:1px solid var(--bdr);color:var(--tm);padding:.18rem .4rem;font-size:.72rem;cursor:pointer;transition:all .14s;font-family:'DM Mono',monospace;}
@@ -1892,11 +1892,25 @@ function renderMsg(msg,myUsername,_,friendData){
   row.querySelectorAll('.react-chip').forEach(c=>c.addEventListener('click',()=>toggleReact(msg.id,c.dataset.emoji)));
   /* Close react picker on outside click */
   document.addEventListener('click',e=>{if(!row.contains(e.target))row.querySelector('.react-picker')?.classList.remove('on');},{passive:true,once:false});
-  /* Long-press mobile */
-  let _lp=null;
-  row.addEventListener('touchstart',()=>{_lp=setTimeout(()=>row.classList.add('touch-active'),500);},{passive:true});
-  row.addEventListener('touchend',()=>{clearTimeout(_lp);setTimeout(()=>row.classList.remove('touch-active'),1800);},{passive:true});
-  row.addEventListener('touchmove',()=>clearTimeout(_lp),{passive:true});
+  /* Dismiss dbl-active when tapping elsewhere */
+  document.addEventListener('touchend',e=>{
+    if(!row.contains(e.target)){row.classList.remove('dbl-active');clearTimeout(row._dblTimer);}
+  },{passive:true});
+  /* Double-tap for mobile — show actions for 3 seconds */
+  let _lastTap=0;
+  row.addEventListener('touchend',e=>{
+    const now=Date.now();
+    if(now-_lastTap<350){
+      /* Double tap detected */
+      e.preventDefault();
+      /* Close any other open rows */
+      document.querySelectorAll('.msg-row.dbl-active').forEach(r=>r.classList.remove('dbl-active'));
+      row.classList.add('dbl-active');
+      clearTimeout(row._dblTimer);
+      row._dblTimer=setTimeout(()=>row.classList.remove('dbl-active'),3000);
+    }
+    _lastTap=now;
+  },{passive:false});
   return row;
 }
 
