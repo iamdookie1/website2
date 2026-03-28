@@ -677,6 +677,52 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .np-time{font-family:"DM Mono",monospace;font-size:.58rem;color:var(--tm);white-space:nowrap;margin-top:.2rem;}
 .np-empty{text-align:center;padding:3rem 1rem;font-family:"DM Mono",monospace;font-size:.75rem;color:var(--tm);}
 
+.soc-tabs{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:.2rem;}
+.soc-tab{flex:1;padding:.45rem;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;text-align:center;border-bottom:2px solid transparent;color:var(--tm);transition:all .18s;background:none;border-left:none;border-right:none;border-top:none;}
+.soc-tab.on{border-bottom-color:var(--gold);color:var(--gold);}
+.grp-card{display:flex;align-items:center;gap:.75rem;padding:.7rem .85rem;background:var(--bg2);border:1px solid var(--bdr);cursor:pointer;transition:all .14s;margin-bottom:.4rem;}
+.grp-card:hover{border-color:var(--gold-d);}
+.grp-av{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1.1rem;flex-shrink:0;}
+.grp-name{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;color:var(--tp);}
+.grp-sub{font-family:'DM Mono',monospace;font-size:.56rem;color:var(--tm);margin-top:.1rem;}
+.role-badge{display:inline-block;padding:.05rem .36rem;border-radius:3px;font-family:'DM Mono',monospace;font-size:.52rem;font-weight:700;margin-left:.3rem;vertical-align:middle;}
+.pres-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;margin-right:.3rem;}
+.pres-active{background:#27AE60;}.pres-idle{background:#F39C12;}.pres-offline{background:#555;}
+#create-group-modal,#group-detail-modal,#member-list-modal,#role-manager-modal,#group-invite-modal{position:fixed;inset:0;z-index:1400;background:rgba(4,4,4,.9);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+#create-group-modal.on,#group-detail-modal.on,#member-list-modal.on,#role-manager-modal.on,#group-invite-modal.on{display:flex;animation:mIn .18s ease;}
+.gm-box{background:var(--bg1);border:1px solid var(--gold-d);width:min(460px,94vw);max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.8);}
+.gm-head{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--bdr);background:var(--bg0);flex-shrink:0;}
+.gm-title{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--gold);}
+.gm-body{padding:.9rem 1rem;overflow-y:auto;flex:1;}
+.gm-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--tm);margin:.6rem 0 .3rem;}
+.gm-row{display:flex;gap:.4rem;align-items:center;margin-bottom:.5rem;}
+.member-row{display:flex;align-items:center;gap:.65rem;padding:.55rem .7rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.3rem;}
+.member-row-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:.85rem;flex-shrink:0;}
+.role-row{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.3rem;}
+.role-swatch{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:.32rem 0;border-bottom:1px solid var(--bdr);}
+.perm-label{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--ts);}
+#notif-bell-modal{position:fixed;inset:0;z-index:1500;background:rgba(4,4,4,.82);display:none;align-items:flex-start;justify-content:flex-end;}
+#notif-bell-modal.on{display:flex;animation:mIn .16s ease;}
+.nbm-panel{background:var(--bg1);border-left:1px solid var(--gold-d);width:min(430px,97vw);height:100%;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.7);}
+.nbm-head{padding:.9rem 1.1rem;border-bottom:1px solid var(--bdr);background:var(--bg0);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
+.nbm-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--gold);}
+.nbm-tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.nbm-tab{flex:1;padding:.48rem;font-family:'DM Mono',monospace;font-size:.63rem;cursor:pointer;text-align:center;border-bottom:2px solid transparent;color:var(--tm);background:none;border-left:none;border-right:none;border-top:none;transition:all .16s;}
+.nbm-tab.on{border-bottom-color:var(--gold);color:var(--gold);}
+.nbm-body{flex:1;overflow-y:auto;padding:.65rem;}
+.nbm-item{display:flex;gap:.65rem;padding:.75rem .8rem;background:var(--bg2);border:1px solid var(--bdr);margin-bottom:.32rem;cursor:pointer;transition:all .14s;align-items:flex-start;}
+.nbm-item:hover{border-color:var(--gold-d);}
+.nbm-item.unread{border-left:3px solid var(--gold);}
+.nbm-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:.95rem;flex-shrink:0;}
+.nbm-av.grp-shape{border-radius:8px;}
+.nbm-info{flex:1;min-width:0;}
+.nbm-name{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;color:var(--tp);}
+.nbm-text{font-family:'DM Mono',monospace;font-size:.63rem;color:var(--ts);line-height:1.6;margin-top:.12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nbm-time{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--tm);margin-top:.15rem;}
+.nbm-actions{display:flex;gap:.3rem;margin-top:.4rem;}
+.nbm-empty{text-align:center;padding:3rem 1rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);}
+
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 @media(max-width:870px){.tbox{bottom:calc(56px + .7rem);right:.7rem;left:.7rem;}}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
@@ -1278,57 +1324,158 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       </div>
 
       <div id="view-friends" class="view">
-        <div class="iso-page" style="max-width:700px">
+        <div class="iso-page" style="max-width:720px">
           <div class="iso-hdr" style="border-color:rgba(100,200,150,.3)">
             <span class="iso-hdr-ico">👥</span>
             <div>
-              <h2>Friends — <span style="color:rgb(100,200,150)">Social</span></h2>
-              <p>Add friends and see their liked content.</p>
+              <h2>Social — <span style="color:rgb(100,200,150)">Friends & Groups</span></h2>
+              <p>Chat with friends and create group conversations.</p>
             </div>
           </div>
 
           <div id="fr-no-account" style="text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);line-height:2.2;display:none">
             <div style="font-size:2.5rem;margin-bottom:.8rem">👤</div>
-            Create an account in <strong style="color:var(--gold)">⚙ Settings</strong> to use Friends.
-            <br/>
-            <button class="btn g" onclick="openSM()" style="margin-top:.8rem">Open Settings</button>
+            Create an account in <strong style="color:var(--gold)">⚙ Settings</strong> to use Social.
+            <button class="btn g" onclick="openSM()" style="margin-top:.8rem;display:block;margin-left:auto;margin-right:auto">Open Settings</button>
           </div>
 
           <div id="fr-main" style="display:none">
-            <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
-              <div id="fr-avatar" style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;flex-shrink:0"></div>
+            <div style="display:flex;align-items:center;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
+              <div id="fr-avatar" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;flex-shrink:0"></div>
               <div style="flex:1;min-width:0">
-                <div id="fr-username" style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--tp)"></div>
-                <div id="fr-bio" style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);margin-top:.25rem;line-height:1.6;max-width:360px"></div>
+                <div id="fr-username" style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--tp)"></div>
+                <div id="fr-bio" style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);margin-top:.2rem;line-height:1.6;max-width:360px"></div>
               </div>
-              <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
-                <button class="btn" onclick="openFrReqPanel()" style="position:relative;font-size:.62rem;padding:.3rem .7rem">
-                  Requests
-                  <span id="fr-req-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--crim);color:#fff;border-radius:50%;width:16px;height:16px;font-family:'DM Mono',monospace;font-size:.46rem;align-items:center;justify-content:center;font-weight:700"></span>
-                </button>
-                <button class="btn" onclick="openSM()" style="font-size:.58rem">⚙ Account</button>
+              <div style="display:flex;gap:.4rem;align-items:center;flex-shrink:0">
+                <button class="btn" onclick="openFrReqPanel()" style="position:relative;font-size:.6rem;padding:.28rem .65rem">Requests<span id="fr-req-badge" style="display:none;position:absolute;top:-5px;right:-5px;background:var(--crim);color:#fff;border-radius:50%;width:16px;height:16px;font-family:'DM Mono',monospace;font-size:.44rem;align-items:center;justify-content:center;font-weight:700"></span></button>
+                <button class="btn" onclick="openSM()" style="font-size:.58rem">⚙</button>
               </div>
             </div>
 
-            <div style="margin-bottom:1.2rem">
-              <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Add Friend</div>
-              <div style="display:flex;gap:.4rem">
-                <input class="cfg-inp" id="fr-add-inp" type="text" placeholder="Username" autocomplete="off" style="flex:1"/>
+            <div class="soc-tabs">
+              <button class="soc-tab on" id="soc-tab-friends" onclick="switchSocTab('friends')">👥 Friends (<span id="fr-count">0</span>)</button>
+              <button class="soc-tab" id="soc-tab-groups" onclick="switchSocTab('groups')">💬 Groups (<span id="grp-count">0</span>)</button>
+            </div>
+
+            <div id="soc-friends-panel">
+              <div style="display:flex;gap:.4rem;margin-bottom:1rem;margin-top:.8rem">
+                <input class="cfg-inp" id="fr-add-inp" type="text" placeholder="Add friend by username" autocomplete="off" style="flex:1"/>
                 <button class="btn g" onclick="addFriend()">Add</button>
               </div>
-              <div id="fr-add-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;margin-top:.3rem;display:none"></div>
+              <div id="fr-add-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;margin-bottom:.5rem;display:none"></div>
+              <div id="fr-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+              <div id="fr-empty" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem;display:none">No friends yet. Add someone by username!</div>
             </div>
 
-            <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Friends (<span id="fr-count">0</span>)</div>
-            <div id="fr-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
-            <div id="fr-empty" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem;display:none">
-              No friends yet. Add someone by their username!
+            <div id="soc-groups-panel" style="display:none">
+              <div style="display:flex;justify-content:flex-end;margin:.8rem 0 .6rem">
+                <button class="btn g" onclick="openCreateGroup()" style="font-size:.65rem">+ New Group</button>
+              </div>
+              <div id="grp-list" style="display:flex;flex-direction:column;gap:.4rem"></div>
+              <div id="grp-empty" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem;display:none">No groups yet. Create one!</div>
+              <div id="grp-invites-section" style="display:none">
+                <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tm);margin:.8rem 0 .4rem">Pending Invites</div>
+                <div id="grp-invites-list"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-    </main>
+
+  </div>
+</div>
+
+<div id="create-group-modal" onclick="if(event.target===this)closeCreateGroup()">
+  <div class="gm-box">
+    <div class="gm-head"><span class="gm-title">💬 New Group</span><button class="bico" onclick="closeCreateGroup()" style="width:26px;height:26px;font-size:.8rem">✕</button></div>
+    <div class="gm-body">
+      <div class="gm-label">Group Name</div>
+      <input class="cfg-inp" id="cg-name" placeholder="My Group" style="width:100%;margin-bottom:.5rem"/>
+      <div class="gm-label">Description (optional)</div>
+      <input class="cfg-inp" id="cg-desc" placeholder="What's this group about?" style="width:100%;margin-bottom:.5rem"/>
+      <div class="gm-label">Avatar</div>
+      <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.8rem">
+        <div id="cg-preview" style="width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;background:#C9A84C;color:#080808;flex-shrink:0">G</div>
+        <div style="flex:1">
+          <div style="display:flex;gap:.4rem;align-items:center;margin-bottom:.4rem">
+            <label style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm)">Color</label>
+            <input type="color" id="cg-color" value="#C9A84C" style="width:32px;height:24px;border:none;background:none;cursor:pointer" oninput="updateCgPreview()"/>
+          </div>
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <label style="font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm)">Letter</label>
+            <input class="cfg-inp" id="cg-letter" maxlength="2" value="G" style="width:48px" oninput="updateCgPreview()"/>
+          </div>
+        </div>
+      </div>
+      <div class="gm-label">Max Members (up to 30)</div>
+      <input class="cfg-inp" id="cg-max" type="number" min="2" max="30" value="30" style="width:80px;margin-bottom:.5rem"/>
+      <div class="gm-label">Who can invite</div>
+      <select class="cfg-inp" id="cg-invite-perm" style="width:100%;margin-bottom:.8rem">
+        <option value="member">All members</option>
+        <option value="admin">Admins only</option>
+        <option value="owner">Owner only</option>
+      </select>
+      <div id="cg-err" style="font-family:'DM Mono',monospace;font-size:.58rem;color:#C0392B;margin-bottom:.5rem;display:none"></div>
+      <button class="btn g" onclick="createGroup()" style="width:100%">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<div id="member-list-modal" onclick="if(event.target===this)closeMemberList()">
+  <div class="gm-box">
+    <div class="gm-head">
+      <span class="gm-title" id="ml-title">Members</span>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn" onclick="openInviteModal()" style="font-size:.6rem" id="ml-invite-btn">+ Invite</button>
+        <button class="bico" onclick="closeMemberList()" style="width:26px;height:26px;font-size:.8rem">✕</button>
+      </div>
+    </div>
+    <div class="gm-body" id="ml-body"></div>
+  </div>
+</div>
+
+<div id="role-manager-modal" onclick="if(event.target===this)closeRoleManager()">
+  <div class="gm-box">
+    <div class="gm-head">
+      <span class="gm-title">Role Manager</span>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn g" onclick="createRole()" style="font-size:.6rem">+ Role</button>
+        <button class="bico" onclick="closeRoleManager()" style="width:26px;height:26px;font-size:.8rem">✕</button>
+      </div>
+    </div>
+    <div class="gm-body" id="rm-body"></div>
+  </div>
+</div>
+
+<div id="group-invite-modal" onclick="if(event.target===this)closeInviteModal()">
+  <div class="gm-box">
+    <div class="gm-head"><span class="gm-title">Invite Friends</span><button class="bico" onclick="closeInviteModal()" style="width:26px;height:26px;font-size:.8rem">✕</button></div>
+    <div class="gm-body" id="gi-body">
+      <div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);margin-bottom:.6rem">Select friends to invite (only shows friends not already in the group)</div>
+      <div id="gi-list"></div>
+      <button class="btn g" onclick="sendInvites()" style="width:100%;margin-top:.6rem">Send Invites</button>
+    </div>
+  </div>
+</div>
+
+<div id="notif-bell-modal" onclick="if(event.target===this)closeNotifBell()">
+  <div class="nbm-panel">
+    <div class="nbm-head">
+      <span class="nbm-title">🔔 Notifications</span>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <button onclick="markAllNotifsRead()" style="background:none;border:none;color:var(--tm);font-family:'DM Mono',monospace;font-size:.58rem;cursor:pointer" onmouseenter="this.style.color='var(--gold)'" onmouseleave="this.style.color='var(--tm)'">Mark all read</button>
+        <button onclick="clearAllNotifs()" style="background:none;border:none;color:var(--tm);font-family:'DM Mono',monospace;font-size:.58rem;cursor:pointer" onmouseenter="this.style.color='#C0392B'" onmouseleave="this.style.color='var(--tm)'">Clear</button>
+        <button class="bico" onclick="closeNotifBell()" style="width:26px;height:26px;font-size:.8rem">✕</button>
+      </div>
+    </div>
+    <div class="nbm-tabs">
+      <button class="nbm-tab on" id="nbt-all" onclick="switchNotifBellTab('all')">All</button>
+      <button class="nbm-tab" id="nbt-msgs" onclick="switchNotifBellTab('msgs')">Messages</button>
+      <button class="nbm-tab" id="nbt-social" onclick="switchNotifBellTab('social')">Social</button>
+      <button class="nbm-tab" id="nbt-groups" onclick="switchNotifBellTab('groups')">Groups</button>
+    </div>
+    <div class="nbm-body" id="nbm-body"><div class="nbm-empty">No notifications</div></div>
   </div>
 </div>
 
@@ -2072,6 +2219,43 @@ function openFrReqPanel(){$('fr-req-panel').classList.add('on');loadFriendReques
 function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
 
 let _chatWith=null,_chatPoll=null,_chatLastTs=0,_unread={};
+let _chatGroupId=null;
+let _updatePoll=null,_lastUpdateTs=0;
+let _pollRunning=false;
+
+
+
+async function _longPollLoop(friendUsername,friendData,groupId){
+  if(_pollRunning)return;
+  _pollRunning=true;
+  const s=getSession();if(!s)return;
+  while(_pollRunning&&(_chatWith===friendUsername||_chatGroupId===groupId)){
+    try{
+      const params=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
+      const r=await fetch(
+        `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=4`,
+        {mode:'cors',signal:AbortSignal.timeout(7000)});
+      const d=await safeJson(r)||{};
+      const msgs=d.messages||[];
+      if(msgs.length){
+        _chatLastTs=msgs[msgs.length-1].ts;
+        const el=$('chat-msgs');if(!el)break;
+        const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+        msgs.forEach(msg=>{
+          if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
+          if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
+          el.appendChild(renderMsg(msg,s.username,null,friendData));
+        });
+        if(wasBottom)el.scrollTop=el.scrollHeight;
+        pollTyping(friendUsername,groupId);
+      }
+    }catch{
+      await new Promise(r=>setTimeout(r,1500));
+    }
+  }
+  _pollRunning=false;
+}
+
 let _replyTo=null,_editingId=null;
 let _notifTimer=null;
 const QUICK_REACTS=['👍','❤️','😂','😮','😢','🔥','💯','👀'];
@@ -2473,7 +2657,7 @@ function renderChatHistory(msgs,myUsername,friendData){
 const _sentIds=new Set();
 
 async function sendMessage(){
-  const s=getSession();if(!s||!_chatWith)return;
+  const s=getSession();if(!s||(!_chatWith&&!_chatGroupId))return;
   const inp=$('chat-inp');const text=inp.value.trim();if(!text)return;
   if(_editingId){
     const d=await apiCall('/api/chat/edit',{id:_editingId,from:s.username,password:s.password,content:text});
@@ -2482,8 +2666,7 @@ async function sendMessage(){
     if(el){
       const b=el.querySelector('.msg-bubble');
       if(b){
-        const rp=b.querySelector('.msg-reply-preview');
-        const reacts=b.querySelector('.msg-reacts');
+        const rp=b.querySelector('.msg-reply-preview');const reacts=b.querySelector('.msg-reacts');
         [...b.childNodes].forEach(n=>{if(n!==rp&&n!==reacts)b.removeChild(n);});
         const span=document.createElement('span');span.innerHTML=renderMarkdown(text);
         rp?rp.after(span):b.prepend(span);
@@ -2491,31 +2674,24 @@ async function sendMessage(){
       }
       if(window._msgCache[_editingId])window._msgCache[_editingId].content=text;
     }
-    cancelEdit();inp.value='';inp.style.height='34px';
-    return;
+    cancelEdit();inp.value='';inp.style.height='34px';return;
   }
-  inp.value='';inp.style.height='34px';
-  $('chat-send-btn').disabled=true;
-  stopTyping();
-  const body={from:s.username,password:s.password,to:_chatWith,content:text,type:'text'};
-  if(_replyTo){body.reply_to=_replyTo.id;}
-
+  inp.value='';inp.style.height='34px';$('chat-send-btn').disabled=true;stopTyping();
+  const body={from:s.username,password:s.password,content:text,type:'text'};
+  if(_chatGroupId)body.group_id=_chatGroupId;else body.to=_chatWith;
+  if(_replyTo)body.reply_to=_replyTo.id;
   const nowTs=Date.now();
-  const fakeMsg={id:'p'+nowTs,sender:s.username,content:text,mtype:'text',
-    ts:nowTs,reply_to:_replyTo?.id||null,reactions:'{}',edited:0,deleted:0};
+  const fakeMsg={id:'p'+nowTs,sender:s.username,content:text,mtype:'text',ts:nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
   const msgEl=$('chat-msgs');
   const wasBot=msgEl.scrollHeight-msgEl.scrollTop-msgEl.clientHeight<80;
   const fakeRow=renderMsg(fakeMsg,s.username,null,window._friendCache);
-  fakeRow.style.opacity='.65';fakeRow.style.transition='opacity .3s';
-  msgEl.appendChild(fakeRow);
+  fakeRow.style.opacity='.65';msgEl.appendChild(fakeRow);
   if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
   clearReply();
   const d=await apiCall('/api/chat/send',body);
   $('chat-send-btn').disabled=false;
   if(d.error){fakeRow.remove();inp.value=text;toast(d.error,'err');return;}
-  fakeRow.remove();
-  if(d.id)_sentIds.add(d.id);
-  if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
+  fakeRow.remove();if(d.id)_sentIds.add(d.id);if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
   inp.focus();
 }
 
@@ -2549,32 +2725,14 @@ async function sendMediaMsg(content,type,editId){
   msgEl.appendChild(fakeRow);
   if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
   clearReply();
-  const body={from:s.username,password:s.password,to:_chatWith,content,type};
-  if(_replyTo){body.reply_to=_replyTo.id;}
+  const body={from:s.username,password:s.password,content,type};
+  if(_chatGroupId)body.group_id=_chatGroupId;else body.to=_chatWith;
+  if(_replyTo)body.reply_to=_replyTo.id;
   const d=await apiCall('/api/chat/send',body,'POST',120000);
   if(d.error){fakeRow.remove();toast(d.error,'err');return;}
   fakeRow.remove();
   if(d.id)_sentIds.add(d.id);
   if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
-}
-
-async function pollNewMessages(friendUsername,friendData){
-  const s=getSession();if(!s||_chatWith!==friendUsername)return;
-  try{
-    const r=await fetch(`${API()}/api/chat/messages?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}&since=${_chatLastTs}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
-    const d=await safeJson(r)||{};const msgs=d.messages||[];if(!msgs.length)return;
-    _chatLastTs=msgs[msgs.length-1].ts;
-    const el=$('chat-msgs');if(!el)return;
-    const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
-    msgs.forEach(msg=>{
-      if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
-      if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
-      el.appendChild(renderMsg(msg,s.username,null,friendData));
-    });
-    if(wasBottom)el.scrollTop=el.scrollHeight;
-
-    pollTyping(friendUsername);
-  }catch{}
 }
 
 async function checkNotifications(){
@@ -2597,12 +2755,54 @@ async function checkNotifications(){
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'?',
           text:`${n.fromDisplay||n.from} sent you a friend request!`,ts:n.time*1000,
           action:()=>{switchView('friends');openFrReqPanel();}});
+      }else if(n.type==='group_invite'){
+        addNotif({type:'group_invite',from:n.from,fromDisplay:n.fromDisplay,
+          fromColor:'#C9A84C',fromLetter:'G',
+          text:`Invited to group: ${n.group_name}`,ts:n.time*1000,
+          invite_id:n.invite_id,group_name:n.group_name,
+          action:()=>{switchView('friends');switchSocTab('groups');}});
       }
     });
     if(needsSync){await syncSessionFromServer();renderFriendsList();updateFriendCount();}
     loadFriendRequests();
     pollUnreadCounts();
   }catch{}
+}
+
+
+async function sendPresence(status){
+  const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
+  try{
+    await fetch(`${API()}/api/presence`,{method:'POST',mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user:s.username,password:s.password,status}),
+      signal:AbortSignal.timeout(3000)});
+  }catch{}
+}
+
+let _presenceTimer=null;
+function startPresenceHeartbeat(){
+  clearInterval(_presenceTimer);
+  sendPresence(document.hasFocus()?'active':'idle');
+  _presenceTimer=setInterval(()=>{
+    if(!S.serverOk)return;
+    sendPresence(document.hasFocus()?'active':'idle');
+  },10000);
+}
+
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden)sendPresence('active');
+  else sendPresence('idle');
+},{passive:true});
+window.addEventListener('focus',()=>sendPresence('active'),{passive:true});
+window.addEventListener('blur',()=>sendPresence('idle'),{passive:true});
+
+async function getPresence(usernames){
+  try{
+    const r=await fetch(`${API()}/api/presence?users=${usernames.join(',')}`,{mode:'cors',signal:AbortSignal.timeout(4000)});
+    const d=await safeJson(r)||{};
+    return d.presence||{};
+  }catch{return {};}
 }
 
 async function pollUnreadCounts(){
@@ -2698,17 +2898,20 @@ function stopTyping(){clearTimeout(_typingTimer);_isTyping=false;}
 async function _sendTyping(){
   const s=getSession();if(!s||!_chatWith)return;
   try{
+    const tbody={from:s.username,password:s.password};
+    if(_chatGroupId)tbody.group_id=_chatGroupId;else tbody.to=_chatWith;
     await fetch(`${API()}/api/chat/typing`,{method:'POST',mode:'cors',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({from:s.username,password:s.password,to:_chatWith}),
+      body:JSON.stringify(tbody),
       signal:AbortSignal.timeout(3000)});
   }catch{}
   if(_isTyping)setTimeout(()=>{if(_isTyping)_sendTyping();},3000);
 }
-async function pollTyping(friendUsername){
+async function pollTyping(friendUsername,groupId){
   const s=getSession();if(!s||!S.serverOk)return;
   try{
-    const r=await fetch(`${API()}/api/chat/typing?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}`,{mode:'cors',signal:AbortSignal.timeout(3000)});
+    const tparams=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
+    const r=await fetch(`${API()}/api/chat/typing?user=${s.username}&password=${encodeURIComponent(s.password)}&${tparams}`,{mode:'cors',signal:AbortSignal.timeout(3000)});
     const d=await safeJson(r)||{};
     const typers=d.typing||[];
     const status=$('chat-hdr-status');if(!status)return;
@@ -2723,58 +2926,351 @@ async function pollTyping(friendUsername){
 const _notifStore={items:[],unread:0};
 let _notifTab='all';
 
-function openNotifPanel(){
+let _notifStore={items:[],unread:0};
+let _notifBellTab='all';
+
+function openNotifPanel(){openNotifBell();}
+function closeNotifPanel(){closeNotifBell();}
+
+function openNotifBell(){
   const badge=$('bell-badge');
   if(badge){badge.textContent='';badge.classList.remove('on');}
   _notifStore.unread=0;
-  $('notif-panel').classList.add('on');
-  renderNotifPanel();
+  $('notif-bell-modal').classList.add('on');
+  switchNotifBellTab(_notifBellTab);
 }
-function closeNotifPanel(){$('notif-panel').classList.remove('on');}
-function switchNotifTab(t){
-  _notifTab=t;
-  document.querySelectorAll('.np-tab').forEach(el=>el.classList.remove('on'));
-  const tab=$('npt-'+t);if(tab)tab.classList.add('on');
-  renderNotifPanel();
+function closeNotifBell(){$('notif-bell-modal').classList.remove('on');}
+function switchNotifBellTab(t){
+  _notifBellTab=t;
+  document.querySelectorAll('.nbm-tab').forEach(el=>el.classList.remove('on'));
+  $('nbt-'+t)?.classList.add('on');
+  renderNotifBell();
 }
-function markAllRead(){_notifStore.items.forEach(n=>n.unread=false);renderNotifPanel();}
+function markAllNotifsRead(){_notifStore.items.forEach(n=>n.unread=false);renderNotifBell();}
+function clearAllNotifs(){_notifStore.items=[];_notifStore.unread=0;renderNotifBell();const b=$('bell-badge');if(b){b.textContent='';b.classList.remove('on');}}
 
 function addNotif(item){
   item.unread=true;item.ts=item.ts||Date.now();
   _notifStore.items.unshift(item);
-  if(_notifStore.items.length>60)_notifStore.items.length=60;
+  if(_notifStore.items.length>80)_notifStore.items.length=80;
   _notifStore.unread++;
   const badge=$('bell-badge');
   if(badge){badge.textContent=_notifStore.unread>9?'9+':_notifStore.unread;badge.classList.add('on');}
-  if($('notif-panel').classList.contains('on'))renderNotifPanel();
+  if($('notif-bell-modal').classList.contains('on'))renderNotifBell();
 }
-function renderNotifPanel(){
-  const body=$('np-body');if(!body)return;
+
+function renderNotifBell(){
+  const body=$('nbm-body');if(!body)return;
   let items=_notifStore.items;
-  if(_notifTab==='msgs')items=items.filter(n=>n.type==='message');
-  else if(_notifTab==='reqs')items=items.filter(n=>n.type==='request'||n.type==='accepted');
-  if(!items.length){body.innerHTML='<div class="np-empty">No notifications yet</div>';return;}
+  if(_notifBellTab==='msgs')items=items.filter(n=>n.type==='message');
+  else if(_notifBellTab==='social')items=items.filter(n=>['request','accepted'].includes(n.type));
+  else if(_notifBellTab==='groups')items=items.filter(n=>['group_invite','group_msg'].includes(n.type));
+  if(!items.length){body.innerHTML='<div class="nbm-empty">No notifications</div>';return;}
   body.innerHTML=items.map((n,i)=>{
     const color=n.fromColor||'#C9A84C';const letter=n.fromLetter||'?';
     const ltxt=isLight(color)?'#080808':'#fff';
-    const timeStr=n.ts?new Date(n.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-    const icon=n.type==='message'?'💬':n.type==='accepted'?'✅':'👥';
-    return`<div class="np-item${n.unread?' unread':''}" onclick="_notifAction(${i})">
-      <div class="np-av" style="background:${color};color:${ltxt}">${esc(letter)}</div>
-      <div class="np-info">
-        <div class="np-name">${icon} ${esc(n.fromDisplay||n.from||'System')}</div>
-        <div class="np-text">${esc(n.text||'')}</div>
-        <div class="np-time">${timeStr}</div>
+    const ts=n.ts?new Date(n.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+    const isGrp=n.type==='group_invite'||n.type==='group_msg';
+    let actions='';
+    if(n.type==='request'){
+      actions=`<div class="nbm-actions"><button class="btn g" onclick="_notifAccept(${i})" style="font-size:.6rem;padding:.22rem .55rem">Accept</button><button class="btn" onclick="_notifDecline(${i})" style="font-size:.6rem;padding:.22rem .55rem">Decline</button></div>`;
+    }else if(n.type==='group_invite'){
+      actions=`<div class="nbm-actions"><button class="btn g" onclick="_notifAcceptInvite(${i})" style="font-size:.6rem;padding:.22rem .55rem">Join</button><button class="btn" onclick="_notifDeclineInvite(${i})" style="font-size:.6rem;padding:.22rem .55rem">Decline</button></div>`;
+    }
+    const icon=n.type==='message'?'💬':n.type==='accepted'?'✅':n.type==='group_invite'?'💌':n.type==='group_msg'?'💬':'👤';
+    return`<div class="nbm-item${n.unread?' unread':''}" onclick="_notifClick(${i})">
+      <div class="nbm-av${isGrp?' grp-shape':''}" style="background:${color};color:${ltxt}">${esc(letter)}</div>
+      <div class="nbm-info">
+        <div class="nbm-name">${icon} ${esc(n.fromDisplay||n.from||'System')}</div>
+        <div class="nbm-text">${esc(n.text||'')}</div>
+        <div class="nbm-time">${ts}</div>
+        ${actions}
       </div>
     </div>`;
   }).join('');
 }
-function _notifAction(idx){
+function _notifClick(idx){
+  const n=_notifStore.items[idx];if(!n)return;
+  n.unread=false;renderNotifBell();
+  if(n.action)n.action();
+}
+async function _notifAccept(idx){
   const n=_notifStore.items[idx];if(!n)return;
   n.unread=false;
-  if(n.action)n.action();
-  closeNotifPanel();
+  const s=getSession();if(!s)return;
+  await apiCall(`/api/users/${s.username}/friends/respond`,{password:s.password,from:n.from,action:'accept'});
+  _notifStore.items.splice(idx,1);
+  renderNotifBell();await syncSessionFromServer();renderFriendsList();updateFriendCount();
+  toast(`You and ${n.fromDisplay||n.from} are now friends!`,'ok',3000);
 }
+async function _notifDecline(idx){
+  const n=_notifStore.items[idx];if(!n)return;
+  const s=getSession();if(!s)return;
+  await apiCall(`/api/users/${s.username}/friends/respond`,{password:s.password,from:n.from,action:'decline'});
+  _notifStore.items.splice(idx,1);renderNotifBell();
+}
+async function _notifAcceptInvite(idx){
+  const n=_notifStore.items[idx];if(!n||!n.invite_id)return;
+  const s=getSession();if(!s)return;
+  await apiCall('/api/groups/invites/respond',{user:s.username,password:s.password,invite_id:n.invite_id,action:'accepted'});
+  _notifStore.items.splice(idx,1);renderNotifBell();
+  toast(`Joined ${n.group_name||'group'}!`,'ok',2500);loadUserGroups();
+}
+async function _notifDeclineInvite(idx){
+  const n=_notifStore.items[idx];if(!n||!n.invite_id)return;
+  const s=getSession();if(!s)return;
+  await apiCall('/api/groups/invites/respond',{user:s.username,password:s.password,invite_id:n.invite_id,action:'declined'});
+  _notifStore.items.splice(idx,1);renderNotifBell();
+}
+
+function switchSocTab(t){
+  document.querySelectorAll('.soc-tab').forEach(el=>el.classList.remove('on'));
+  $('soc-tab-'+t)?.classList.add('on');
+  $('soc-friends-panel').style.display=t==='friends'?'':'none';
+  $('soc-groups-panel').style.display=t==='groups'?'':'none';
+  if(t==='groups')loadUserGroups();
+}
+
+let _userGroups=[];
+async function loadUserGroups(){
+  const s=getSession();if(!s||!S.serverOk)return;
+  const d=await apiCall(`/api/users/${s.username}/groups`,'GET','GET');
+  const d2=await fetch(`${API()}/api/users/${s.username}/groups?password=${encodeURIComponent(s.password)}`,{mode:'cors',signal:AbortSignal.timeout(6000)}).then(r=>safeJson(r)).catch(()=>null)||{};
+  _userGroups=(d2.groups||[]);
+  const el=$('grp-list');const em=$('grp-empty');if(!el)return;
+  $('grp-count').textContent=_userGroups.length;
+  if(!_userGroups.length){el.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';
+  el.innerHTML=_userGroups.map(g=>{
+    const ltxt=isLight(g.avatar_color||'#C9A84C')?'#080808':'#fff';
+    return`<div class="grp-card" onclick="openGroupChat(${g.id},${JSON.stringify(g).replace(/"/g,'&quot;')})">
+      <div class="grp-av" style="background:${g.avatar_color||'#C9A84C'};color:${ltxt}">${esc(g.avatar_letter||'G')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="grp-name">${esc(g.name)}</div>
+        <div class="grp-sub">${g.member_count||'?'} members${g.description?` · ${esc(g.description.slice(0,40))}`:''}</div>
+      </div>
+      <button class="bico" onclick="event.stopPropagation();openGroupDetail(${g.id})" style="font-size:.7rem;width:26px;height:26px" title="Group settings">⚙</button>
+    </div>`;
+  }).join('');
+  await loadGroupInvites();
+}
+
+async function loadGroupInvites(){
+  const s=getSession();if(!s||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/users/${s.username}/group_invites?password=${encodeURIComponent(s.password)}`,{mode:'cors',signal:AbortSignal.timeout(6000)});
+    const d=await safeJson(r)||{};
+    const invites=d.invites||[];
+    const sec=$('grp-invites-section');
+    const list=$('grp-invites-list');
+    if(!sec||!list)return;
+    if(!invites.length){sec.style.display='none';return;}
+    sec.style.display='block';
+    list.innerHTML=invites.map(inv=>{
+      const ltxt=isLight(inv.avatar_color||'#C9A84C')?'#080808':'#fff';
+      return`<div class="grp-card">
+        <div class="grp-av" style="background:${inv.avatar_color||'#C9A84C'};color:${ltxt}">${esc(inv.avatar_letter||'G')}</div>
+        <div style="flex:1;min-width:0"><div class="grp-name">${esc(inv.group_name||'Group')}</div><div class="grp-sub">Invited by ${esc(inv.from_u)}</div></div>
+        <div style="display:flex;gap:.3rem">
+          <button class="btn g" onclick="acceptGroupInvite(${inv.id})" style="font-size:.6rem;padding:.22rem .5rem">Join</button>
+          <button class="btn" onclick="declineGroupInvite(${inv.id})" style="font-size:.6rem;padding:.22rem .5rem">Decline</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch{}
+}
+
+async function acceptGroupInvite(invId){
+  const s=getSession();if(!s)return;
+  const d=await apiCall('/api/groups/invites/respond',{user:s.username,password:s.password,invite_id:invId,action:'accepted'});
+  if(d.error){toast(d.error,'err');return;}
+  toast('Joined group!','ok',2000);loadUserGroups();
+}
+async function declineGroupInvite(invId){
+  const s=getSession();if(!s)return;
+  await apiCall('/api/groups/invites/respond',{user:s.username,password:s.password,invite_id:invId,action:'declined'});
+  loadGroupInvites();
+}
+
+function openGroupChat(gid,groupData){
+  openChat(null,groupData,gid);
+}
+
+function openCreateGroup(){$('create-group-modal').classList.add('on');updateCgPreview();}
+function closeCreateGroup(){$('create-group-modal').classList.remove('on');}
+function updateCgPreview(){
+  const color=$('cg-color')?.value||'#C9A84C';
+  const letter=($('cg-letter')?.value||'G')[0]||'G';
+  const prev=$('cg-preview');
+  if(prev){prev.style.background=color;prev.textContent=letter;prev.style.color=isLight(color)?'#080808':'#fff';}
+}
+async function createGroup(){
+  const s=getSession();if(!s)return;
+  const name=$('cg-name').value.trim();
+  if(!name){$('cg-err').textContent='Name required';$('cg-err').style.display='block';return;}
+  $('cg-err').style.display='none';
+  const d=await apiCall('/api/groups',{user:s.username,password:s.password,name,
+    description:$('cg-desc').value.trim(),
+    avatar_color:$('cg-color').value,
+    avatar_letter:($('cg-letter').value||'G')[0],
+    max_members:Math.min(30,Math.max(2,parseInt($('cg-max').value)||30)),
+    invite_perm:$('cg-invite-perm').value});
+  if(d.error){$('cg-err').textContent=d.error;$('cg-err').style.display='block';return;}
+  closeCreateGroup();toast('Group created!','ok',2000);
+  $('cg-name').value='';$('cg-desc').value='';
+  loadUserGroups();switchSocTab('groups');
+}
+
+let _detailGid=null,_detailData=null;
+async function openGroupDetail(gid){
+  _detailGid=gid;
+  const r=await fetch(`${API()}/api/groups/${gid}`,{mode:'cors',signal:AbortSignal.timeout(6000)}).then(r=>safeJson(r)).catch(()=>null)||{};
+  _detailData=r;
+  if(!r.group)return;
+  openMemberList(gid,r);
+}
+function closeGroupDetail(){$('group-detail-modal').classList.remove('on');}
+
+let _mlGid=null,_mlData=null;
+function openMemberList(gid,data){
+  _mlGid=gid;_mlData=data;
+  const g=data.group||{};
+  $('ml-title').textContent=`${g.name||'Group'} — Members`;
+  renderMemberList(data);
+  $('member-list-modal').classList.add('on');
+}
+function closeMemberList(){$('member-list-modal').classList.remove('on');}
+
+function renderMemberList(data){
+  const s=getSession();if(!s)return;
+  const body=$('ml-body');if(!body)return;
+  const members=data.members||[];
+  const roles=data.roles||[];
+  const g=data.group||{};
+  const myMember=members.find(m=>m.username===s.username);
+  const myRolePos=myMember?.position??100;
+  const isOwner=g.owner===s.username;
+  const canManage=isOwner||roles.find(r=>r.id===myMember?.role_id)?.perms?.includes?.('can_manage_roles');
+
+  body.innerHTML=`
+    <div style="display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap">
+      ${isOwner?`<button class="btn" onclick="openRoleManager(${g.id})" style="font-size:.6rem">⚙ Roles</button>`:''}
+      <button class="btn g" onclick="openInviteModal()" style="font-size:.6rem">+ Invite</button>
+      ${!isOwner?`<button class="btn" onclick="confirmLeaveGroup(${g.id})" style="font-size:.6rem;border-color:#8b2222;color:#999">Leave</button>`:''}
+      ${isOwner?`<button class="btn" onclick="openGroupChat(${g.id},${JSON.stringify(g).replace(/"/g,'&quot;')});closeMemberList()" style="font-size:.6rem">💬 Open Chat</button>`:`<button class="btn" onclick="openGroupChat(${g.id},${JSON.stringify(g).replace(/"/g,'&quot;')});closeMemberList()" style="font-size:.6rem">💬 Chat</button>`}
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--tm);margin-bottom:.5rem">${members.length} / ${g.max_members} members</div>
+    ${members.map(m=>{
+      const role=roles.find(r=>r.id===m.role_id)||{name:'Member',color:'#888',position:100};
+      const canAct=isOwner||(m.position>myRolePos&&canManage);
+      const ltxt=isLight(m.pfpColor||'#555')?'#080808':'#fff';
+      return`<div class="member-row">
+        <div class="member-row-av" style="background:${m.pfpColor||'#555'};color:${ltxt}">${esc(m.pfpLetter||'?')}</div>
+        <div style="flex:1;min-width:0">
+          <span style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp)">${esc(m.display||m.username)}</span>
+          <span class="role-badge" style="background:${role.color}22;color:${role.color};border:1px solid ${role.color}44">${esc(role.name)}</span>
+          <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm)">@${esc(m.username)}</div>
+        </div>
+        ${canAct&&m.username!==s.username?`<button class="btn" onclick="kickMember(${g.id},'${esc(m.username)}')" style="font-size:.56rem;padding:.18rem .45rem;border-color:#8b2222;color:#999">Kick</button>`:''}
+      </div>`;
+    }).join('')}`;
+}
+
+async function confirmLeaveGroup(gid){
+  const confirmed=await _obsDialog({title:'Leave Group',msg:'Are you sure you want to leave?',icon:'🚪',okLabel:'Leave',danger:true});
+  if(!confirmed)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${gid}/leave`,{user:s.username,password:s.password});
+  if(d.error){toast(d.error,'err');return;}
+  closeMemberList();toast('Left group','ok',2000);loadUserGroups();
+}
+async function kickMember(gid,target){
+  const confirmed=await _obsDialog({title:'Kick Member',msg:`Remove ${target} from the group?`,icon:'🥾',okLabel:'Kick',danger:true});
+  if(!confirmed)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${gid}/kick`,{user:s.username,password:s.password,target});
+  if(d.error){toast(d.error,'err');return;}
+  toast(`Kicked ${target}`,'ok',2000);openGroupDetail(gid);
+}
+
+let _rmGid=null;
+function openRoleManager(gid){_rmGid=gid;$('role-manager-modal').classList.add('on');renderRoleManager();}
+function closeRoleManager(){$('role-manager-modal').classList.remove('on');}
+function renderRoleManager(){
+  const body=$('rm-body');if(!body||!_mlData)return;
+  const roles=(_mlData.roles||[]).sort((a,b)=>a.position-b.position);
+  const s=getSession();if(!s)return;
+  const myMember=(_mlData.members||[]).find(m=>m.username===s.username);
+  const myPos=myMember?.position??100;
+  const allPerms=['can_invite','can_kick','can_delete_msg','can_manage_roles','can_rename_group','can_change_desc','can_change_avatar'];
+  body.innerHTML=roles.map(r=>{
+    let perms={};try{perms=JSON.parse(r.perms||'{}');}catch{}
+    const canEdit=r.position>0&&r.position>myPos;
+    return`<div class="role-row">
+      <div class="role-swatch" style="background:${r.color}"></div>
+      <div style="flex:1">
+        <div style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp)">${esc(r.name)} <span style="font-size:.54rem;color:var(--tm);font-family:'DM Mono',monospace">pos:${r.position}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:.2rem">
+          ${allPerms.map(p=>`<span style="font-family:'DM Mono',monospace;font-size:.5rem;padding:.05rem .3rem;background:${perms[p]?'rgba(201,168,76,.15)':'var(--bg3)'};color:${perms[p]?'var(--gold)':'var(--tm)'};border-radius:2px">${p.replace('can_','')}</span>`).join('')}
+        </div>
+      </div>
+      ${canEdit?`<button class="btn" onclick="editRole(${r.id})" style="font-size:.56rem;padding:.18rem .42rem">Edit</button>`:''}
+    </div>`;
+  }).join('');
+}
+async function createRole(){
+  const name=await _obsDialog({title:'New Role',msg:'Role name:',icon:'🎭',okLabel:'Create',input:true,cancelLabel:'Cancel'});
+  if(!name||typeof name!=='string')return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${_rmGid}/roles`,{user:s.username,password:s.password,name,position:50});
+  if(d.error){toast(d.error,'err');return;}
+  toast('Role created','ok');await openGroupDetail(_rmGid);renderRoleManager();
+}
+async function editRole(rid){
+  toast('Role editing coming soon','ok',2000);
+}
+
+let _invGid=null,_invSelected=new Set();
+function openInviteModal(){
+  _invGid=_mlGid;_invSelected=new Set();
+  $('group-invite-modal').classList.add('on');
+  renderInviteList();
+}
+function closeInviteModal(){$('group-invite-modal').classList.remove('on');}
+function renderInviteList(){
+  const s=getSession();if(!s)return;
+  const friends=s.friends||[];
+  const members=(_mlData?.members||[]).map(m=>m.username);
+  const eligible=friends.filter(f=>!members.includes(f));
+  const el=$('gi-list');if(!el)return;
+  if(!eligible.length){el.innerHTML=`<div style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);text-align:center;padding:1rem">All your friends are already in this group</div>`;return;}
+  el.innerHTML=eligible.map(f=>{
+    const p=window._friendProfileCache?.[f]||{};
+    const color=p.pfpColor||'#555';const letter=p.pfpLetter||f[0].toUpperCase();
+    const ltxt=isLight(color)?'#080808':'#fff';
+    return`<div class="member-row" onclick="toggleInviteSelect('${esc(f)}',this)" style="cursor:pointer" id="gi-row-${esc(f)}">
+      <div class="member-row-av" style="background:${color};color:${ltxt}">${esc(letter)}</div>
+      <div style="flex:1"><div style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp)">${esc(p.display||f)}</div><div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm)">@${esc(f)}</div></div>
+      <div class="inv-check" style="width:18px;height:18px;border:1px solid var(--bdr);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.8rem"></div>
+    </div>`;
+  }).join('');
+}
+function toggleInviteSelect(username,row){
+  if(_invSelected.has(username)){_invSelected.delete(username);row.style.background='';row.querySelector('.inv-check').textContent='';}
+  else{_invSelected.add(username);row.style.background='rgba(201,168,76,.08)';row.querySelector('.inv-check').textContent='✓';}
+}
+async function sendInvites(){
+  if(!_invSelected.size){toast('Select at least one friend','err');return;}
+  const s=getSession();if(!s)return;
+  let sent=0;
+  for(const to of _invSelected){
+    const d=await apiCall(`/api/groups/${_invGid}/invite`,{user:s.username,password:s.password,to});
+    if(!d.error)sent++;
+  }
+  closeInviteModal();
+  toast(`Invited ${sent} friend${sent!==1?'s':''}!`,'ok',2500);
+}
+
 
 const EMOJI_CATS={
   'Recent':[],
@@ -3230,8 +3726,7 @@ function switchView(name){
   if(isLikedView){renderLiked();return;}
   if(isFriendsView){
     refreshAccountUI();
-
-    syncSessionFromServer().then(()=>{refreshAccountUI();});
+    syncSessionFromServer().then(()=>{refreshAccountUI();loadUserGroups();});
     return;
   }
   if(!iso)loadVideos();
@@ -4644,22 +5139,19 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-
   await fetchServerUrlFromGithub();
-
   refreshAccountUI();
-
   if(S.serverUrl){
     skels();
     const ok=await checkServer(3);
     if(ok){
       toast('Server connected ✓','ok',2000);
+      startPresenceHeartbeat();
       loadVideos();
     }else{
-
       await fetchServerUrlFromGithub();
       const ok2=await checkServer(1);
-      if(ok2){loadVideos();}
+      if(ok2){startPresenceHeartbeat();loadVideos();}
       else{showApiDownPopup();}
     }
   }else{
