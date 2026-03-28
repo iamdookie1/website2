@@ -1455,6 +1455,36 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           </div>
         </div>
         <div class="sm-row">
+          <span>Videos per page</span>
+          <div style="display:flex;align-items:center;gap:.5rem">
+            <input type="range" id="st-pagesize" min="6" max="96" step="6" style="width:90px;accent-color:var(--gold)"
+              oninput="$('st-pagesize-lbl').textContent=this.value;ST.pageSize=parseInt(this.value);saveSettings();"/>
+            <span id="st-pagesize-lbl" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gold);min-width:24px">24</span>
+          </div>
+        </div>
+        <div class="sm-row">
+          <span>Region</span>
+          <select id="st-region" class="cfg-inp" style="font-size:.6rem;max-width:150px"
+            onchange="ST.region=this.value;saveSettings()">
+            <option value="">🌍 Global</option>
+            <option value="us">🇺🇸 United States</option>
+            <option value="gb">🇬🇧 United Kingdom</option>
+            <option value="ca">🇨🇦 Canada</option>
+            <option value="au">🇦🇺 Australia</option>
+            <option value="de">🇩🇪 Germany</option>
+            <option value="fr">🇫🇷 France</option>
+            <option value="jp">🇯🇵 Japan</option>
+            <option value="kr">🇰🇷 South Korea</option>
+            <option value="br">🇧🇷 Brazil</option>
+            <option value="mx">🇲🇽 Mexico</option>
+            <option value="it">🇮🇹 Italy</option>
+            <option value="es">🇪🇸 Spain</option>
+            <option value="nl">🇳🇱 Netherlands</option>
+            <option value="se">🇸🇪 Sweden</option>
+            <option value="ru">🇷🇺 Russia</option>
+          </select>
+        </div>
+        <div class="sm-row">
           <span>Autoplay videos</span>
           <label class="toggle"><input type="checkbox" id="st-autoplay" onchange="ST.autoplay=this.checked;saveSettings()"/><span class="tslider"></span></label>
         </div>
@@ -1713,7 +1743,7 @@ const S={
   redditOnly: false,
 };
 
-const DEF_SETTINGS={theme:'dark',chatLayout:'modal',api1:'pornhub',api2:'none',gifApi:'redgifs',autoplay:true};
+const DEF_SETTINGS={theme:'dark',chatLayout:'modal',api1:'pornhub',api2:'none',gifApi:'redgifs',autoplay:true,pageSize:24,region:''};
 let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
 ST={...DEF_SETTINGS,...ST};
 
@@ -1721,6 +1751,8 @@ function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));
 
 function openSM(){
   const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
+  const ps=$('st-pagesize');if(ps){ps.value=ST.pageSize||24;$('st-pagesize-lbl').textContent=ST.pageSize||24;}
+  const rg=$('st-region');if(rg)rg.value=ST.region||'';
 
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===ST.theme));
 
@@ -4045,7 +4077,8 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
   });
 });
 
-const CFG_PAGE=24;
+const CFG_PAGE_DEFAULT=24;
+function getCfgPage(){return Math.max(6,Math.min(96,parseInt(ST.pageSize)||24));}
 const PROXY_LIST=[
   u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
   u=>`https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
@@ -4065,40 +4098,44 @@ async function proxyFetch(url,parse='json'){
 }
 
 const PH_SORT={views:'mostviewed',newest:'newest',rating:'rating',trending:'trending'};
-async function fetchPornhub(q='',page=1,sort='views'){
+async function fetchPornhub(q='',page=1,sort='views',region=''){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({page,limit:CFG_PAGE,sort:PH_SORT[sort]||'mostviewed'});
+  const p=new URLSearchParams({page,limit:getCfgPage(),sort:PH_SORT[sort]||'mostviewed'});
   if(q)p.set('q',q);
+  if(region)p.set('region',region);
   const r=await fetch(`${S.serverUrl}/api/videos?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
   if(!r.ok)throw new Error(`PH server ${r.status}`);
   const d=await safeJson(r)||{};if(!d.videos&&d.error)throw new Error(d.error||'Bad response');
-  return{videos:d.videos||[],total:d.total||0};
+  return{videos:(d.videos||[]).map(v=>({...v,title:_decodeHtmlEntities(v.title)||v.title})),total:d.total||0};
 }
 
-async function fetchRedTube(q='',page=1,sort='views'){
+async function fetchRedTube(q='',page=1,sort='views',region=''){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
+  const p=new URLSearchParams({page,sort,limit:getCfgPage()});
   if(q)p.set('q',q);
+  if(region)p.set('region',region);
   const r=await fetch(`${S.serverUrl}/api/redtube?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw new Error(`RT server ${r.status}`);
   const d=await safeJson(r)||{};
-  return{videos:d.videos||[],total:d.total||0};
+  return{videos:(d.videos||[]).map(v=>({...v,title:_decodeHtmlEntities(v.title)||v.title})),total:d.total||0};
 }
 
-async function fetchYouPorn(q='',page=1,sort='views'){
+async function fetchYouPorn(q='',page=1,sort='views',region=''){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
+  const p=new URLSearchParams({page,sort,limit:getCfgPage()});
   if(q)p.set('q',q);
+  if(region)p.set('region',region);
   const r=await fetch(`${S.serverUrl}/api/youporn?${p}`,{mode:'cors',signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw new Error(`YP server ${r.status}`);
   const d=await safeJson(r)||{};
-  return{videos:d.videos||[],total:d.total||0};
+  return{videos:(d.videos||[]).map(v=>({...v,title:_decodeHtmlEntities(v.title)||v.title})),total:d.total||0};
 }
 
 function fetchByName(name,q,page,sort,opts={}){
-  if(name==='pornhub')  return fetchPornhub(q,page,sort);
-  if(name==='redtube')  return fetchRedTube(q,page,sort);
-  if(name==='youporn')  return fetchYouPorn(q,page,sort);
+  const region=opts.region||ST.region||'';
+  if(name==='pornhub')  return fetchPornhub(q,page,sort,region);
+  if(name==='redtube')  return fetchRedTube(q,page,sort,region);
+  if(name==='youporn')  return fetchYouPorn(q,page,sort,region);
   if(name==='redgifs')  return fetchRedgifs(q,page);
   return Promise.reject(new Error(`Unknown API: ${name}`));
 }
@@ -4117,17 +4154,24 @@ async function fetchRedgifs(q='',page=1){
   if(d.after)RG.pos[posKey]=d.after;
   const items=d.posts||d.gifs||d.videos||[];
   const mapped=items.map(g=>{
-    const url=g.url||'';
+    let url=g.url||'';
+    // Normalise formats
+    if(url.endsWith('.gifv'))url=url.replace('.gifv','.mp4');
     const isVid=g.mtype==='video'||url.endsWith('.mp4')||url.endsWith('.webm')||url.includes('v.redd.it');
+    // Proxy Reddit video URLs through server
+    let playUrl=url;
+    if(isVid&&S.serverUrl&&(url.includes('v.redd.it')||url.includes('external-preview.redd.it'))){
+      playUrl=`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(url)}&ref=${encodeURIComponent('https://www.reddit.com/')}`;
+    }
     return{
-      id:g.id,title:g.title||g.id||'GIF',
+      id:g.id,title:_decodeHtmlEntities(g.title)||g.title||g.id||'GIF',
       thumb:g.thumb||'',
       dur:0,views:g.ups||g.score||0,
       rating:'—',qual:isVid?'VIDEO':'GIF',
       tags:[],
-      directUrl:url,url,
+      directUrl:playUrl,url:playUrl,
       embedUrl:'',useIframe:false,
-      mType:isVid?'video':'gif',
+      mType:isVid?'gif-v':'gif',
       src:g.sub?`r/${g.sub}`:'Reddit GIF',bc:'b-rg',
     };
   }).filter(g=>g.url&&g.url.length>4);
@@ -4135,7 +4179,7 @@ async function fetchRedgifs(q='',page=1){
 }
 
 async function fetchMain(params={}){
-  const{q='',page=1,sort='views',tag='all',cat='',dur='',qual=''}=params;
+  const{q='',page=1,sort='views',tag='all',cat='',dur='',qual='',region=''}=params;
   const up=S.serverUrl&&S.serverOk;
 
   if(tag==='gif'||q.startsWith('__rg')){
@@ -4154,7 +4198,7 @@ async function fetchMain(params={}){
 
   const api1=ST.api1||'pornhub';
   const api2=ST.api2||'none';
-  const opts={cat,dur,qual};
+  const opts={cat,dur,qual,region};
   const fetches=[
     fetchByName(api1,effQ,page,sort,opts),
     api2!=='none'?fetchByName(api2,effQ,page,sort,opts):Promise.reject('disabled'),
@@ -4216,7 +4260,7 @@ function mockVids(n){
   }));
 }
 
-function skels(){const g=$('vgrid');g.innerHTML='';for(let i=0;i<CFG_PAGE;i++)g.innerHTML+=`<div class="skc"><div class="sk skt"></div><div class="ski"><div class="sk sk1"></div><div class="sk sk2"></div></div></div>`;}
+function skels(){const g=$('vgrid');g.innerHTML='';for(let i=0;i<getCfgPage();i++)g.innerHTML+=`<div class="skc"><div class="sk skt"></div><div class="ski"><div class="sk sk1"></div><div class="sk sk2"></div></div></div>`;}
 
 function mkCard(v,idx=0){
   const el=document.createElement('article');el.className='vc';el.setAttribute('role','listitem');el.setAttribute('tabindex','0');
@@ -4255,10 +4299,10 @@ async function loadVideos(append=false){
   if(S.loading)return;S.loading=true;
   if(!append)skels();
   try{
-    const res=await fetchMain({q:S.f.q,page:S.page,sort:S.f.sort,tag:S.f.tag,cat:S.f.cat,dur:S.f.dur,qual:S.f.qual});
+    const res=await fetchMain({q:S.f.q,page:S.page,sort:S.f.sort,tag:S.f.tag,cat:S.f.cat,dur:S.f.dur,qual:S.f.qual,region:ST.region||''});
     const videos=res.videos||[];
     const total=res.total||0;
-    S.totalPages=Math.max(1,Math.ceil(total/CFG_PAGE));
+    S.totalPages=Math.max(1,Math.ceil(total/getCfgPage()));
     const g=$('vgrid');
     if(!append)g.innerHTML='';
     if(!videos.length&&!append){
@@ -4850,23 +4894,40 @@ function launchPlayer(opts){
   document.body.style.overflow='hidden';
 }
 
+function _decodeHtmlEntities(s){
+  if(!s)return s;
+  return s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+    .replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(n))
+    .replace(/&apos;/g,"'").replace(/&nbsp;/g,' ').trim();
+}
+
 function openMain(v){
   S.curVid=v;
-  let src=v.useIframe?(v.embedUrl||v.url||''):(v.directUrl||v.url||'');
-  let mType=v.useIframe?'iframe'
-    :(v.mType==='gif'||v.mType==='gif-v'||v.src==='Redgifs')?'video'
-    :(v.mType==='image')?'image'
-    :'video';
-  if(mType==='video'&&(v.mType==='gif'||v.mType==='gif-v')){
-    if(src.includes('v.redd.it')||src.includes('reddit.com/video')){
+  // PH and EPorner videos can only play via embed iframe — direct URLs are blocked by CORS/DRM
+  const needsIframe=v.src==='PornHub'||v.src==='EPorner'||v.useIframe;
+  let src, mType;
+  if(needsIframe){
+    src=v.embed||v.embedUrl||v.url||'';
+    if(v.src==='PornHub'&&src.includes('view_video.php')){
+      // Convert page URL to embed URL
+      const vk=src.match(/viewkey=([a-z0-9]+)/i);
+      src=vk?`https://www.pornhub.com/embed/${vk[1]}`:src;
+    }
+    mType='iframe';
+  }else{
+    src=v.directUrl||v.url||'';
+    mType=v.mType==='gif'||v.mType==='gif-v'||v.src==='Redgifs'?'video'
+      :v.mType==='image'?'image':'video';
+    if(mType==='video'&&(src.includes('v.redd.it')||src.includes('reddit.com/video'))){
       if(S.serverUrl)src=`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(src)}&ref=${encodeURIComponent('https://www.reddit.com/')}`;
     }
   }
+  const title=_decodeHtmlEntities(v.title)||v.title||'';
   const liked=isLiked(v.id);
   launchPlayer({
-    src,title:v.title,accent:'gr',
+    src,title,accent:'gr',
     meta:`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span>${v.qual||''}</span><span style="color:var(--gold)">${esc(v.src)}</span>`,
-    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">♥${liked?' Liked':' Like'}</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
+    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">♥${liked?' Liked':' Like'}</button>${!needsIframe?`<button class="btn" onclick="window.open('${esc(v.url)}','_blank')">↗ Open</button>`:''}`,
     mediaType:mType,showRelated:mType!=='image',loop:v.mType==='gif'||v.mType==='gif-v',
   });
   if(mType!=='image')loadRelated(v);
@@ -4878,15 +4939,24 @@ function openRedditPost(post){
   const isGif=post.mType==='gif'||post.mType==='gif-v';
   const isGal=post.mType==='gallery';
   const isImg=post.mType==='image'||isGal;
-  const mType=isVid||isGif?'video':'image';
-  const src=isImg?(post.gallery?.[0]||post.mUrl):post.mUrl;
+  const isWebMedia=isVid||isGif;
+  let mType=isImg?'image':'video';
+  let src=isImg?(post.gallery?.[0]||post.mUrl||''):post.mUrl||'';
+  // Proxy Reddit-hosted video through server to fix CORS/auth issues
+  if(isWebMedia&&S.serverUrl){
+    if(src.includes('v.redd.it')||src.includes('reddit.com/video')||src.includes('external-preview.redd.it')){
+      src=`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(src)}&ref=${encodeURIComponent('https://www.reddit.com/')}`;
+    }
+  }
+  // imgur gifv → mp4
+  if(src.endsWith('.gifv'))src=src.replace('.gifv','.mp4');
   const galItems=isGal&&post.gallery?.length>1?post.gallery:[];
   const liked=isLiked(post.id);
   launchPlayer({
-    src,title:post.title,accent:'rr',
-    meta:`<span style="color:var(--red)">r/${esc(post.sub)}</span><span>u/${esc(post.author)}</span><span>▲ ${fmtV(post.ups)}</span><span>💬 ${fmtV(post.comments)}</span>${post.nsfw?'<span style="color:#f77;font-size:.5rem">NSFW</span>':''}`,
-    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘</button>`,
-    extra:`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes`,
+    src,title:_decodeHtmlEntities(post.title)||post.title,accent:'rr',
+    meta:`<span style="color:var(--red)">r/${esc(post.sub)}</span><span>u/${esc(post.author||'')}</span><span>▲ ${fmtV(post.ups)}</span>${post.nsfw?'<span style="color:#f77;font-size:.5rem">NSFW</span>':''}`,
+    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${esc(post.link||'')}" target="_blank" rel="noopener" class="btn r">Reddit ↗</a>`,
+    extra:`<strong>r/${esc(post.sub)}</strong>${post.author?` · u/${esc(post.author)}`:''}${post.ups?' · '+fmtV(post.ups)+' upvotes':''}`,
     mediaType:mType,galleryItems:galItems,loop:isGif,showRelated:false,
   });
 }
