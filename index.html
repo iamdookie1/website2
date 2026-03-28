@@ -4226,22 +4226,27 @@ async function fetchRedgifs(q='',page=1){
   const posKey=sub+'_'+sort;
   const p=new URLSearchParams({sub,sort});
   if(page>1&&RG.pos[posKey])p.set('after',RG.pos[posKey]);
-  const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
+  const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(20000)});
   if(!r.ok)throw new Error(`GIF server ${r.status}`);
   const d=await safeJson(r)||{};
+  if(d.error)throw new Error(d.error);
   if(d.after)RG.pos[posKey]=d.after;
   const items=d.posts||d.gifs||d.videos||[];
-  const mapped=items.map(g=>({
-    id:g.id,title:g.title||g.id||'GIF',
-    thumb:g.thumb||'',
-    dur:0,views:g.ups||g.score||0,
-    rating:'—',qual:'GIF',
-    tags:[],
-    directUrl:g.url||'',
-    url:g.url||'',
-    embedUrl:'',useIframe:false,
-    src:g.sub?`r/${g.sub}`:'Reddit GIF',bc:'b-rg',
-  })).filter(g=>g.url&&g.url.length>4);
+  const mapped=items.map(g=>{
+    const url=g.url||'';
+    const isVid=g.mtype==='video'||url.endsWith('.mp4')||url.endsWith('.webm')||url.includes('v.redd.it');
+    return{
+      id:g.id,title:g.title||g.id||'GIF',
+      thumb:g.thumb||'',
+      dur:0,views:g.ups||g.score||0,
+      rating:'—',qual:isVid?'VIDEO':'GIF',
+      tags:[],
+      directUrl:url,url,
+      embedUrl:'',useIframe:false,
+      mType:isVid?'video':'gif',
+      src:g.sub?`r/${g.sub}`:'Reddit GIF',bc:'b-rg',
+    };
+  }).filter(g=>g.url&&g.url.length>4);
   return{videos:mapped,total:mapped.length*10};
 }
 
