@@ -4852,16 +4852,24 @@ function launchPlayer(opts){
 
 function openMain(v){
   S.curVid=v;
-  const src=v.useIframe?(v.embedUrl||v.url||''):(v.directUrl||v.url||'');
-  const mType=v.useIframe?'iframe':(v.src==='Redgifs'?'gif':'video');
+  let src=v.useIframe?(v.embedUrl||v.url||''):(v.directUrl||v.url||'');
+  let mType=v.useIframe?'iframe'
+    :(v.mType==='gif'||v.mType==='gif-v'||v.src==='Redgifs')?'video'
+    :(v.mType==='image')?'image'
+    :'video';
+  if(mType==='video'&&(v.mType==='gif'||v.mType==='gif-v')){
+    if(src.includes('v.redd.it')||src.includes('reddit.com/video')){
+      if(S.serverUrl)src=`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(src)}&ref=${encodeURIComponent('https://www.reddit.com/')}`;
+    }
+  }
   const liked=isLiked(v.id);
   launchPlayer({
     src,title:v.title,accent:'gr',
     meta:`<span>★ ${v.rating||'—'}</span><span>◉ ${fmtV(v.views)} views</span><span>⏱ ${fmtD(v.dur)}</span><span>${v.qual||''}</span><span style="color:var(--gold)">${esc(v.src)}</span>`,
     actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">♥${liked?' Liked':' Like'}</button><button class="btn" onclick="toast('Saved','ok')">+ Save</button>`,
-    mediaType:mType,showRelated:true,
+    mediaType:mType,showRelated:mType!=='image',loop:v.mType==='gif'||v.mType==='gif-v',
   });
-  loadRelated(v);
+  if(mType!=='image')loadRelated(v);
 }
 
 function openRedditPost(post){
