@@ -2331,6 +2331,18 @@ function cancelEdit(){
   if($('chat-video-inp'))delete $('chat-video-inp').dataset.editId;
   closeAttachMenu();
 }
+function _hasGroupPerm(perm){
+  if(!_chatGroupId||!_mlData)return false;
+  const s=getSession();if(!s)return false;
+  const g=_mlData.group||{};
+  if(g.owner===s.username)return true;
+  const member=(_mlData.members||[]).find(m=>m.username===s.username);
+  if(!member)return false;
+  const role=(_mlData.roles||[]).find(r=>r.id===member.role_id);
+  if(!role)return false;
+  try{return !!JSON.parse(role.perms||'{}')[perm];}catch{return false;}
+}
+
 async function deleteMsg(id){
   const s=getSession();if(!s)return;
   const confirmed=await _obsDialog({title:'Delete Message',msg:'This will be deleted for everyone.',icon:'🗑',okLabel:'Delete',danger:true});
@@ -2413,11 +2425,13 @@ function renderMsg(msg,myUsername,_,friendData){
   const reactsHtml=renderReactions(msg.reactions,msg.id,myUsername);
   const reactsEl=reactsHtml?`<div class="msg-reacts">${reactsHtml}</div>`:'';
 
+  const s=getSession();
+  const canDelete=mine||(!!_chatGroupId&&_hasGroupPerm('can_delete_msg'));
   const actions=deleted?'':`<div class="msg-actions">
     ${mine?`<button class="msg-act" onclick="startEdit(window._msgCache[${msg.id}])" title="Edit">✏</button>`:''}
     <button class="msg-act" onclick="startReply(window._msgCache[${msg.id}],window._friendCache)" title="Reply">↩</button>
     <button class="msg-act" onclick="openReactionPicker(${msg.id})" title="React">😊</button>
-    ${mine?`<button class="msg-act del" onclick="deleteMsg(${msg.id})" title="Delete">🗑</button>`:''}
+    ${canDelete?`<button class="msg-act del" onclick="deleteMsg(${msg.id})" title="Delete">🗑</button>`:''}
   </div>`;
 
   const row=document.createElement('div');
@@ -2580,15 +2594,21 @@ function toggleChatEmoji(forceClose){
 }
 function openReactionPicker(msgId){
   _cepForReaction=msgId;
-  $('chat-attach-menu').classList.remove('on');
-  $('chat-emoji-panel').classList.add('on');
+  $('chat-attach-menu')?.classList.remove('on');
+  const ep=$('chat-emoji-panel');
+  ep.classList.add('on');
   _buildCepQuick();_buildCepTabs();$('cep-search').value='';
+  setTimeout(()=>$('cep-search').focus(),60);
 }
 
 document.addEventListener('click',e=>{
-  if(!e.target.closest('.chat-foot')){
+  const inFoot=e.target.closest('.chat-foot');
+  const inMsgs=e.target.closest('.chat-msgs');
+  const inPanel=e.target.closest('#chat-emoji-panel');
+  if(!inFoot&&!inMsgs&&!inPanel){
     $('chat-attach-menu')?.classList.remove('on');
     $('chat-emoji-panel')?.classList.remove('on');
+    if(!inFoot&&!inPanel)_cepForReaction=null;
   }
 },{passive:true});
 
@@ -3503,13 +3523,16 @@ function toggleInviteSelect(username,row){
 async function sendInvites(){
   if(!_invSelected.size){toast('Select at least one friend','err');return;}
   const s=getSession();if(!s)return;
-  let sent=0;
+  let sent=0,errs=[];
   for(const to of _invSelected){
     const d=await apiCall(`/api/groups/${_invGid}/invite`,{user:s.username,password:s.password,to});
     if(!d.error)sent++;
+    else errs.push(`${to}: ${d.error}`);
   }
   closeInviteModal();
-  toast(`Invited ${sent} friend${sent!==1?'s':''}!`,'ok',2500);
+  if(sent)toast(`Invited ${sent} friend${sent!==1?'s':''}!`,'ok',2500);
+  if(errs.length)errs.forEach(e=>toast(e,'err',3500));
+  await openGroupDetail(_invGid);
 }
 
 
@@ -3611,16 +3634,19 @@ function handleMediaFile(e){
   if(!file)return;
   closeAttachMenu();
   if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
-
-  if(file.type==='image/gif'&&file.size>1024*1024){
-    toast('GIF too big to upload — paste a Giphy/Tenor URL instead','err',4500);
-    showUrlInput();return;
+  if(file.type==='image/gif'){
+    if(file.size>25*1024*1024){
+      toast('GIF over 25MB — paste a Giphy/Tenor URL instead','err',4500);
+      showUrlInput();return;
+    }
+    _compressGifAndSend(file,editId);
+    return;
   }
-  if(file.type.startsWith('image/')&&file.type!=='image/gif'){
+  if(file.type.startsWith('image/')){
     _compressAndSend(file,editId);
   }else{
     const reader=new FileReader();
-    const type=file.type.startsWith('video/')?'video':file.type==='image/gif'?'gif':'image';
+    const type=file.type.startsWith('video/')?'video':'image';
     reader.onload=ev=>sendMediaMsg(ev.target.result,type,editId);
     reader.onerror=()=>toast('Could not read file','err');
     reader.readAsDataURL(file);
@@ -3629,6 +3655,40 @@ function handleMediaFile(e){
 }
 
 function handleVideoFile(e){handleMediaFile(e);}
+
+function _compressGifAndSend(file,editId){
+  const sizeMB=file.size/1024/1024;
+  if(sizeMB<1){
+    const r=new FileReader();
+    r.onload=ev=>sendMediaMsg(ev.target.result,'gif',editId);
+    r.readAsDataURL(file);
+    return;
+  }
+  toast('Compressing GIF…','ok',2000);
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const MAX=sizeMB>10?400:sizeMB>4?600:800;
+    let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){const ratio=Math.min(MAX/w,MAX/h);w=Math.round(w*ratio);h=Math.round(h*ratio);}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+    const quality=sizeMB>10?0.55:sizeMB>4?0.65:0.75;
+    canvas.toBlob(blob=>{
+      if(!blob){
+        const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'gif',editId);r.readAsDataURL(file);return;
+      }
+      const r=new FileReader();
+      r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);
+      r.readAsDataURL(blob);
+    },'image/webp',quality);
+  };
+  img.onerror=()=>{
+    const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'gif',editId);r.readAsDataURL(file);
+  };
+  img.src=url;
+}
 
 function _compressAndSend(file,editId){
   const img=new Image();
