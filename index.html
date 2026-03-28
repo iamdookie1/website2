@@ -996,13 +996,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
     </nav>
   </header>
 
-
   <div id="offline-banner">
     <span class="ob-dot"></span>
     <span>Reddit-only mode — laptop server is offline</span>
     <button class="btn" onclick="retryServer()" style="height:20px;font-size:.52rem;padding:0 .55rem;margin-left:.5rem;">Retry</button>
   </div>
-
 
   <div id="fbar" role="toolbar">
     <span class="fl">Filter:</span>
@@ -1102,7 +1100,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
     <main class="ca">
 
-
       <div id="view-main" class="view on">
         <div class="hero" id="hero">
           <div class="hero-bg"></div><div class="hero-g"></div>
@@ -1126,7 +1123,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="pag" id="pag"></div>
       </div>
 
-
       <div id="view-liked" class="view">
         <div class="sh">
           <h2 class="st">♥ Liked Videos</h2>
@@ -1139,7 +1135,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           Press <span style="color:var(--gold)">♥ Like</span> when a video is open.
         </div>
       </div>
-
 
       <div id="view-reddit" class="view">
         <div class="iso-page">
@@ -1207,7 +1202,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           <div class="scroll-sentinel" id="r-sentinel"></div>
         </div>
       </div>
-
 
       <div id="view-r34" class="view">
         <div class="iso-page">
@@ -1283,7 +1277,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
-
       <div id="view-friends" class="view">
         <div class="iso-page" style="max-width:700px">
           <div class="iso-hdr" style="border-color:rgba(100,200,150,.3)">
@@ -1294,14 +1287,12 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             </div>
           </div>
 
-
           <div id="fr-no-account" style="text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);line-height:2.2;display:none">
             <div style="font-size:2.5rem;margin-bottom:.8rem">👤</div>
             Create an account in <strong style="color:var(--gold)">⚙ Settings</strong> to use Friends.
             <br/>
             <button class="btn g" onclick="openSM()" style="margin-top:.8rem">Open Settings</button>
           </div>
-
 
           <div id="fr-main" style="display:none">
             <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
@@ -1319,7 +1310,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               </div>
             </div>
 
-
             <div style="margin-bottom:1.2rem">
               <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Add Friend</div>
               <div style="display:flex;gap:.4rem">
@@ -1328,7 +1318,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               </div>
               <div id="fr-add-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;margin-top:.3rem;display:none"></div>
             </div>
-
 
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Friends (<span id="fr-count">0</span>)</div>
             <div id="fr-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
@@ -1544,7 +1533,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 <div id="chat-modal" onclick="if(event.target===$('chat-modal'))closeChat()">
   <div class="chat-box">
 
-
     <div class="chat-hdr">
       <div class="chat-hdr-av" id="chat-hdr-av"></div>
       <div style="flex:1;min-width:0">
@@ -1555,14 +1543,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       <button class="chat-ico" onclick="closeChat()" style="font-size:.85rem">✕</button>
     </div>
 
-
     <div class="chat-msgs" id="chat-msgs">
       <div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">Loading…</div>
     </div>
 
-
     <div class="chat-foot">
-
 
       <div id="chat-reply-bar">
         <span style="color:var(--gold)">↩</span>
@@ -1570,12 +1555,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button onclick="clearReply()" style="background:none;border:none;color:var(--tm);cursor:pointer;font-size:.8rem;padding:0 .3rem;margin-left:.3rem">✕</button>
       </div>
 
-
       <div id="chat-edit-bar">
         <span>✏ Editing</span>
         <button onclick="cancelEdit()" style="background:none;border:none;color:var(--tm);cursor:pointer;font-size:.75rem;margin-left:auto;padding:0 .3rem">✕ Cancel</button>
       </div>
-
 
       <div class="chat-attach-menu" id="chat-attach-menu">
         <label class="cam-item">
@@ -1590,7 +1573,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="cam-item" onclick="showUrlInput()">🔗 Paste URL</div>
       </div>
 
-
       <div class="chat-emoji-panel" id="chat-emoji-panel">
         <div class="cep-quick" id="cep-quick"></div>
         <div class="cep-tabs" id="cep-tabs"></div>
@@ -1598,13 +1580,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="cep-grid" id="cep-grid"></div>
       </div>
 
-
       <div id="chat-url-bar" style="display:none;align-items:center;gap:.4rem;padding:.32rem .75rem;border-top:1px solid var(--bdr);background:var(--bg0);">
         <input class="chat-inp" id="chat-url-inp" type="url" placeholder="https://… (image, gif, video)" style="min-height:28px;max-height:28px;font-size:.64rem" onkeydown="if(event.key==='Enter')sendUrlMedia();if(event.key==='Escape')hideUrlInput()"/>
         <button class="chat-send" onclick="sendUrlMedia()" style="width:28px;height:28px;font-size:.78rem">➤</button>
         <button class="chat-ico" onclick="hideUrlInput()" style="width:26px;height:26px;font-size:.78rem">✕</button>
       </div>
-
 
       <div class="chat-foot-row">
         <button class="chat-ico" id="chat-plus-btn" onclick="toggleAttachMenu()" title="Attach">＋</button>
@@ -1701,9 +1681,14 @@ function openSM(){
   $('settings-modal').classList.add('on');
 }
 function closeSM(){$('settings-modal').classList.remove('on');}
-function retryServer(){
-  if(S.serverUrl)checkServer(2).then(ok=>{if(ok){S.serverOk=true;loadVideos();toast('Server connected ✓','ok');}else toast('Still offline','err');});
-  else fetchServerUrlFromGithub().then(()=>checkServer(2));
+
+function showApiDownPopup(){
+  const el=$('api-down');
+  if(el)el.classList.add('show');
+}
+function hideApiDownPopup(){
+  const el=$('api-down');
+  if(el)el.classList.remove('show');
 }
 
 function applyTheme(t){
@@ -1862,23 +1847,6 @@ async function saveAccountChanges(){
   refreshAccountUI();
 }
 
-async function addFriend(){
-  const s=getSession();
-  if(!s){toast('Log in first','err');return;}
-  const inp=$('fr-add-inp')||$('sm-add-friend');
-  const name=(inp?.value||'').trim().toLowerCase();
-  const err=$('fr-add-err')||$('sm-acc-err2');
-  if(err)err.style.display='none';
-  if(!name){if(err){err.textContent='Enter a username';err.style.display='block';}return;}
-  const d=await apiCall(`/api/users/${s.username}/friends/add`,{password:s.password,friend:name});
-  if(d.error){if(err){err.textContent=d.error;err.style.display='block';}return;}
-
-  const ns={...s,friends:d.friends};setSession(ns);
-  if(inp)inp.value='';
-  toast(`Added ${name}!`,'ok');
-  renderFriendsList();updateFriendCount();
-}
-
 async function removeFriend(name){
   const s=getSession();if(!s)return;
   const d=await apiCall(`/api/users/${s.username}/friends/remove`,{password:s.password,friend:name});
@@ -1903,14 +1871,6 @@ async function syncSessionFromServer(){
     const fresh=await safeJson(r);
     if(fresh)setSession({...s,...fresh,password:s.password});
   }catch(e){console.warn('[syncSession]',e.message);}
-}
-
-function updateFriendUnread(username){
-  const n=_unread[username]||0;
-  const badge=document.querySelector(`[data-chat-unread="${username}"]`);
-  if(!badge)return;
-  badge.textContent=n>9?'9+':n||'';
-  badge.classList.toggle('on',n>0);
 }
 
 async function viewProfile(username){
@@ -2441,20 +2401,6 @@ document.addEventListener('click',e=>{
   }
 },{passive:true});
 
-function chatKeyDown(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
-  if(e.key==='Escape'){
-    if($('chat-emoji-panel')?.classList.contains('on')){toggleChatEmoji(true);return;}
-    if($('chat-attach-menu')?.classList.contains('on')){closeAttachMenu();return;}
-    if(_editingId){cancelEdit();return;}
-    if(_replyTo){clearReply();return;}
-  }
-}
-function autoResizeChatInp(el){
-  if(!el)return;
-  el.style.height='34px';
-  el.style.height=Math.min(el.scrollHeight,110)+'px';
-}
 function updateFriendUnread(username){
   const n=_unread[username]||0;
   const badge=document.querySelector(`[data-chat-unread="${username}"]`);
@@ -2462,10 +2408,6 @@ function updateFriendUnread(username){
   badge.textContent=n>9?'9+':n||'';
   badge.classList.toggle('on',n>0);
 }
-function openChatEmoji(){toggleChatEmoji();}
-function toggleMediaPop(){toggleAttachMenu();}
-function openMediaModal(){toggleAttachMenu();}
-function closeMediaModal(){}
 async function promptGif(){
   const url=await _obsDialog({title:'Add GIF / Video',msg:'Paste a URL:',icon:'🎞',okLabel:'Send',input:true,cancelLabel:'Cancel'});
   if(!url||typeof url!=='string')return;
