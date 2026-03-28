@@ -226,11 +226,8 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-lm-btn.p{border:1px solid rgba(155,89,182,.35);color:rgba(180,130,210,.75);}.iso-lm-btn.p:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
 .iso-lm-btn:disabled{opacity:.3;cursor:not-allowed;}
 
-.vth .hov-vid,.rcm .hov-vid,.r4m .hov-vid{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  opacity:0;transition:opacity .25s;pointer-events:none;z-index:1;
-}
-.vc:hover .hov-vid,.rc:hover .hov-vid,.r4c:hover .hov-vid{opacity:1;}
+.vth .hov-vid,.rcm .hov-vid,
+.vc:hover .hov-vid,.rc:hover .hov-vid,
 
 .rc{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .24s,border-color .24s,box-shadow .24s;}
 .rc:hover{transform:translateY(-3px);border-color:rgba(255,69,0,.4);box-shadow:0 10px 32px rgba(0,0,0,.55),0 0 0 1px rgba(255,69,0,.28);}
@@ -256,28 +253,10 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .spinner.r{border-top-color:var(--red);}
 .spinner.p{border-top-color:var(--pur);}
 
-.r4-masonry{columns:2 160px;column-gap:.6rem;}.r4-masonry .r4c{break-inside:avoid;margin-bottom:.6rem;display:inline-block;width:100%;}
-@media(min-width:600px){.r4-masonry{columns:3 160px;}}
-@media(min-width:900px){.r4-masonry{columns:4 160px;}}
-@media(min-width:1200px){.r4-masonry{columns:5 160px;}}
-.r4-masonry .r4m{aspect-ratio:unset;}.r4-masonry .r4m img{height:auto;max-height:420px;object-fit:cover;}
-.r4c:hover{transform:translateY(-3px);border-color:rgba(155,89,182,.4);box-shadow:0 10px 28px rgba(0,0,0,.5),0 0 0 1px rgba(155,89,182,.28);}
-.r4m{position:relative;background:var(--bg2);overflow:hidden;}
-.r4m.sq{aspect-ratio:1/1;}
-.r4m.r16{aspect-ratio:16/9;}
-.r4m img,.r4m video{width:100%;height:100%;object-fit:cover;display:block;transition:transform .34s,filter .34s;filter:brightness(.84);}
-.r4c:hover .r4m img,.r4c:hover .r4m video{transform:scale(1.05);filter:brightness(1);}
-.r4ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.8) 0%,transparent 52%);opacity:0;transition:opacity .24s;display:flex;align-items:center;justify-content:center;}
-.r4c:hover .r4ov{opacity:1;}
-.r4p{width:44px;height:44px;background:var(--pur-b);display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:1rem;color:#fff;padding-left:3px;transition:transform .18s;}
-.r4c:hover .r4p{transform:scale(1.12);}
-.r4tb{position:absolute;top:.4rem;right:.4rem;padding:.1rem .38rem;font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;}
-.r4-v{background:rgba(155,89,182,.85);color:#fff;}.r4-i{background:rgba(20,20,20,.9);color:#ccc;}.r4-g{background:rgba(0,80,40,.85);color:#aef;}
-.r4sc{position:absolute;bottom:.4rem;left:.4rem;background:rgba(8,8,8,.85);padding:.09rem .35rem;font-family:'DM Mono',monospace;font-size:.54rem;color:#ccf;}
-.r4in{padding:.72rem .85rem .65rem;}
-.r4tg{display:flex;gap:.2rem;flex-wrap:wrap;margin-bottom:.35rem;}
-.r4tgchip{padding:.07rem .38rem;background:rgba(155,89,182,.12);border:1px solid rgba(155,89,182,.2);font-family:'DM Mono',monospace;font-size:.46rem;color:rgba(190,140,220,.75);letter-spacing:.06em;cursor:pointer;transition:all .15s;}
-.r4tgchip:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
+}
+@media(min-width:900px){}
+@media(min-width:1200px){}
+
 .r4mt{display:flex;align-items:center;gap:.58rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);letter-spacing:.04em;}
 
 .pag{display:flex;align-items:center;justify-content:center;gap:.32rem;margin-top:1.9rem;padding-bottom:.65rem;}
@@ -383,15 +362,9 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .theme-chip:hover{border-color:var(--gold-d);color:var(--gold);}
 .theme-chip.on{background:var(--gold);border-color:var(--gold);color:#080808;font-weight:700;}
 
-.vth img,.r4m img,.rcm img,.rct img{
-  image-rendering:auto;
-  will-change:auto;
-}
+.vth img,
 
-.vc,.r4c,.rc{
-  content-visibility:auto;
-  contain-intrinsic-size:0 280px;
-}
+.vc,
 
 .pvw-img{
   image-rendering:auto;
@@ -872,7 +845,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
   #rgrid{grid-template-columns:repeat(2,1fr);gap:.5rem;}
 
-  .r4-masonry{columns:2 120px;column-gap:.4rem;}
+  
 
   .bn{font-size:.42rem;}
   .bn .bni{font-size:1rem;}
@@ -887,7 +860,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .vg{grid-template-columns:repeat(2,1fr);gap:.4rem;}
   .vti{font-size:.63rem;}
   #rgrid{grid-template-columns:repeat(2,1fr);}
-  .r4-masonry{columns:2 100px;}
+  
   .hero{height:155px;}
 }
 
@@ -944,11 +917,11 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .btn{min-height:36px;}
   .bico{width:40px;height:40px;}
   .iso-btn{min-height:40px;}
-  .r4-go,.iso-btn{padding:.5rem 1rem;}
+  
   .cb{min-width:36px;min-height:36px;}
   .pclose{width:36px;height:36px;}
 
-  .vc,.rc,.r4c{cursor:pointer;}
+  .vc,.rc,
 }
 
 .hidden{display:none!important;}
@@ -1008,7 +981,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button class="bico" id="bell-btn" aria-label="Notifications" onclick="openNotifPanel()" title="Notifications (N)">🔔</button>
         <div id="bell-badge"></div>
       </div>
-
 
 <div id="emoji-picker">
   <div class="ep-quick" id="ep-quick"></div>
@@ -1147,7 +1119,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       </div>
       <div class="sb-sec">
         <div class="sb-ttl" style="color:rgba(155,89,182,.5)">API 4 — Rule34</div>
-        <div class="sb-lnk r4" data-nav="r34"><span>🔞</span> Rule34 Browser <span class="sb-bdg p">R34</span></div>
         <div style="padding:.25rem .5rem;font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm);line-height:1.7;">Search by tags.<br/>Isolated from main feed.</div>
       </div>
       <div class="sb-sec">
@@ -1261,80 +1232,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
-      <div id="view-r34" class="view">
-        <div class="iso-page">
-          <div class="iso-hdr p">
-            <span class="iso-hdr-ico">🔞</span>
-            <div>
-              <h2>Booru Browser — <span style="color:var(--pur)">API 4</span></h2>
-              <p>Search image boards by tags. <span class="hlp">Isolated — never shown in main feeds.</span></p>
-            </div>
-          </div>
-          <div class="iso-notice p"><span>⚠</span><span><strong>API 4 — Booru boards only.</strong> Content never appears in main feeds. Tag syntax: separate tags with spaces. Prefix <code style="color:var(--pur)">-tag</code> to exclude.</span></div>
-          <div class="iso-sp">
-            <div class="iso-row">
-              <div class="iso-f" style="flex:2">
-                <label class="iso-lbl" for="r4-tag">Tags</label>
-                <input class="iso-inp" id="r4-tag" type="text" placeholder="naruto animated 1girl  (space-separated)" autocomplete="off" style="border-color:rgba(155,89,182,.25);"/>
-              </div>
-              <div class="iso-f" style="flex:0 0 auto">
-                <label class="iso-lbl" for="r4-sort">Sort</label>
-                <select class="iso-sel" id="r4-sort" style="border-color:rgba(155,89,182,.2);">
-                  <option value="score:desc">Top Score</option>
-                  <option value="id:desc">Newest</option>
-                  <option value="rating:explicit">Explicit Only</option>
-                </select>
-              </div>
-              <div class="iso-f" style="flex:0 0 auto">
-                <label class="iso-lbl" for="r4-api">Board</label>
-                <select class="iso-sel" id="r4-api" style="border-color:rgba(155,89,182,.2);">
-                  <option value="gelbooru">Gelbooru ★</option>
-                  <option value="e621">e621 (furry)</option>
-                  <option value="danbooru">Danbooru</option>
-                  <option value="konachan">Konachan</option>
-                  <option value="yandere">Yande.re</option>
-                  <option value="paheal">Paheal</option>
-                  <option value="safebooru">Safebooru (SFW)</option>
-                </select>
-              </div>
-              <div class="iso-f" style="flex:0 0 auto">
-                <label class="iso-lbl">&nbsp;</label>
-                <button class="iso-btn p" id="r4-go" onclick="fetchR34()">Search</button>
-              </div>
-            </div>
-            <div class="iso-quick">
-              <span class="iso-ql">Quick:</span>
-              <button class="iso-qc p" onclick="qs_r4('naruto')">naruto</button>
-              <button class="iso-qc p" onclick="qs_r4('overwatch')">overwatch</button>
-              <button class="iso-qc p" onclick="qs_r4('my_hero_academia')">MHA</button>
-              <button class="iso-qc p" onclick="qs_r4('genshin_impact')">genshin</button>
-              <button class="iso-qc p" onclick="qs_r4('animated')">animated</button>
-              <button class="iso-qc p" onclick="qs_r4('league_of_legends')">league</button>
-              <button class="iso-qc p" onclick="qs_r4('pokemon')">pokemon</button>
-              <button class="iso-qc p" onclick="qs_r4('hololive')">hololive</button>
-              <button class="iso-qc p" onclick="qs_r4('demon_slayer')">demon slayer</button>
-              <button class="iso-qc p" onclick="qs_r4('jujutsu_kaisen')">JJK</button>
-              <button class="iso-qc p" onclick="qs_r4('one_piece')">one piece</button>
-              <button class="iso-qc p" onclick="qs_r4('street_fighter')">street fighter</button>
-            </div>
-          </div>
-          <div class="iso-info p" id="r4si">
-            <div><div class="iso-in p" id="r4si-n">—</div><div class="iso-im" id="r4si-m">—</div></div>
-            <div class="iso-fa">
-              <span class="iso-lbl">Type:</span>
-              <button class="iso-fc p on" data-r4m="all" onclick="setR4F(this,'all')">All</button>
-              <button class="iso-fc p" data-r4m="image" onclick="setR4F(this,'image')">Image</button>
-              <button class="iso-fc p" data-r4m="video" onclick="setR4F(this,'video')">Video</button>
-              <button class="iso-fc p" data-r4m="gif" onclick="setR4F(this,'gif')">GIF</button>
-            </div>
-          </div>
-          <div class="iso-grid r4-masonry" id="r4grid"></div>
-          <div id="r4state" class="iso-state"><span class="big">🔞</span>Pick a board, enter tags, hit <span class="hl-p">Search</span></div>
-          <div id="r4-autoload" class="auto-loading hidden"></div>
-          <div class="scroll-sentinel" id="r4-sentinel"></div>
-        </div>
-      </div>
-
       <div id="view-friends" class="view">
         <div class="iso-page" style="max-width:720px">
           <div class="iso-hdr" style="border-color:rgba(100,200,150,.3)">
@@ -1393,7 +1290,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
           </div>
         </div>
       </div>
-
 
   </div>
 </div>
@@ -1783,9 +1679,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <button class="bn r" id="bn-reddit" onclick="bnav('reddit')">
     <span class="bni">👽</span><span>Reddit</span>
   </button>
-  <button class="bn p" id="bn-r34" onclick="bnav('r34')">
-    <span class="bni">🔞</span><span>Booru</span>
-  </button>
   <button class="bn" id="bn-friends" onclick="bnav('friends')" style="--bon:rgb(100,200,150)">
     <span class="bni">👥</span><span>Friends</span>
   </button>
@@ -1815,7 +1708,6 @@ const S={
   page:1,totalPages:1,curVid:null,curView:'home',loading:false,
   f:{cat:'',dur:'',qual:'',sort:'views',tag:'all',q:''},
   rd:{sub:'',after:null,sort:'hot',time:'day',all:[],filtered:[],mf:'all',loading:false,hasMore:false},
-  r4:{tag:'',pid:0,all:[],filtered:[],mf:'all',loading:false,hasMore:false,sort:'score:desc'},
   serverUrl: (HARDCODED_SERVER||localStorage.getItem('obs_server')||'').replace(/\/$/,''),
   serverOk: false,
   redditOnly: false,
@@ -2240,8 +2132,6 @@ let _chatWith=null,_chatPoll=null,_chatLastTs=0,_unread={};
 let _chatGroupId=null;
 let _updatePoll=null,_lastUpdateTs=0;
 let _pollRunning=false;
-
-
 
 async function _longPollLoop(friendUsername,friendData,groupId){
   if(_pollRunning)return;
@@ -2803,7 +2693,6 @@ async function checkNotifications(){
   await checkBroadcast();
   pollUnreadCounts();
 }
-
 
 async function sendPresence(status){
   const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
@@ -3602,7 +3491,6 @@ async function deleteRole(rid){
   toast('Role deleted','ok',1500);await openGroupDetail(_rmGid);openRoleManager(_rmGid);
 }
 
-
 let _invGid=null,_invSelected=new Set();
 function openInviteModal(){
   _invGid=_mlGid;_invSelected=new Set();
@@ -3646,7 +3534,6 @@ async function sendInvites(){
   if(errs.length)errs.forEach(e=>toast(e,'err',3500));
   await openGroupDetail(_invGid);
 }
-
 
 const EMOJI_CATS={
   'Recent':[],
@@ -4042,10 +3929,8 @@ function renderLiked(){
   liked.forEach(v=>{
 
     const isReddit=!!(v.sub||v.link||v.author);
-    const isR34=!!(v.apiSrc||v.fileUrl);
     const open=()=>{
       if(isReddit)openRedditPost(v);
-      else if(isR34)openR34Post(v);
       else openMain(v);
     };
     const el=document.createElement('article');
@@ -4107,7 +3992,7 @@ function bnav(name){
   syncBnav(name);
 }
 function syncBnav(name){
-  const map={home:'bn-home',trending:'bn-trending',gif:'bn-gif',reddit:'bn-reddit',r34:'bn-r34',friends:'bn-friends',liked:'bn-home',new:'bn-home',top:'bn-home'};
+  const map={home:'bn-home',trending:'bn-trending',gif:'bn-gif',reddit:'bn-reddit',friends:'bn-friends',liked:'bn-home',new:'bn-home',top:'bn-home'};
   document.querySelectorAll('.bn').forEach(b=>b.classList.remove('on'));
   const active=$(map[name]||'bn-home');
   if(active)active.classList.add('on');
@@ -4115,7 +4000,7 @@ function syncBnav(name){
 
 function switchView(name){
   S.curView=name;
-  const iso=name==='reddit'||name==='r34';
+  const iso=name==='reddit';
   const isLikedView=name==='liked';
   const isFriendsView=name==='friends';
   const isSpecial=iso||isLikedView||isFriendsView;
@@ -4131,7 +4016,7 @@ function switchView(name){
   $('fbar').classList.toggle('off',isSpecial);
   $('nsw').style.display=isSpecial?'none':'';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
-  const map={reddit:'view-reddit',r34:'view-r34',liked:'view-liked',friends:'view-friends'};
+  const map={reddit:'view-reddit',liked:'view-liked',friends:'view-friends'};
   $(map[name]||'view-main').classList.add('on');
   document.querySelectorAll('.sb-lnk').forEach(l=>l.classList.toggle('on',l.dataset.nav===name));
   syncBnav(name);
@@ -4148,7 +4033,6 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
   l.addEventListener('click',()=>{
     const n=l.dataset.nav;
     if(n==='reddit'){switchView('reddit');return;}
-    if(n==='r34'){switchView('r34');return;}
     if(n==='friends'){switchView('friends');return;}
     const cm={'cat-amateur':'amateur','cat-milf':'milf','cat-teen':'teen','cat-lesbian':'lesbian'};
     const rgmap={'rg-trending':'__rg_trending__','rg-new':'__rg_new__'};
@@ -4781,107 +4665,6 @@ function renderRGrid(append=false){
   });
 }
 
-$('r4-tag').addEventListener('keydown',e=>{if(e.key==='Enter')fetchR34();});
-function qs_r4(tag){$('r4-tag').value=tag;fetchR34();}
-
-const R4_NAMES={
-  gelbooru:'Gelbooru',e621:'e621',danbooru:'Danbooru',
-  konachan:'Konachan',yandere:'Yande.re',paheal:'Paheal',safebooru:'Safebooru'
-};
-
-async function _fetchBooru(apiSrc,tags,limit,pid){
-  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({source:apiSrc,tags:tags||'',limit,page:pid});
-  const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(20000)});
-  if(!r.ok)throw new Error(`Booru server ${r.status}`);
-  const d=await safeJson(r)||{};
-  if(!d.ok&&d.error)throw new Error(d.error);
-  const posts=d.posts||[];
-  return posts.map(p=>({
-    ...p,
-    file_url:p.url||p.file_url||'',
-    preview_url:p.thumb||p.preview_url||'',
-  }));
-}
-
-async function fetchR34(append=false){
-  const rawTag=$('r4-tag').value.trim();
-  const sort=$('r4-sort').value;
-  const apiSrc=$('r4-api').value;
-  if(!rawTag){toast('Enter at least one tag','err');return;}
-  if(S.r4.loading)return;
-  S.r4.loading=true;
-  const btn=$('r4-go');btn.disabled=true;btn.textContent='Searching…';
-  const boardName=R4_NAMES[apiSrc]||apiSrc;
-  if(!append){
-    Object.assign(S.r4,{tag:rawTag,sort,apiSrc,pid:0,all:[],filtered:[],mf:'all'});
-    document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m==='all'));
-    $('r4grid').innerHTML='';
-    $('r4state').innerHTML=`<span class="big">⏳</span>Searching <span class="hl-p">${boardName}</span> for: <span style="color:var(--gold)">${esc(rawTag)}</span>`;
-    $('r4state').style.display='block';
-  }
-  try{
-    const limit=40;
-    const pid=append?Math.floor(S.r4.all.length/limit):0;
-    const rawPosts=await _fetchBooru(apiSrc,rawTag,limit,pid);
-    const posts=Array.isArray(rawPosts)?rawPosts:[];
-    S.r4.hasMore=posts.length>=limit;
-    const mapped=posts.map(p=>{
-      const url=String(p.file_url||'');
-      const ext=url.split('?')[0].split('.').pop().toLowerCase();
-      const mType=ext==='mp4'||ext==='webm'?'video':ext==='gif'?'gif':'image';
-      return{
-        id:String(p.id),score:parseInt(p.score)||0,
-        tags:(Array.isArray(p.tags)?p.tags:String(p.tags||'').split(' ')).filter(t=>t&&!t.startsWith('sort:')),
-        fileUrl:url,previewUrl:p.preview_url||p.sample_url||url,
-        sampleUrl:p.sample_url||url,
-        width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        mType,src:boardName,apiSrc,
-      };
-    }).filter(p=>p.fileUrl);
-    S.r4.all=append?[...S.r4.all,...mapped]:mapped;
-    if(append){
-      let f=applyR4FilterData(S.r4.all,S.r4.mf);
-      S.r4.filtered=f;renderR4Grid(true);
-      $('r4si-m').textContent=`${S.r4.all.length} posts · ${f.length} shown`;
-    }else{
-      applyR4Filter(S.r4.mf);
-    }
-    $('r4si').classList.add('on');
-    $('r4si-n').textContent=`${esc(rawTag)} — ${boardName}`;
-    $('r4si-m').textContent=`${S.r4.all.length} posts`;
-    if(S.r4.all.length)$('r4state').style.display='none';
-    else{
-      $('r4state').innerHTML=`<span class="big">🔍</span>No results for <span class="hl-p">${esc(rawTag)}</span> on ${boardName}<br/><span style="font-size:.6rem;color:var(--tm)">Try fewer or different tags</span>`;
-      $('r4state').style.display='block';
-    }
-  }catch(e){
-    const msg=e.message||'Search error';
-    $('r4state').innerHTML=`<span class="big">⚠️</span><b>${boardName}</b><br/><span style="color:var(--tm);font-size:.65rem">${esc(msg)}</span>`;
-    $('r4state').style.display='block';
-    toast(msg,'err',5000);
-  }finally{
-    S.r4.loading=false;
-    btn.disabled=false;
-    btn.textContent='Search';
-    hideAutoLoad('r4-autoload');
-  }
-}
-
-function applyR4FilterData(all,type){
-  if(type==='image')return all.filter(p=>p.mType==='image');
-  if(type==='video')return all.filter(p=>p.mType==='video');
-  if(type==='gif')return all.filter(p=>p.mType==='gif');
-  return all;
-}
-
-function loadMoreR4(){
-  if(!S.r4.hasMore||S.r4.loading)return;
-  $('r4-tag').value=S.r4.tag;
-  $('r4-sort').value=S.r4.sort;
-  if($('r4-api'))$('r4-api').value=S.r4.apiSrc||'gelbooru';
-  fetchR34(true);
-}
 function loadMoreR(){if(!S.rd.after||S.rd.loading)return;$('r-sub').value=S.rd.sub;$('r-sort').value=S.rd.sort;$('r-time').value=S.rd.time;fetchReddit(true);}
 
 function showAutoLoad(id,color=''){
@@ -4916,68 +4699,10 @@ if(rSentinel){
   },iOpts).observe(rSentinel);
 }
 
-const r4Sentinel=$('r4-sentinel');
-if(r4Sentinel){
-  new IntersectionObserver((entries)=>{
-    if(!entries[0].isIntersecting||S.r4.loading||!S.r4.tag)return;
-    if(S.r4.hasMore){
-      showAutoLoad('r4-autoload','p');
-      loadMoreR4();
-    }
-  },iOpts).observe(r4Sentinel);
+,iOpts).observe(r4Sentinel);
 }
 
-function setR4F(btn,type){document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset.r4m===type));S.r4.mf=type;applyR4Filter(type);}
-function applyR4Filter(type){
-  const f=applyR4FilterData(S.r4.all,type);
-  S.r4.filtered=f;renderR4Grid(false);
-  $('r4si-m').textContent=`${S.r4.all.length} posts · ${f.length} shown`;
-}
-function renderR4Grid(append=false){
-  const g=$('r4grid');
-  if(!append)g.innerHTML='';
-  S.r4.filtered.forEach(post=>{
-    if(g.querySelector(`[data-r4id="${post.id}"]`))return;
-    const isV=post.mType==='video',isG=post.mType==='gif';
-    const tLbl=isV?'VIDEO':isG?'GIF':'IMAGE';
-    const tCls=isV?'r4-v':isG?'r4-g':'r4-i';
-    const ar=post.width&&post.height?(post.width/post.height>1.5?'r16':'sq'):'r16';
-    const vidUrl=(isV||isG)?post.fileUrl:'';
-    const tagHtml=post.tags.slice(0,4).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');event.stopPropagation()">${esc(t)}</span>`).join('');
-    const el=document.createElement('article');
-    el.className='r4c';el.setAttribute('tabindex','0');el.setAttribute('data-r4id',post.id);
-    el.innerHTML=`
-      <div class="r4m ${ar}">
-        ${post.previewUrl
-          ?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer"
-              onerror="this.onerror=null;this.style.opacity='.15';this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"/>`
-          :`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.2">${isV?'▶':'🖼'}</div>`}
-        ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
-        <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
-        <span class="r4tb ${tCls}">${tLbl}</span>
-        <span class="r4sc">▲ ${post.score}</span>
-      </div>
-      <div class="r4in">
-        <div class="r4tg">${tagHtml}</div>
-        <div class="r4mt"><span style="color:var(--pur);font-size:.54rem">${esc(post.apiSrc||'rule34.xxx')}</span><span>#${post.id}</span></div>
-      </div>`;
-    if(vidUrl){
-      const hv=el.querySelector('.hov-vid');
-      el.addEventListener('mouseenter',()=>{if(hv)hv.play().catch(()=>{});});
-      el.addEventListener('mouseleave',()=>{if(hv){hv.pause();hv.currentTime=0;}});
-    }
-    el.addEventListener('click',()=>openR34Post(post));
-    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openR34Post(post);});
-
-    if(post.mType==='image'&&post.fileUrl){
-      let preloaded=false;
-      el.addEventListener('mouseenter',()=>{
-        if(!preloaded){preloaded=true;const i=new Image();i.referrerPolicy='no-referrer';i.src=post.fileUrl;}
-      },{passive:true});
-    }
-    g.appendChild(el);
-  });
-}
+function setR4F(btn,type){document.querySelectorAll('#r4si .iso-fc').forEach(c=>c.classList.toggle('on',c.dataset
 
 function setPlayerImage(src,alt=''){
   if(!src)return;
@@ -5160,38 +4885,6 @@ function openRedditPost(post){
     actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${esc(post.link)}" target="_blank" rel="noopener" class="btn r">Reddit ↗</a><button class="btn" onclick="cpLink('${esc(post.link)}')">⎘</button>`,
     extra:`<strong>r/${esc(post.sub)}</strong> · u/<a href="https://reddit.com/u/${esc(post.author)}" target="_blank">${esc(post.author)}</a> · ${fmtV(post.ups)} upvotes`,
     mediaType:mType,galleryItems:galItems,loop:isGif,showRelated:false,
-  });
-}
-
-function openR34Post(post){
-  S.curVid=post;
-  const isVid=post.mType==='video';
-  const isGif=post.mType==='gif';
-  const mType=(isVid||isGif)?'video':'image';
-  const tagLinks=post.tags.slice(0,12).map(t=>`<span class="r4tgchip" onclick="qs_r4('${esc(t)}');closePlayer()" style="cursor:pointer">${esc(t)}</span>`).join('');
-  const boardUrls={
-    gelbooru:`https://gelbooru.com/index.php?page=post&s=view&id=${post.id}`,
-    e621:`https://e621.net/posts/${post.id}`,
-    danbooru:`https://danbooru.donmai.us/posts/${post.id}`,
-    konachan:`https://konachan.com/post/show/${post.id}`,
-    yandere:`https://yande.re/post/show/${post.id}`,
-    paheal:`https://rule34.paheal.net/post/view/${post.id}`,
-    safebooru:`https://safebooru.org/index.php?page=post&s=view&id=${post.id}`,
-  };
-  const viewUrl=boardUrls[post.apiSrc]||'#';
-  const liked=isLiked(post.id);
-  const boardReferers={gelbooru:'https://gelbooru.com/',e621:'https://e621.net/',
-    danbooru:'https://danbooru.donmai.us/',konachan:'https://konachan.com/',
-    yandere:'https://yande.re/',paheal:'https://rule34.paheal.net/',safebooru:'https://safebooru.org/'};
-  const ref=boardReferers[post.apiSrc]||'';
-  const mediaSrc=(isVid||isGif)?post.fileUrl
-    :(S.serverUrl&&post.fileUrl?`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(post.fileUrl)}&ref=${encodeURIComponent(ref)}`:post.fileUrl);
-  launchPlayer({
-    src:mediaSrc,title:`${post.src} #${post.id}`,accent:'pr',
-    meta:`<span style="color:var(--pur)">${esc(post.src)}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
-    actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘</button>`,
-    extra:`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`,
-    mediaType:mType,loop:isGif,showRelated:false,
   });
 }
 
