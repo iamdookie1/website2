@@ -3614,7 +3614,7 @@ let acFocusIdx=-1;
 
 function showSubAC(val){
   const ac=$('r-sub-ac');
-  const q=val.trim().replace(/^r\
+  const q=val.trim().replace(/^r\//i,'').toLowerCase();
   if(q.length<1){ac.style.display='none';return;}
   const matches=NSFW_SUBS.filter(s=>s.startsWith(q)).slice(0,10);
   if(!matches.length){ac.style.display='none';return;}
@@ -3662,7 +3662,7 @@ $('r-sub').addEventListener('focus',()=>{if($('r-sub').value.length>=1)showSubAC
 function qs_r(name){$('r-sub').value=name;$('r-sub-ac').style.display='none';fetchReddit();}
 
 async function fetchReddit(append=false){
-  const sub=$('r-sub').value.trim().replace(/^r\
+  const sub=$('r-sub').value.trim().replace(/^r\//i,'').toLowerCase().trim();
   if(!sub){toast('Enter a subreddit name','err');return;}
   if(S.rd.loading)return;S.rd.loading=true;
   const btn=$('r-go');btn.disabled=true;btn.textContent='Loading…';
