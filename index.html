@@ -738,6 +738,16 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-spoiler{background:var(--bg3);color:transparent;border-radius:3px;padding:.1rem .25rem;cursor:pointer;user-select:none;transition:all .2s;}
 .msg-spoiler.revealed{color:inherit;background:rgba(201,168,76,.1);}
 .msg-quote{border-left:3px solid var(--gold-d);padding:.25rem .6rem;margin:.2rem 0;color:var(--tm);font-style:italic;}
+.mention-highlight{border-left:2px solid var(--gold)!important;background:rgba(201,168,76,.05)!important;}
+.msg-mention{background:rgba(201,168,76,.18);color:var(--gold);border-radius:3px;padding:.05rem .3rem;font-weight:600;cursor:pointer;}
+.msg-mention:hover{background:rgba(201,168,76,.3);}
+.mention-self{background:rgba(201,168,76,.35);animation:mentionPulse .4s ease;}
+@keyframes mentionPulse{0%{background:rgba(201,168,76,.7)}100%{background:rgba(201,168,76,.35)}}
+#mention-dropdown{position:absolute;bottom:100%;left:0;right:0;background:var(--bg1);border:1px solid var(--gold-d);border-bottom:none;z-index:500;max-height:160px;overflow-y:auto;display:none;}
+#mention-dropdown.on{display:block;}
+.mention-opt{padding:.42rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--ts);}
+.mention-opt:hover,.mention-opt.sel{background:rgba(201,168,76,.1);color:var(--gold);}
+.mention-opt-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:.6rem;flex-shrink:0;}
 .bc-progress{position:absolute;bottom:0;left:0;height:2px;background:var(--gold);transition:width 1s linear;}
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
@@ -1699,7 +1709,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
     </div>
 
     <div class="chat-foot">
-
+      <div id="mention-dropdown"></div>
       <div id="chat-reply-bar">
         <span style="color:var(--gold)">↩</span>
         <span id="chat-reply-text" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ts)"></span>
@@ -2121,7 +2131,8 @@ function renderMarkdown(raw){
   s=s.replace(/_(.+?)_/gs,'<em>$1</em>');
   s=s.replace(/~~(.+?)~~/gs,'<s>$1</s>');
   s=s.replace(/\|\|(.+?)\|\|/gs,'<span class="msg-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
-  s=s.replace(/^> (.+)$/gm,'<blockquote class="msg-quote">$1</blockquote>');
+  s=s.replace(/^&gt; (.+)$/gm,'<blockquote class="msg-quote">$1</blockquote>');
+  s=s.replace(/@([a-zA-Z0-9_\-]+)/g,'<span class="msg-mention">@$1</span>');
   s=s.replace(/(https?:\/\/[^\s<>"]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline">$1</a>');
   s=s.replace(/(?<!<\/pre>)\n/g,'<br>');
   return s;
@@ -2236,15 +2247,17 @@ async function _longPollLoop(friendUsername,friendData,groupId){
   if(_pollRunning)return;
   _pollRunning=true;
   const s=getSession();if(!s)return;
-  while(_pollRunning&&(_chatWith===friendUsername||_chatGroupId===groupId)){
+  const snapFriend=friendUsername;
+  const snapGroup=groupId;
+  while(_pollRunning&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
     try{
-      const params=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
+      const params=snapGroup?`group_id=${snapGroup}`:`with=${snapFriend}`;
       const r=await fetch(
         `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=4`,
         {mode:'cors',signal:AbortSignal.timeout(7000)});
       const d=await safeJson(r)||{};
       const msgs=d.messages||[];
-      if(msgs.length){
+      if(msgs.length&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
         _chatLastTs=msgs[msgs.length-1].ts;
         const el=$('chat-msgs');if(!el)break;
         const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
@@ -2254,7 +2267,7 @@ async function _longPollLoop(friendUsername,friendData,groupId){
           el.appendChild(renderMsg(msg,s.username,null,friendData));
         });
         if(wasBottom)el.scrollTop=el.scrollHeight;
-        pollTyping(friendUsername,groupId);
+        pollTyping(snapFriend,snapGroup);
       }
     }catch{
       await new Promise(r=>setTimeout(r,1500));
@@ -2434,7 +2447,8 @@ function renderMsg(msg,myUsername,_,friendData){
   </div>`;
 
   const row=document.createElement('div');
-  row.className=`msg-row ${mine?'mine':'theirs'}${deleted?' msg-deleted':''}`;
+  const mentionsMe=!mine&&s&&msg.content&&msg.content.includes(`@${s.username}`);
+  row.className=`msg-row ${mine?'mine':'theirs'}${deleted?' msg-deleted':''}${mentionsMe?' mention-highlight':''}`;
   row.dataset.msgId=msg.id;
   row.innerHTML=`${av}
     <div class="msg-col">
@@ -2732,7 +2746,9 @@ async function sendMessage(){
     const realRow=renderMsg(realMsg,s.username,null,window._friendCache);
     msgEl.appendChild(realRow);
     if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+    if(_chatGroupId)_sendMentionNotifs(text,_chatGroupId);
   }
+  _closeMentionDropdown();
   inp.focus();
 }
 
@@ -2892,9 +2908,98 @@ document.addEventListener('keydown',e=>{
 function openChatEmoji(btn){openEmojiPicker('message',null,btn||$('chat-send-btn'));}
 
 let _typingTimer=null,_isTyping=false;
+let _mentionQuery=null,_mentionSelIdx=0,_mentionOpts=[];
+
+function _getMentionCandidates(){
+  if(_chatGroupId&&_mlData){
+    const s=getSession();
+    return (_mlData.members||[])
+      .filter(m=>m.username!==s?.username)
+      .map(m=>({username:m.username,display:m.display||m.username,
+        pfpColor:m.pfpColor||'#555',pfpLetter:m.pfpLetter||'?'}));
+  }
+  const s=getSession();
+  if(_chatWith&&s){
+    const p=window._friendProfileCache?.[_chatWith]||{};
+    return [{username:_chatWith,display:p.display||_chatWith,
+      pfpColor:p.pfpColor||'#555',pfpLetter:p.pfpLetter||'?'}];
+  }
+  return [];
+}
+
+function _checkMentionTrigger(inp){
+  const val=inp.value;const pos=inp.selectionStart;
+  const before=val.slice(0,pos);
+  const m=before.match(/@([a-zA-Z0-9_\-]*)$/);
+  if(!m){_closeMentionDropdown();return;}
+  _mentionQuery=m[1].toLowerCase();
+  const candidates=_getMentionCandidates().filter(c=>
+    c.username.toLowerCase().startsWith(_mentionQuery)||
+    c.display.toLowerCase().startsWith(_mentionQuery));
+  if(!candidates.length){_closeMentionDropdown();return;}
+  _mentionOpts=candidates;_mentionSelIdx=0;
+  _renderMentionDropdown();
+}
+
+function _renderMentionDropdown(){
+  const dd=$('mention-dropdown');if(!dd)return;
+  dd.innerHTML=_mentionOpts.map((c,i)=>{
+    const ltxt=isLight(c.pfpColor)?'#080808':'#fff';
+    return`<div class="mention-opt${i===_mentionSelIdx?' sel':''}" onmousedown="_pickMention('${esc(c.username)}')" data-idx="${i}">
+      <div class="mention-opt-av" style="background:${c.pfpColor};color:${ltxt}">${esc(c.pfpLetter)}</div>
+      <span>${esc(c.display)}</span>
+      <span style="color:var(--tm);font-size:.58rem">@${esc(c.username)}</span>
+    </div>`;
+  }).join('');
+  dd.classList.add('on');
+}
+
+function _closeMentionDropdown(){
+  const dd=$('mention-dropdown');if(dd){dd.classList.remove('on');dd.innerHTML='';}
+  _mentionOpts=[];_mentionQuery=null;_mentionSelIdx=0;
+}
+
+function _pickMention(username){
+  const inp=$('chat-inp');if(!inp)return;
+  const val=inp.value;const pos=inp.selectionStart;
+  const before=val.slice(0,pos);const after=val.slice(pos);
+  const replaced=before.replace(/@([a-zA-Z0-9_\-]*)$/,`@${username} `);
+  inp.value=replaced+after;
+  inp.selectionStart=inp.selectionEnd=replaced.length;
+  inp.focus();autoResizeChatInp(inp);
+  _closeMentionDropdown();
+}
+
+function _mentionKeyNav(e){
+  const dd=$('mention-dropdown');
+  if(!dd?.classList.contains('on')||!_mentionOpts.length)return false;
+  if(e.key==='ArrowDown'){e.preventDefault();_mentionSelIdx=(_mentionSelIdx+1)%_mentionOpts.length;_renderMentionDropdown();return true;}
+  if(e.key==='ArrowUp'){e.preventDefault();_mentionSelIdx=(_mentionSelIdx-1+_mentionOpts.length)%_mentionOpts.length;_renderMentionDropdown();return true;}
+  if(e.key==='Enter'||e.key==='\t'){e.preventDefault();_pickMention(_mentionOpts[_mentionSelIdx].username);return true;}
+  if(e.key==='Escape'){_closeMentionDropdown();return true;}
+  return false;
+}
+
+async function _sendMentionNotifs(content,groupId){
+  if(!groupId||!_mlData)return;
+  const s=getSession();if(!s)return;
+  const mentioned=[...content.matchAll(/@([a-zA-Z0-9_\-]+)/g)].map(m=>m[1].toLowerCase());
+  if(!mentioned.length)return;
+  const members=(_mlData.members||[]).map(m=>m.username.toLowerCase());
+  const toNotify=[...new Set(mentioned.filter(u=>members.includes(u)&&u!==s.username.toLowerCase()))];
+  if(!toNotify.length)return;
+  try{
+    await apiCall('/api/chat/mention',{from:s.username,password:s.password,
+      group_id:groupId,mentioned:toNotify,
+      group_name:_mlData?.group?.name||'Group',
+      content:content.slice(0,100)});
+  }catch{}
+}
+
 function onChatInput(el){
   if(el)autoResizeChatInp(el);
-  if(!_chatWith||!S.serverOk)return;
+  _checkMentionTrigger(el||$('chat-inp'));
+  if(!_chatWith&&!_chatGroupId||!S.serverOk)return;
   if(!_isTyping){_isTyping=true;_sendTyping();}
   clearTimeout(_typingTimer);
   _typingTimer=setTimeout(stopTyping,3500);
@@ -2905,6 +3010,7 @@ function autoResizeChatInp(el){
   el.style.height=Math.min(el.scrollHeight,110)+'px';
 }
 function chatKeyDown(e){
+  if(_mentionKeyNav(e))return;
   if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
   if(e.key==='Escape'){
     if($('chat-emoji-panel')?.classList.contains('on')){toggleChatEmoji(true);return;}
@@ -3100,7 +3206,14 @@ async function checkBroadcast(){
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'?',
           text:`${n.fromDisplay||n.from} sent you a friend request!`,ts:(n.time||0)*1000,
           action:()=>{switchView('friends');openFrReqPanel();}});
-      }else if(n.type==='group_invite'){
+      }else if(n.type==='mention'){
+        addNotif({type:'mention',from:n.from,fromDisplay:n.fromDisplay||n.from,
+          fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'?',
+          text:`${n.fromDisplay||n.from} mentioned you in ${n.group_name||'a group'}: "${n.content}"`,
+          ts:(n.time||0)*1000,
+          action:()=>{switchView('friends');}});
+        showBroadcast(`📣 ${n.fromDisplay||n.from} mentioned you: "${n.content}"`,10);
+      }
         addNotif({type:'group_invite',from:n.from,fromDisplay:n.fromDisplay||n.from,
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'G',
           text:`Invited to group: ${n.group_name||'a group'}`,ts:(n.time||0)*1000,
@@ -4832,7 +4945,7 @@ function renderR4Grid(append=false){
       <div class="r4m ${ar}">
         ${post.previewUrl
           ?`<img src="${esc(post.previewUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer"
-              onerror="this.onerror=null;this.src='${esc(post.fileUrl)}';this.onerror=function(){this.onerror=null;this.closest('.r4c')?.remove();};"/>`
+              onerror="this.onerror=null;this.style.opacity='.15';this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'"/>`
           :`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;opacity:.2">${isV?'▶':'🖼'}</div>`}
         ${vidUrl?`<video class="hov-vid" src="${esc(vidUrl)}" muted loop playsinline preload="none"></video>`:''}
         <div class="r4ov"><div class="r4p">${isV||isG?'▶':'🔍'}</div></div>
@@ -5062,8 +5175,14 @@ function openR34Post(post){
   };
   const viewUrl=boardUrls[post.apiSrc]||'#';
   const liked=isLiked(post.id);
+  const boardReferers={gelbooru:'https://gelbooru.com/',e621:'https://e621.net/',
+    danbooru:'https://danbooru.donmai.us/',konachan:'https://konachan.com/',
+    yandere:'https://yande.re/',paheal:'https://rule34.paheal.net/',safebooru:'https://safebooru.org/'};
+  const ref=boardReferers[post.apiSrc]||'';
+  const mediaSrc=(isVid||isGif)?post.fileUrl
+    :(S.serverUrl&&post.fileUrl?`${S.serverUrl}/api/proxy_image?url=${encodeURIComponent(post.fileUrl)}&ref=${encodeURIComponent(ref)}`:post.fileUrl);
   launchPlayer({
-    src:post.fileUrl,title:`${post.src} #${post.id}`,accent:'pr',
+    src:mediaSrc,title:`${post.src} #${post.id}`,accent:'pr',
     meta:`<span style="color:var(--pur)">${esc(post.src)}</span><span>▲ ${post.score}</span><span>${post.mType.toUpperCase()}</span>${post.width?`<span>${post.width}×${post.height}</span>`:''}`,
     actions:`<button class="btn${liked?' btn-liked':''}" id="liked-btn" onclick="toggleLike(S.curVid)" style="${liked?'background:var(--crim);border-color:var(--crim);color:#fff':''}">${liked?'♥ Liked':'♥ Like'}</button><a href="${viewUrl}" target="_blank" rel="noopener" class="btn p">View ↗</a><button class="btn" onclick="cpLink('${esc(post.fileUrl)}')">⎘</button>`,
     extra:`<div style="display:flex;gap:.28rem;flex-wrap:wrap;padding-top:.3rem">${tagLinks}</div>`,
