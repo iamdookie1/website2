@@ -2766,9 +2766,6 @@ async function sendMediaMsg(content,type,editId){
 
 async function checkNotifications(){
   await checkBroadcast();
-  const s=getSession();if(!s||!S.serverOk)return;
-  try{await syncSessionFromServer();renderFriendsList();updateFriendCount();}catch{}
-  loadFriendRequests();
   pollUnreadCounts();
 }
 
@@ -3067,26 +3064,33 @@ async function checkBroadcast(){
     const r=await fetch(`${API()}/api/users/${s.username}/notifications?password=${encodeURIComponent(s.password)}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
     if(!r.ok)return;
     const d=await safeJson(r)||{};
-    (d.notifications||[]).forEach(n=>{
-      if(n.type==='system'){showBroadcast(n.text||'System message',14);}
-      else if(n.type==='request_accepted'){
+    const notifs=d.notifications||[];
+    if(!notifs.length)return;
+    let needsSync=false;
+    notifs.forEach(n=>{
+      if(n.type==='system'){
+        showBroadcast(n.text||'System message',14);
+      }else if(n.type==='request_accepted'){
         addNotif({type:'accepted',from:n.from,fromDisplay:n.fromDisplay,
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'?',
-          text:`${n.fromDisplay||n.from} accepted your friend request!`,ts:n.time*1000,
+          text:`${n.fromDisplay||n.from} accepted your friend request!`,ts:(n.time||0)*1000,
           action:()=>switchView('friends')});
+        needsSync=true;
       }else if(n.type==='friend_request'){
         addNotif({type:'request',from:n.from,fromDisplay:n.fromDisplay,
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'?',
-          text:`${n.fromDisplay||n.from} sent you a friend request!`,ts:n.time*1000,
+          text:`${n.fromDisplay||n.from} sent you a friend request!`,ts:(n.time||0)*1000,
           action:()=>{switchView('friends');openFrReqPanel();}});
       }else if(n.type==='group_invite'){
-        addNotif({type:'group_invite',from:n.from,fromDisplay:n.fromDisplay,
-          fromColor:'#C9A84C',fromLetter:'G',
-          text:`Invited to group: ${n.group_name}`,ts:n.time*1000,
+        addNotif({type:'group_invite',from:n.from,fromDisplay:n.fromDisplay||n.from,
+          fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'G',
+          text:`Invited to group: ${n.group_name||'a group'}`,ts:(n.time||0)*1000,
           invite_id:n.invite_id,group_name:n.group_name,
           action:()=>{switchView('friends');switchSocTab('groups');}});
       }
     });
+    if(needsSync){try{await syncSessionFromServer();renderFriendsList();updateFriendCount();}catch{}}
+    loadFriendRequests();
   }catch{}
 }
 
@@ -4441,150 +4445,18 @@ const R4_NAMES={
 };
 
 async function _fetchBooru(apiSrc,tags,limit,pid){
-
-  const page=pid+1;
-  const tag=encodeURIComponent(tags);
-
-  if(apiSrc==='gelbooru'){
-
-    const url=`https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${tag}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const d=await safeJson(r)||{};
-        const posts=d?.post||d?.posts||[];
-        if(!Array.isArray(posts)||!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:parseInt(p.score)||0,
-          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
-          file_url:p.file_url||p.source||'',
-          preview_url:p.preview_url||p.sample_url||'',
-          sample_url:p.sample_url||'',
-          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('Gelbooru: all proxies failed');
-  }
-
-  if(apiSrc==='e621'){
-    const url=`https://e621.net/posts.json?tags=${tag}&limit=${limit}&page=${page}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const d=await safeJson(r)||{};
-        const posts=d?.posts||[];
-        if(!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:p.score?.total||0,
-          tags:Object.values(p.tags||{}).flat().slice(0,10),
-          file_url:p.file?.url||'',
-          preview_url:p.preview?.url||'',
-          sample_url:p.sample?.url||'',
-          width:p.file?.width||0,height:p.file?.height||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('e621: all proxies failed');
-  }
-
-  if(apiSrc==='danbooru'){
-
-    const twoTags=tags.split(' ').slice(0,2).join('+');
-    const url=`https://danbooru.donmai.us/posts.json?tags=${encodeURIComponent(twoTags)}&limit=${limit}&page=${page}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const posts=await safeJson(r)||{};
-        if(!Array.isArray(posts)||!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:parseInt(p.score)||0,
-          tags:(p.tag_string||'').split(' ').filter(Boolean).slice(0,10),
-          file_url:p.file_url||p.large_file_url||'',
-          preview_url:p.preview_file_url||'',
-          sample_url:p.large_file_url||p.file_url||'',
-          width:parseInt(p.image_width)||0,height:parseInt(p.image_height)||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('Danbooru: proxy failed (max 2 tags on free tier)');
-  }
-
-  if(apiSrc==='konachan'){
-    const url=`https://konachan.com/post.json?tags=${tag}&limit=${limit}&page=${page}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const posts=await safeJson(r)||{};
-        if(!Array.isArray(posts)||!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:parseInt(p.score)||0,
-          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
-          file_url:p.file_url||'',
-          preview_url:p.preview_url||'',
-          sample_url:p.sample_url||'',
-          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('Konachan: proxy failed');
-  }
-
-  if(apiSrc==='yandere'){
-    const url=`https://yande.re/post.json?tags=${tag}&limit=${limit}&page=${page}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const posts=await safeJson(r)||{};
-        if(!Array.isArray(posts)||!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:parseInt(p.score)||0,
-          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
-          file_url:p.file_url||'',
-          preview_url:p.preview_url||'',
-          sample_url:p.sample_url||'',
-          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('Yande.re: proxy failed');
-  }
-
-  if(apiSrc==='safebooru'){
-    const url=`https://safebooru.org/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${tag}`;
-    for(const mkP of PROXY_LIST){
-      try{
-        const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
-        if(!r.ok)continue;
-        const posts=await safeJson(r)||{};
-        if(!Array.isArray(posts)||!posts.length)continue;
-        return posts.map(p=>({
-          id:p.id,score:0,
-          tags:String(p.tags||'').split(' ').filter(Boolean).slice(0,10),
-          file_url:p.file_url?`https://safebooru.org/images/${p.directory}/${p.image}`:'',
-          preview_url:p.preview_url||`https://safebooru.org/thumbnails/${p.directory}/thumbnail_${p.image}`,
-          sample_url:'',
-          width:parseInt(p.width)||0,height:parseInt(p.height)||0,
-        }));
-      }catch{continue;}
-    }
-    throw new Error('Safebooru: proxy failed');
-  }
-
-  if(apiSrc==='paheal'){
-    if(!S.serverUrl||!S.serverOk)throw new Error('Paheal requires the Python server');
-    const p=new URLSearchParams({tags,limit,pid,source:'paheal'});
-    const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
-    if(!r.ok)throw new Error(`Paheal server ${r.status}`);
-    return await safeJson(r)||{};
-  }
-
-  throw new Error(`Unknown source: ${apiSrc}`);
+  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  const p=new URLSearchParams({source:apiSrc,tags:tags||'',limit,page:pid});
+  const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(20000)});
+  if(!r.ok)throw new Error(`Booru server ${r.status}`);
+  const d=await safeJson(r)||{};
+  if(!d.ok&&d.error)throw new Error(d.error);
+  const posts=d.posts||[];
+  return posts.map(p=>({
+    ...p,
+    file_url:p.url||p.file_url||'',
+    preview_url:p.thumb||p.preview_url||'',
+  }));
 }
 
 async function fetchR34(append=false){
