@@ -733,6 +733,11 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .bc-timer{font-family:'DM Mono',monospace;font-size:.56rem;color:var(--tm);white-space:nowrap;min-width:28px;text-align:right;}
 .bc-close{background:none;border:none;color:var(--tm);font-size:.9rem;cursor:pointer;padding:.1rem .3rem;flex-shrink:0;line-height:1;}
 .bc-close:hover{color:var(--tp);}
+.msg-code{background:rgba(0,0,0,.4);border:1px solid var(--bdr);border-radius:3px;padding:.1rem .35rem;font-family:'DM Mono',monospace;font-size:.82em;color:#e0c87c;}
+.msg-code-block{background:rgba(0,0,0,.5);border:1px solid var(--bdr);border-left:3px solid var(--gold-d);border-radius:4px;padding:.55rem .8rem;font-family:'DM Mono',monospace;font-size:.75rem;color:#b8d4b8;margin:.3rem 0;overflow-x:auto;white-space:pre;}
+.msg-spoiler{background:var(--bg3);color:transparent;border-radius:3px;padding:.1rem .25rem;cursor:pointer;user-select:none;transition:all .2s;}
+.msg-spoiler.revealed{color:inherit;background:rgba(201,168,76,.1);}
+.msg-quote{border-left:3px solid var(--gold-d);padding:.25rem .6rem;margin:.2rem 0;color:var(--tm);font-style:italic;}
 .bc-progress{position:absolute;bottom:0;left:0;height:2px;background:var(--gold);transition:width 1s linear;}
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
@@ -1915,7 +1920,7 @@ async function apiCall(path,body=null,method='POST',timeoutMs=12000){
       console.warn('[apiCall] Non-JSON response from',path,'status',r.status,text.slice(0,120));
       return{error:`Server error (${r.status}) — check your tunnel is running`};
     }
-    const d=await r.json();
+    const d=await safeJson(r)||{};
     return d;
   }catch(e){
     if(e.name==='TimeoutError'||e.name==='AbortError')
@@ -2104,18 +2109,21 @@ async function renderFriendsList(){
 
 function renderMarkdown(raw){
   let s=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-  s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
-  s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
-  s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-
+  s=s.replace(/```([\s\S]*?)```/g,(_,c)=>`<pre class="msg-code-block"><code>${c.trim()}</code></pre>`);
+  s=s.replace(/`([^`]+)`/g,'<code class="msg-code">$1</code>');
+  s=s.replace(/^### (.+)$/gm,'<strong style="font-size:1em;display:block">$1</strong>');
+  s=s.replace(/^## (.+)$/gm,'<strong style="font-size:1.1em;display:block">$1</strong>');
+  s=s.replace(/^# (.+)$/gm,'<strong style="font-size:1.2em;display:block">$1</strong>');
   s=s.replace(/\*\*\*(.+?)\*\*\*/gs,'<strong><em>$1</em></strong>');
   s=s.replace(/\*\*(.+?)\*\*/gs,'<strong>$1</strong>');
+  s=s.replace(/__(.+?)__/gs,'<strong>$1</strong>');
   s=s.replace(/\*(.+?)\*/gs,'<em>$1</em>');
-
-  s=s.replace(/`(.+?)`/g,'<code>$1</code>');
-
-  s=s.replace(/\n/g,'<br>');
+  s=s.replace(/_(.+?)_/gs,'<em>$1</em>');
+  s=s.replace(/~~(.+?)~~/gs,'<s>$1</s>');
+  s=s.replace(/\|\|(.+?)\|\|/gs,'<span class="msg-spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
+  s=s.replace(/^> (.+)$/gm,'<blockquote class="msg-quote">$1</blockquote>');
+  s=s.replace(/(https?:\/\/[^\s<>"]+)/g,'<a href="$1" target="_blank" rel="noopener noreferrer" style="color:var(--gold);text-decoration:underline">$1</a>');
+  s=s.replace(/(?<!<\/pre>)\n/g,'<br>');
   return s;
 }
 
@@ -2169,7 +2177,7 @@ async function respondRequest(fromUser, action){
     try{
       const r=await fetch(`${API()}/api/users/${s.username}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
       if(r.ok){
-        const fresh=await r.json();
+        const fresh=await safeJson(r)||{};
         setSession({...s,friends:fresh.friends||d.friends||[]});
       }else{
         setSession({...s,friends:d.friends||[]});
@@ -2696,7 +2704,16 @@ async function sendMessage(){
   const d=await apiCall('/api/chat/send',body);
   $('chat-send-btn').disabled=false;
   if(d.error){fakeRow.remove();inp.value=text;toast(d.error,'err');return;}
-  fakeRow.remove();if(d.id)_sentIds.add(d.id);if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
+  if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
+  fakeRow.remove();
+  if(d.id){
+    _sentIds.add(d.id);
+    const realMsg={id:d.id,sender:s.username,content:text,mtype:'text',
+      ts:d.ts||nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
+    const realRow=renderMsg(realMsg,s.username,null,window._friendCache);
+    msgEl.appendChild(realRow);
+    if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+  }
   inp.focus();
 }
 
@@ -2735,9 +2752,16 @@ async function sendMediaMsg(content,type,editId){
   if(_replyTo)body.reply_to=_replyTo.id;
   const d=await apiCall('/api/chat/send',body,'POST',120000);
   if(d.error){fakeRow.remove();toast(d.error,'err');return;}
-  fakeRow.remove();
-  if(d.id)_sentIds.add(d.id);
   if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
+  fakeRow.remove();
+  if(d.id){
+    _sentIds.add(d.id);
+    const realMsg={id:d.id,sender:s.username,content,mtype:type,
+      ts:d.ts||nowTs,reply_to:body.reply_to||null,reactions:{},edited:0,deleted:0};
+    const realRow=renderMsg(realMsg,s.username,null,window._friendCache);
+    msgEl.appendChild(realRow);
+    if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+  }
 }
 
 async function checkNotifications(){
@@ -3853,30 +3877,28 @@ function fetchByName(name,q,page,sort,opts={}){
 const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
-  const p=new URLSearchParams({count:CFG_PAGE,page:Math.max(0,page-1)});
-  if(q)p.set('q',q);
-  const posKey=q||'__t__';
+  const sub=q||'gonewild';
+  const sort='hot';
+  const posKey=sub+'_'+sort;
+  const p=new URLSearchParams({sub,sort});
   if(page>1&&RG.pos[posKey])p.set('after',RG.pos[posKey]);
   const r=await fetch(`${S.serverUrl}/api/gifs?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
   if(!r.ok)throw new Error(`GIF server ${r.status}`);
-  const d=await r.json();
+  const d=await safeJson(r)||{};
   if(d.after)RG.pos[posKey]=d.after;
-  const items=d.gifs||d.videos||[];
-  return{
-    videos:items.map(g=>({
-      id:g.id,title:g.title||g.id,
-      thumb:g.thumb||g.tUrl||'',
-      dur:g.dur||g.duration||0,
-      views:g.views||g.ups||g.score||0,
-      rating:'—',qual:'GIF',
-      tags:Array.isArray(g.tags)?g.tags.slice(0,5):[],
-      directUrl:g.directUrl||g.url||g.mUrl||'',
-      url:g.directUrl||g.url||g.mUrl||'',
-      embedUrl:'',useIframe:false,
-      src:g.src||'Reddit GIF',bc:'b-rg',
-    })).filter(g=>g.directUrl),
-    total:d.total||items.length*10,
-  };
+  const items=d.posts||d.gifs||d.videos||[];
+  const mapped=items.map(g=>({
+    id:g.id,title:g.title||g.id||'GIF',
+    thumb:g.thumb||'',
+    dur:0,views:g.ups||g.score||0,
+    rating:'—',qual:'GIF',
+    tags:[],
+    directUrl:g.url||'',
+    url:g.url||'',
+    embedUrl:'',useIframe:false,
+    src:g.sub?`r/${g.sub}`:'Reddit GIF',bc:'b-rg',
+  })).filter(g=>g.url&&g.url.length>4);
+  return{videos:mapped,total:mapped.length*10};
 }
 
 async function fetchMain(params={}){
@@ -4010,10 +4032,11 @@ async function loadVideos(append=false){
       if(res.notice==='server-offline'){
         g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm);line-height:2.2">
           <div style="font-size:2rem;margin-bottom:.8rem;opacity:.3">📡</div>
-          Server offline — Pornhub requires the Python server running<br/>
-          <span style="color:var(--gold)">Run server.py, start your Cloudflare tunnel, paste URL in ⚙</span><br/>
+          Server offline — start server.py + Cloudflare tunnel<br/>
+          <span style="color:var(--gold)">Paste your tunnel URL in ⚙ Settings</span><br/>
           <button class="btn g" style="margin-top:.8rem" onclick="retryServer()">↺ Retry Connection</button>
         </div>`;
+        setTimeout(()=>{if(!S.serverOk)loadVideos();},10000);
       }else if(res.notice==='gif-error'){
         g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--tm);line-height:2.2">
           <div style="font-size:2rem;margin-bottom:.8rem;opacity:.3">🎞</div>
@@ -4429,7 +4452,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const d=await r.json();
+        const d=await safeJson(r)||{};
         const posts=d?.post||d?.posts||[];
         if(!Array.isArray(posts)||!posts.length)continue;
         return posts.map(p=>({
@@ -4451,7 +4474,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const d=await r.json();
+        const d=await safeJson(r)||{};
         const posts=d?.posts||[];
         if(!posts.length)continue;
         return posts.map(p=>({
@@ -4475,7 +4498,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const posts=await r.json();
+        const posts=await safeJson(r)||{};
         if(!Array.isArray(posts)||!posts.length)continue;
         return posts.map(p=>({
           id:p.id,score:parseInt(p.score)||0,
@@ -4496,7 +4519,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const posts=await r.json();
+        const posts=await safeJson(r)||{};
         if(!Array.isArray(posts)||!posts.length)continue;
         return posts.map(p=>({
           id:p.id,score:parseInt(p.score)||0,
@@ -4517,7 +4540,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const posts=await r.json();
+        const posts=await safeJson(r)||{};
         if(!Array.isArray(posts)||!posts.length)continue;
         return posts.map(p=>({
           id:p.id,score:parseInt(p.score)||0,
@@ -4538,7 +4561,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
       try{
         const r=await fetch(mkP(url),{mode:'cors',signal:AbortSignal.timeout(10000)});
         if(!r.ok)continue;
-        const posts=await r.json();
+        const posts=await safeJson(r)||{};
         if(!Array.isArray(posts)||!posts.length)continue;
         return posts.map(p=>({
           id:p.id,score:0,
@@ -4558,7 +4581,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
     const p=new URLSearchParams({tags,limit,pid,source:'paheal'});
     const r=await fetch(`${S.serverUrl}/api/r34?${p}`,{mode:'cors',signal:AbortSignal.timeout(15000)});
     if(!r.ok)throw new Error(`Paheal server ${r.status}`);
-    return await r.json();
+    return await safeJson(r)||{};
   }
 
   throw new Error(`Unknown source: ${apiSrc}`);
@@ -5189,6 +5212,7 @@ async function bootApp(){
     if(ok){
       toast('Server connected ✓','ok',2000);
       startPresenceHeartbeat();
+      setTimeout(checkBroadcast, 1500);
       loadVideos();
     }else{
       await fetchServerUrlFromGithub();
