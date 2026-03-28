@@ -2422,24 +2422,6 @@ function renderChatHistory(msgs,myUsername,friendData){
   });
   el.scrollTop=el.scrollHeight;
 }
-  const el=$('chat-msgs');if(!el)return;
-  el.innerHTML='';
-  if(!msgs.length){
-    el.innerHTML=`<div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">No messages yet. Say hello! 👋</div>`;
-    return;
-  }
-  let lastDay='';
-  msgs.forEach(msg=>{
-    const day=fmtDay(msg.ts);
-    if(day!==lastDay){
-      const sep=document.createElement('div');sep.className='chat-day';sep.textContent=day;
-      el.appendChild(sep);lastDay=day;
-    }
-    el.appendChild(renderMsg(msg,myUsername,null,friendData));
-  });
-  el.scrollTop=el.scrollHeight;
-}
-
 /* ── Sent message IDs — prevents poll from adding duplicates ── */
 const _sentIds=new Set();
 
