@@ -14,7 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet"/></noscript>
 <style>
-/* ═══ TOKENS ═══════════════════════════════════════════════ */
+
 :root{
   --gold:#C9A84C;--gold-d:#8A6F32;--gold-g:rgba(201,168,76,.22);
   --red:#FF4500;--red-d:rgba(255,69,0,.15);
@@ -28,24 +28,24 @@
   --bg0:#F5F2ED;--bg1:#EEEBE4;--bg2:#E5E0D8;--bg3:#D8D2C8;--sf:#FAFAF8;
   --bdr:rgba(100,80,40,.18);--tp:#1A1714;--ts:#5C5448;--tm:#9A9186;--ov:rgba(245,242,237,.96);
 }
-/* True black for OLED screens — zero battery draw on AMOLED */
+
 [data-theme=oled]{
   --bg0:#000000;--bg1:#080808;--bg2:#0E0E0E;--bg3:#141414;--sf:#0A0A0A;
   --bdr:rgba(201,168,76,.18);--tp:#FFFFFF;--ts:#AAAAAA;--tm:#555555;--ov:rgba(0,0,0,.97);
 }
-/* Dimmed — easier on eyes, less contrast than dark */
+
 [data-theme=dim]{
   --bg0:#1A1C22;--bg1:#22252D;--bg2:#2A2D38;--bg3:#323643;--sf:#23262F;
   --bdr:rgba(180,160,100,.15);--tp:#E2D9CC;--ts:#8A8070;--tm:#54504A;--ov:rgba(26,28,34,.96);
 }
-/* Mocha — warm deep brown, cozy cinema feel */
+
 [data-theme=mocha]{
   --bg0:#120D09;--bg1:#1C1510;--bg2:#261C15;--bg3:#30231B;--sf:#201811;
   --bdr:rgba(201,140,60,.18);--tp:#EDE0D0;--ts:#A08870;--tm:#604838;
   --gold:#D4935A;--gold-d:#8A5E35;--gold-g:rgba(212,147,90,.2);
   --ov:rgba(18,13,9,.97);
 }
-/* ═══ RESET ════════════════════════════════════════════════ */
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp);min-height:100vh;overflow-x:hidden;transition:background .4s,color .4s;}
@@ -61,7 +61,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 @keyframes tIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 @keyframes mIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
 
-/* ═══ AGE GATE ══════════════════════════════════════════════ */
 #age-gate{position:fixed;inset:0;z-index:9999;background:#040404;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;}
 #age-gate.out{animation:fadeOut .5s ease forwards;pointer-events:none;}
 .ag-logo{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,7vw,5rem);font-weight:900;letter-spacing:.28em;color:var(--gold);text-shadow:0 0 50px var(--gold-g);}
@@ -74,7 +73,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .ag-btn.n{background:transparent;color:var(--tm);border:1px solid rgba(255,255,255,.08);}.ag-btn.n:hover{border-color:var(--tm);color:var(--ts);}
 .ag-legal{font-family:'DM Mono',monospace;font-size:.56rem;color:#2a2a2a;text-align:center;max-width:460px;line-height:2;}
 
-/* ═══ SPLASH ═══════════════════════════════════════════════ */
 #splash{position:fixed;inset:0;z-index:9000;background:var(--bg0);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.3rem;opacity:0;pointer-events:none;}
 #splash.active{opacity:1;pointer-events:all;animation:fadeIn .7s ease forwards;}
 #splash.out{animation:fadeOut .6s ease forwards;pointer-events:none;}
@@ -87,11 +85,9 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .sp-bar{position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);width:150px;height:1px;background:var(--bg3);overflow:hidden;}
 .sp-bf{height:100%;width:0;background:linear-gradient(90deg,var(--gold-d),var(--gold));animation:barLoad 1.5s .3s ease forwards;}
 
-/* ═══ APP ════════════════════════════════════════════════════ */
 #app{min-height:100vh;opacity:0;transition:opacity .5s;}
 #app.on{opacity:1;}
 
-/* ═══ TOPBAR ═════════════════════════════════════════════════ */
 .topbar{position:sticky;top:0;z-index:800;display:flex;align-items:center;gap:1rem;padding:.8rem 1.6rem;background:var(--bg0);border-bottom:1px solid var(--bdr);backdrop-filter:blur(14px);transition:background .4s;}
 .nav-logo{font-family:'Playfair Display',serif;font-size:1.28rem;font-weight:900;letter-spacing:.22em;color:var(--gold);text-decoration:none;flex-shrink:0;text-shadow:0 0 20px var(--gold-g);}
 .nsw{flex:1;max-width:500px;position:relative;}
@@ -107,7 +103,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .bico{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--bdr);color:var(--ts);cursor:pointer;font-size:.9rem;transition:all .2s;}
 .bico:hover{border-color:var(--gold-d);color:var(--gold);background:var(--gold-g);}
 
-/* ═══ FILTER BAR ════════════════════════════════════════════ */
 #fbar{display:flex;align-items:center;gap:.5rem;padding:.6rem 1.6rem;background:var(--bg1);border-bottom:1px solid var(--bdr);overflow-x:auto;scrollbar-width:none;}
 #fbar::-webkit-scrollbar{display:none;}
 #fbar.off{display:none;}
@@ -119,7 +114,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .fchip.on{background:var(--gold);border-color:var(--gold);color:#080808;}
 .fdiv{width:1px;height:14px;background:var(--bdr);flex-shrink:0;}
 
-/* ═══ LAYOUT ════════════════════════════════════════════════ */
 .ml{display:grid;grid-template-columns:202px 1fr;min-height:calc(100vh - 115px);}
 .sb{padding:1.3rem .92rem;border-right:1px solid var(--bdr);background:var(--bg1);}
 .sb-sec{margin-bottom:1.6rem;}
@@ -134,7 +128,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .ca{padding:1.6rem;}
 .view{display:none;}.view.on{display:block;}
 
-/* ═══ HERO ════════════════════════════════════════════════ */
 .hero{position:relative;height:295px;overflow:hidden;margin-bottom:1.6rem;background:var(--bg2);}
 .hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#0A0A0A 0%,#1A1205 50%,#0A0A0A 100%);}
 .hero-g{position:absolute;inset:0;background:linear-gradient(to right,var(--bg1) 0%,transparent 50%,var(--bg1) 100%),linear-gradient(to top,var(--bg1) 0%,transparent 40%);}
@@ -144,12 +137,10 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .hero-m{display:flex;align-items:center;gap:.8rem;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);letter-spacing:.06em;margin-bottom:.85rem;flex-wrap:wrap;}
 .hero-a{display:flex;gap:.6rem;}
 
-/* ═══ SECTION HEADER ══════════════════════════════════════ */
 .sh{display:flex;align-items:baseline;gap:.8rem;margin-bottom:1.25rem;}
 .st{font-family:'Playfair Display',serif;font-size:clamp(1.2rem,2.5vw,1.6rem);font-weight:700;color:var(--tp);}
 .sc{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--tm);text-transform:uppercase;}
 
-/* ═══ VIDEO GRID ═══════════════════════════════════════════ */
 .vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(242px,1fr));gap:1rem;}
 .vc{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .24s,border-color .24s,box-shadow .24s;}
 .vc:hover{transform:translateY(-3px);border-color:var(--gold-d);box-shadow:0 10px 32px rgba(0,0,0,.55),0 0 0 1px var(--gold-d);}
@@ -174,15 +165,14 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .vtgs{margin-top:.4rem;display:flex;gap:.2rem;flex-wrap:wrap;}
 .vtg{padding:.08rem .4rem;background:var(--bg2);border:1px solid var(--bdr);font-family:'DM Mono',monospace;font-size:.48rem;color:var(--tm);letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .15s;}
 .vtg:hover{border-color:var(--gold-d);color:var(--gold);}
-/* Skeletons */
+
 .sk{background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:sksh 1.5s infinite;}
 .skc{border:1px solid var(--bdr);}.skt{aspect-ratio:16/9;}
 .ski{padding:.78rem .88rem;display:flex;flex-direction:column;gap:.4rem;}
 .sk1{height:12px;width:75%;}.sk2{height:10px;width:45%;}
 
-/* ═══ SHARED ISOLATED PAGE STYLES ══════════════════════════ */
 .iso-page{max-width:1070px;margin:0 auto;}
-/* Header banner */
+
 .iso-hdr{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem 1.3rem;background:var(--bg1);border:1px solid var(--bdr);}
 .iso-hdr.r{border-left:3px solid var(--red);}
 .iso-hdr.p{border-left:3px solid var(--pur);}
@@ -191,13 +181,13 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-hdr p{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);letter-spacing:.07em;}
 .iso-hdr span.hl{color:var(--red);}
 .iso-hdr span.hlp{color:var(--pur);}
-/* Notice bar */
+
 .iso-notice{display:flex;gap:.7rem;padding:.58rem .95rem;margin-bottom:1.2rem;font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.07em;line-height:1.7;}
 .iso-notice.r{background:rgba(255,69,0,.04);border:1px solid rgba(255,69,0,.2);color:rgba(255,110,60,.75);}
 .iso-notice.r strong{color:var(--red);}
 .iso-notice.p{background:rgba(155,89,182,.05);border:1px solid rgba(155,89,182,.22);color:rgba(190,140,220,.75);}
 .iso-notice.p strong{color:var(--pur);}
-/* Search panel */
+
 .iso-sp{background:var(--bg1);border:1px solid var(--bdr);padding:1.25rem 1.3rem;margin-bottom:1.25rem;}
 .iso-row{display:flex;gap:.62rem;align-items:flex-end;flex-wrap:wrap;}
 .iso-f{display:flex;flex-direction:column;gap:.3rem;flex:1;min-width:155px;}
@@ -208,13 +198,13 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-btn.r{background:var(--red);}.iso-btn.r:hover{background:#FF5722;box-shadow:0 0 22px rgba(255,69,0,.3);}
 .iso-btn.p{background:var(--pur-b);}.iso-btn.p:hover{background:var(--pur);box-shadow:0 0 22px rgba(155,89,182,.3);}
 .iso-btn:disabled{background:var(--bg3);color:var(--tm);cursor:not-allowed;box-shadow:none;}
-/* Quick chips */
+
 .iso-quick{display:flex;gap:.36rem;flex-wrap:wrap;margin-top:.85rem;align-items:center;}
 .iso-ql{font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);}
 .iso-qc{padding:.18rem .65rem;background:transparent;font-family:'DM Mono',monospace;font-size:.56rem;letter-spacing:.07em;cursor:pointer;transition:all .2s;}
 .iso-qc.r{border:1px solid rgba(255,69,0,.25);color:rgba(255,100,50,.65);}.iso-qc.r:hover{background:var(--red-d);border-color:var(--red);color:var(--red);}
 .iso-qc.p{border:1px solid rgba(155,89,182,.25);color:rgba(180,130,210,.65);}.iso-qc.p:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
-/* Sub/tag info bar */
+
 .iso-info{display:none;align-items:center;gap:.85rem;padding:.68rem 1.05rem;margin-bottom:1.05rem;font-family:'DM Mono',monospace;}
 .iso-info.on{display:flex;}
 .iso-info.r{background:var(--bg2);border:1px solid rgba(255,69,0,.18);}
@@ -225,7 +215,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-fc{padding:.18rem .6rem;border:1px solid var(--bdr);background:transparent;color:var(--tm);font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.08em;cursor:pointer;transition:all .15s;}
 .iso-fc.r:hover{border-color:var(--red);color:var(--red);}.iso-fc.r.on{background:var(--red);border-color:var(--red);color:#fff;}
 .iso-fc.p:hover{border-color:var(--pur);color:var(--pur);}.iso-fc.p.on{background:var(--pur-b);border-color:var(--pur-b);color:#fff;}
-/* Shared grids */
+
 .iso-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:.92rem;}
 .iso-state{text-align:center;padding:3.5rem 2rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);letter-spacing:.1em;line-height:2;}
 .iso-state .big{font-size:2.3rem;display:block;margin-bottom:.65rem;opacity:.25;}
@@ -236,13 +226,12 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .iso-lm-btn.p{border:1px solid rgba(155,89,182,.35);color:rgba(180,130,210,.75);}.iso-lm-btn.p:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
 .iso-lm-btn:disabled{opacity:.3;cursor:not-allowed;}
 
-/* ═══ GIF/VIDEO HOVER AUTOPLAY ══════════════════════════════ */
 .vth .hov-vid,.rcm .hov-vid,.r4m .hov-vid{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
   opacity:0;transition:opacity .25s;pointer-events:none;z-index:1;
 }
 .vc:hover .hov-vid,.rc:hover .hov-vid,.r4c:hover .hov-vid{opacity:1;}
-/* Reddit cards restyled to match main vc cards */
+
 .rc{background:var(--sf);border:1px solid var(--bdr);cursor:pointer;overflow:hidden;transition:transform .24s,border-color .24s,box-shadow .24s;}
 .rc:hover{transform:translateY(-3px);border-color:rgba(255,69,0,.4);box-shadow:0 10px 32px rgba(0,0,0,.55),0 0 0 1px rgba(255,69,0,.28);}
 .rc .vth{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg2);}
@@ -258,16 +247,15 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .rc .vti{font-family:'Cormorant Garamond',serif;font-size:.88rem;font-weight:600;color:var(--tp);line-height:1.38;margin-bottom:.3rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .rc .vm{display:flex;align-items:center;gap:.62rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);letter-spacing:.05em;flex-wrap:wrap;}
 .rc .vtgs{margin-top:.4rem;display:flex;gap:.2rem;flex-wrap:wrap;}
-/* Sentinel for infinite scroll */
+
 .scroll-sentinel{height:1px;width:100%;}
-/* Loading spinner for auto-load */
+
 .auto-loading{text-align:center;padding:1.2rem;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);letter-spacing:.1em;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--bdr);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:.5rem;}
 .spinner.r{border-top-color:var(--red);}
 .spinner.p{border-top-color:var(--pur);}
 
-/* ═══ RULE34 CARDS ══════════════════════════════════════════ */
 .r4-masonry{columns:2 160px;column-gap:.6rem;}.r4-masonry .r4c{break-inside:avoid;margin-bottom:.6rem;display:inline-block;width:100%;}
 @media(min-width:600px){.r4-masonry{columns:3 160px;}}
 @media(min-width:900px){.r4-masonry{columns:4 160px;}}
@@ -292,43 +280,40 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .r4tgchip:hover{background:var(--pur-d);border-color:var(--pur);color:var(--pur);}
 .r4mt{display:flex;align-items:center;gap:.58rem;font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);letter-spacing:.04em;}
 
-/* ═══ PAGINATION ════════════════════════════════════════════ */
 .pag{display:flex;align-items:center;justify-content:center;gap:.32rem;margin-top:1.9rem;padding-bottom:.65rem;}
 .pgb{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg2);border:1px solid var(--bdr);color:var(--ts);font-family:'DM Mono',monospace;font-size:.64rem;cursor:pointer;transition:all .2s;}
 .pgb:hover{border-color:var(--gold-d);color:var(--gold);}
 .pgb.cur{background:var(--gold);border-color:var(--gold);color:#080808;}
 
-/* ═══ BUTTONS (shared) ═══════════════════════════════════════ */
 .btn{padding:.4rem .92rem;background:transparent;border:1px solid var(--bdr);color:var(--ts);font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
 .btn:hover{border-color:var(--gold-d);color:var(--gold);}
 .btn.g{background:var(--gold);border-color:var(--gold);color:#080808;}.btn.g:hover{background:#E2BC5A;}
 .btn.r{background:var(--red);border-color:var(--red);color:#fff;text-decoration:none;display:inline-flex;align-items:center;}.btn.r:hover{background:#FF5722;}
 .btn.p{background:var(--pur-b);border-color:var(--pur-b);color:#fff;}.btn.p:hover{background:var(--pur);}
 
-/* ═══ PLAYER MODAL ══════════════════════════════════════════ */
 .pm{position:fixed;inset:0;z-index:850;background:var(--ov);display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
 .pm.on{display:flex;animation:mIn .28s ease;}
-/* Shell: fixed layout, media + info + related each scroll independently */
+
 .ps{width:100%;max-width:1040px;background:var(--bg1);border:1px solid var(--bdr);
     position:relative;display:flex;flex-direction:column;
-    max-height:92vh;overflow:hidden;}  /* NO overflow-y:auto on shell */
+    max-height:92vh;overflow:hidden;}
 .ps.gr{border-left:3px solid var(--gold);}
 .ps.rr{border-left:3px solid var(--red);}
 .ps.pr{border-left:3px solid var(--pur);}
-/* Media section - never grows, never scrolls */
+
 .ps-media{flex-shrink:0;position:relative;background:#000;width:100%;}
-/* Scrollable info section below media */
+
 .ps-scroll{overflow-y:auto;flex:1;min-height:0;}
 .pclose{position:absolute;top:.65rem;right:.65rem;z-index:10;width:28px;height:28px;background:rgba(0,0,0,.7);border:1px solid var(--bdr);color:var(--ts);font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .pclose:hover{background:var(--crim);color:#fff;border-color:var(--crim);}
-/* Video — fixed 16/9, no overflow */
+
 .pvw{position:relative;background:#000;aspect-ratio:16/9;width:100%;overflow:hidden;}
 #mv{width:100%;height:100%;display:block;object-fit:contain;}
-/* Iframe */
+
 #mf{width:100%;aspect-ratio:16/9;display:block;border:none;}
-/* Image overlay inside pvw — always contained */
+
 .pvw-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;z-index:2;}
-/* Controls */
+
 .co{position:absolute;bottom:0;left:0;right:0;padding:1.2rem .92rem .62rem;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 100%);opacity:0;transition:opacity .28s;display:flex;flex-direction:column;gap:.48rem;z-index:5;}
 .pvw:hover .co{opacity:1;}
 .pw{position:relative;height:4px;background:rgba(255,255,255,.2);cursor:pointer;transition:height .15s;}
@@ -342,7 +327,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .cvr{-webkit-appearance:none;width:60px;height:3px;background:rgba(255,255,255,.3);outline:none;cursor:pointer;}
 .cvr::-webkit-slider-thumb{-webkit-appearance:none;width:9px;height:9px;background:var(--gold);border-radius:50%;}
 .ct{font-family:'DM Mono',monospace;font-size:.58rem;color:rgba(255,255,255,.6);letter-spacing:.04em;}
-/* Info (inside scrollable section) */
+
 .pinfo{padding:.95rem 1.25rem;display:grid;grid-template-columns:1fr auto;gap:.82rem;}
 .ptitle{font-family:'Playfair Display',serif;font-size:clamp(.92rem,2vw,1.22rem);font-weight:700;color:var(--tp);line-height:1.28;margin-bottom:.35rem;}
 .pmeta{display:flex;align-items:center;gap:.78rem;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);letter-spacing:.06em;}
@@ -350,7 +335,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .pxtra{padding:.52rem 1.25rem .85rem;border-top:1px solid var(--bdr);font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);letter-spacing:.05em;line-height:1.9;}
 .pxtra a{color:var(--red);text-decoration:none;}.pxtra a:hover{text-decoration:underline;}
 .pxtra.p a{color:var(--pur);}
-/* Related */
+
 .prl{border-top:1px solid var(--bdr);padding:.82rem 1.25rem;}
 .prl-t{font-family:'DM Mono',monospace;font-size:.54rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tm);margin-bottom:.62rem;}
 .rlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.42rem;}
@@ -360,7 +345,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .rlct img{width:100%;height:100%;object-fit:cover;}
 .rlci{padding:.4rem .5rem;font-family:'Cormorant Garamond',serif;font-size:.7rem;color:var(--ts);line-height:1.3;}
 
-/* ═══ SETTINGS MODAL ════════════════════════════════════════ */
 #settings-modal{position:fixed;inset:0;z-index:8600;background:rgba(4,4,4,.88);
   display:none;align-items:flex-start;justify-content:flex-end;backdrop-filter:blur(6px);}
 #settings-modal.on{display:flex;animation:mIn .25s ease;}
@@ -379,7 +363,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
   color:var(--ts);font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;outline:none;
   transition:border-color .2s;min-width:140px;}
 .sm-row select:focus{border-color:var(--gold-d);}
-/* Toggle switch */
+
 .toggle{position:relative;width:38px;height:20px;flex-shrink:0;}
 .toggle input{opacity:0;width:0;height:0;}
 .tslider{position:absolute;inset:0;background:var(--bg3);border-radius:10px;cursor:pointer;transition:.3s;}
@@ -388,7 +372,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .toggle input:checked+.tslider{background:var(--gold);}
 .toggle input:checked+.tslider:before{transform:translateX(18px);background:#080808;}
 
-/* ═══ LIKED TAB ═════════════════════════════════════════════ */
 .r-ac-item{padding:.42rem .72rem;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--ts);cursor:pointer;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid var(--bdr);}
 .r-ac-item:hover,.r-ac-item.focused{background:rgba(255,69,0,.1);color:var(--red);}
 .r-ac-item .r-ac-sub{color:var(--red);font-weight:700;}
@@ -400,63 +383,54 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .theme-chip:hover{border-color:var(--gold-d);color:var(--gold);}
 .theme-chip.on{background:var(--gold);border-color:var(--gold);color:#080808;font-weight:700;}
 
-/* ═══ MEDIA PERFORMANCE ═════════════════════════════════════ */
-/* Thumbnails — fast decode, no smoothing delay on small images */
 .vth img,.r4m img,.rcm img,.rct img{
   image-rendering:auto;
   will-change:auto;
 }
-/* Cards — browser skips off-screen paint (huge speed boost on long grids) */
+
 .vc,.r4c,.rc{
   content-visibility:auto;
-  contain-intrinsic-size:0 280px; /* approximate card height */
+  contain-intrinsic-size:0 280px;
 }
-/* Player image — instant render */
+
 .pvw-img{
   image-rendering:auto;
-  will-change:transform; /* promotes to own layer for instant display */
+  will-change:transform;
 }
-/* ═══ CHAT — layouts: modal | sidebar ════════════════════════ */
-/* modal layout */
+
 #chat-modal{position:fixed;inset:0;z-index:1100;background:rgba(4,4,4,.88);
   display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
 #chat-modal.on{display:flex;animation:mIn .2s ease;}
 
-/* sidebar layout */
 #chat-modal.layout-sidebar{background:transparent;backdrop-filter:none;
   align-items:flex-end;justify-content:flex-end;pointer-events:none;padding:0 1.5rem 1.5rem;}
 #chat-modal.layout-sidebar .chat-box{pointer-events:all;height:min(72vh,600px);width:min(400px,96vw);
   border-radius:0;border:1px solid var(--gold-d);}
 #chat-modal.layout-sidebar.on{animation:slideUp .2s ease;}
 
-/* fullscreen layout (mobile) */
 #chat-modal.layout-full{padding:0;align-items:stretch;justify-content:stretch;}
 #chat-modal.layout-full .chat-box{width:100%;height:100%;max-width:none;max-height:none;border-radius:0;border:none;}
 
-/* chat box — shared */
 .chat-box{
   width:min(700px,96vw);height:min(640px,92vh);
   background:var(--bg1);border:1px solid var(--bdr);
   display:flex;flex-direction:column;
   box-shadow:0 24px 60px rgba(0,0,0,.7);
-  overflow:hidden; /* CRITICAL: clips children so nothing bleeds out */
-  position:relative; /* stacking context for all children */
+  overflow:hidden;
+  position:relative;
 }
 
-/* header */
 .chat-hdr{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;
   border-bottom:1px solid var(--bdr);flex-shrink:0;background:var(--bg0);z-index:2;}
 .chat-hdr-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
   justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:.9rem;flex-shrink:0;}
 .chat-hdr-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--tp);flex:1;}
 
-/* messages area */
 .chat-msgs{flex:1;overflow-y:auto;padding:.75rem .9rem;display:flex;flex-direction:column;
   gap:.2rem;scroll-behavior:smooth;overscroll-behavior:contain;}
 .chat-day{text-align:center;font-family:'DM Mono',monospace;font-size:.5rem;color:var(--tm);
   letter-spacing:.14em;text-transform:uppercase;padding:.5rem 0;opacity:.55;user-select:none;}
 
-/* message rows */
 .msg-row{display:flex;align-items:flex-end;gap:.4rem;max-width:80%;position:relative;
   animation:mIn .14s ease;}
 .msg-row.mine{align-self:flex-end;flex-direction:row-reverse;}
@@ -474,7 +448,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-deleted .msg-bubble{opacity:.42;font-style:italic;background:transparent!important;border-style:dashed!important;}
 .msg-edited{font-size:.44rem;color:var(--tm);margin-left:.3rem;font-style:italic;}
 
-/* action bar — INSIDE .msg-col so z-index is scoped to chat-box */
 .msg-actions{display:flex;gap:2px;opacity:0;pointer-events:none;
   transition:opacity .18s;margin-bottom:2px;align-self:flex-end;}
 .msg-row.mine   .msg-col .msg-actions{align-self:flex-start;}
@@ -485,17 +458,14 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-act:hover{background:var(--bg0);color:var(--gold);border-color:var(--gold-d);}
 .msg-act.del:hover{color:#C0392B;border-color:#8b2222;}
 
-/* reply preview inside bubble */
 .msg-reply-preview{border-left:2px solid var(--gold-d);padding:.12rem .45rem;
   margin-bottom:.25rem;font-size:.56rem;color:var(--tm);opacity:.7;
   background:rgba(201,168,76,.04);cursor:pointer;border-radius:0 3px 3px 0;}
 .msg-reply-preview:hover{opacity:1;}
 
-/* timestamp */
 .msg-time{font-family:'DM Mono',monospace;font-size:.44rem;color:var(--tm);
   padding-bottom:3px;white-space:nowrap;align-self:flex-end;}
 
-/* reactions */
 .msg-reacts{display:flex;flex-wrap:wrap;gap:3px;margin-top:.2rem;}
 .react-chip{display:inline-flex;align-items:center;gap:3px;padding:.08rem .34rem;
   background:var(--bg3);border:1px solid var(--bdr);border-radius:12px;
@@ -504,7 +474,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .react-chip.mine{border-color:rgba(201,168,76,.5);background:rgba(201,168,76,.15);}
 .react-chip .react-n{font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm);}
 
-/* media in chat */
 .chat-img{max-width:100%;max-height:260px;display:block;border-radius:6px;margin-top:.3rem;border:1px solid var(--bdr);cursor:pointer;transition:opacity .15s;}
 .chat-img:hover{opacity:.88;}
 .chat-vid{max-width:100%;max-height:260px;display:block;border-radius:6px;margin-top:.3rem;border:1px solid var(--bdr);}
@@ -518,27 +487,23 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .msg-bubble strong{font-weight:700;color:var(--tp);}
 .msg-bubble em{font-style:italic;}
 
-/* highlight */
 @keyframes msgHL{0%,100%{background:transparent}50%{background:rgba(201,168,76,.18)}}
 .msg-row.highlight{animation:msgHL .8s ease;}
 
-/* ── REPLY BAR (above footer) ── */
 #chat-reply-bar{display:none;align-items:center;gap:.5rem;padding:.28rem .9rem;
   border-top:1px solid var(--bdr);background:rgba(201,168,76,.05);
   font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);flex-shrink:0;}
 #chat-reply-bar.on{display:flex;}
 #chat-reply-text{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ts);}
-/* editing bar */
+
 #chat-edit-bar{display:none;align-items:center;gap:.5rem;padding:.28rem .9rem;
   border-top:1px solid var(--bdr);background:rgba(155,89,182,.07);
   font-family:'DM Mono',monospace;font-size:.58rem;color:var(--pur);flex-shrink:0;}
 
-/* ── FOOTER ── */
 .chat-foot{display:flex;flex-direction:column;border-top:1px solid var(--bdr);
   flex-shrink:0;background:var(--bg0);position:relative;z-index:2;}
 .chat-foot-row{display:flex;align-items:flex-end;gap:.4rem;padding:.5rem .75rem;}
 
-/* inline + menu — inside .chat-box so no z-index fights */
 .chat-attach-menu{display:none;flex-direction:column;gap:1px;
   position:absolute;bottom:calc(100% + 2px);left:.75rem;
   background:var(--bg1);border:1px solid var(--gold-d);min-width:160px;
@@ -550,7 +515,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .cam-item:hover{background:var(--gold-g);color:var(--gold);}
 .cam-sep{height:1px;background:var(--bdr);margin:.15rem 0;}
 
-/* inline emoji picker — also inside .chat-box */
 .chat-emoji-panel{display:none;flex-direction:column;
   position:absolute;bottom:100%;right:.75rem;
   width:min(300px,90vw);background:var(--bg1);border:1px solid var(--gold-d);
@@ -577,13 +541,12 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
   align-items:center;justify-content:center;}
 .cep-emoji:hover{background:var(--gold-g);}
 
-/* input */
 .chat-inp{flex:1;padding:.4rem .7rem;background:var(--bg2);border:1px solid var(--bdr);
   color:var(--tp);font-family:'DM Mono',monospace;font-size:.7rem;outline:none;
   transition:border-color .18s;resize:none;min-height:34px;max-height:110px;
   overflow-y:auto;line-height:1.5;}
 .chat-inp:focus{border-color:rgba(201,168,76,.4);}
-/* icon buttons in footer */
+
 .chat-ico{width:30px;height:30px;background:transparent;border:1px solid var(--bdr);
   color:var(--tm);cursor:pointer;display:flex;align-items:center;justify-content:center;
   flex-shrink:0;transition:all .16s;font-size:1rem;align-self:flex-end;}
@@ -594,7 +557,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .chat-send:hover{background:var(--gold-d);}
 .chat-send:disabled{background:var(--bg3);color:var(--tm);cursor:default;}
 
-/* ═══ FRIEND REQUESTS PANEL ═════════════════════════════════ */
 #fr-req-panel{position:fixed;top:0;right:0;bottom:0;z-index:1050;
   width:min(360px,94vw);background:var(--bg1);border-left:1px solid var(--bdr);
   display:none;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.5);}
@@ -611,7 +573,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .frp-name{font-family:'Playfair Display',serif;font-size:.84rem;color:var(--tp);}
 .frp-user{font-family:'DM Mono',monospace;font-size:.54rem;color:var(--tm);}
 
-/* ═══ UNREAD & BADGES ════════════════════════════════════════ */
 .fr-chat-btn{position:relative;width:32px;height:32px;border-radius:50%;
   background:var(--bg2);border:1px solid var(--bdr);display:flex;align-items:center;
   justify-content:center;cursor:pointer;flex-shrink:0;font-size:.8rem;
@@ -627,7 +588,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
   font-size:.44rem;display:none;align-items:center;justify-content:center;font-weight:700;}
 #bell-badge.on{display:flex;}
 
-/* ═══ CUSTOM EMOJI PICKER ═══════════════════════════════════ */
 #emoji-picker{position:fixed;z-index:9800;background:var(--bg1);border:1px solid var(--gold-d);
   width:320px;display:none;flex-direction:column;animation:mIn .16s ease;
   box-shadow:0 12px 40px rgba(0,0,0,.7),0 0 0 1px rgba(201,168,76,.12);}
@@ -654,7 +614,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .ep-cat-label{grid-column:1/-1;font-family:"DM Mono",monospace;font-size:.5rem;
   color:var(--tm);letter-spacing:.14em;text-transform:uppercase;padding:.25rem .1rem .1rem;}
 
-/* ═══ CUSTOM MEDIA IMPORT MODAL ═════════════════════════════ */
 #media-modal{position:fixed;inset:0;z-index:2100;background:rgba(4,4,4,.9);
   display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 #media-modal.on{display:flex;animation:mIn .18s ease;}
@@ -678,7 +637,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
   color:var(--tp);font-family:"DM Mono",monospace;font-size:.66rem;outline:none;transition:border-color .18s;}
 .media-inp:focus{border-color:var(--gold-d);}
 
-/* ═══ CUSTOM CONTEXT MENU ════════════════════════════════════ */
 #ctx-menu{position:fixed;z-index:3000;background:var(--bg1);border:1px solid var(--gold-d);
   min-width:175px;display:none;flex-direction:column;
   box-shadow:0 10px 32px rgba(0,0,0,.75),0 0 0 1px rgba(201,168,76,.1);
@@ -691,7 +649,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .ctx-ico{width:15px;text-align:center;font-size:.82rem;}
 .ctx-sep{height:1px;background:var(--bdr);margin:.22rem 0;}
 
-/* ═══ NOTIFICATION CENTER ════════════════════════════════════ */
 #notif-panel{position:fixed;top:0;right:0;bottom:0;z-index:1500;
   width:min(420px,96vw);background:var(--bg1);border-left:1px solid var(--gold-d);
   display:none;flex-direction:column;box-shadow:-16px 0 50px rgba(0,0,0,.6);}
@@ -725,7 +682,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
 .tst.err{border-left-color:#C0392B;}.tst.ok{border-left-color:#4CAF50;}.tst.info{border-left-color:var(--red);}.tst.pur{border-left-color:var(--pur);}
 
-/* ═══ API-DOWN POPUP ════════════════════════════════════════ */
 #api-down{
   position:fixed;inset:0;z-index:9100;
   background:rgba(4,4,4,.96);
@@ -743,7 +699,6 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .apd-btn.leave{background:transparent;color:var(--tm);border:1px solid rgba(255,255,255,.1);}.apd-btn.leave:hover{border-color:var(--ts);color:var(--ts);}
 .apd-rule{width:60px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.3),transparent);}
 
-/* ═══ OFFLINE BANNER ════════════════════════════════════════ */
 .cfg-inp{padding:.48rem .85rem;background:var(--bg2);border:1px solid var(--bdr);color:var(--tp);font-family:'DM Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
 .cfg-inp:focus{border-color:var(--gold-d);}.cfg-inp::placeholder{color:var(--tm);}
 #offline-banner{
@@ -756,15 +711,12 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 #offline-banner.show{display:flex;}
 .ob-dot{width:6px;height:6px;background:var(--red);border-radius:50%;animation:blink 1.5s ease infinite;}
 
-/* ═══ REDDIT-ONLY MODE ══════════════════════════════════════ */
 body.reddit-only .sb-lnk:not(.rl){opacity:.22;pointer-events:none;cursor:default;}
 body.reddit-only #fbar{opacity:.2;pointer-events:none;}
 body.reddit-only .nav-logo{pointer-events:none;}
 body.reddit-only #nsw{opacity:.2;pointer-events:none;}
 body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
-/* ═══ RESPONSIVE ════════════════════════════════════════════ */
-/* ═══ BOTTOM NAV (mobile only) ══════════════════════════════ */
 #bnav{
   display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:810;
@@ -783,22 +735,18 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 .bn.r.on{color:var(--red);}
 .bn.p.on{color:var(--pur);}
 
-/* ═══ RESPONSIVE ════════════════════════════════════════════ */
-
-/* ── Tablet (≤1024px) ── */
 @media(max-width:1024px){
   .ml{grid-template-columns:180px 1fr;}
   .vg{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
   .hero{height:250px;}
 }
 
-/* ── Hide sidebar, show bottom nav (≤870px) ── */
 @media(max-width:870px){
   .ml{grid-template-columns:1fr;}
   .sb{display:none;}
   .ca{padding:.85rem;}
   #bnav{display:grid;}
-  /* Add bottom padding so content isn't hidden behind bottom nav */
+
   #app{padding-bottom:56px;}
   .vg{grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:.65rem;}
   .hero{height:220px;}
@@ -806,29 +754,28 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .vc{font-size:.92em;}
 }
 
-/* ── Phone (≤600px) ── */
 @media(max-width:600px){
-  /* Topbar */
+
   .topbar{padding:.6rem .85rem;gap:.5rem;}
   .nav-logo{font-size:.75rem;letter-spacing:.18em;}
   #nsw{max-width:none;flex:1;}
   .ni{font-size:.7rem;padding:.38rem .75rem .38rem 1.9rem;}
-  /* Filter bar wraps nicely */
+
   #fbar{padding:.42rem .85rem;gap:.35rem;}
-  .fl{display:none;} /* hide "Filter:" label on mobile */
+  .fl{display:none;}
   .fsel{font-size:.58rem;padding:.22rem .4rem;}
   .fchip{font-size:.52rem;padding:.18rem .55rem;}
-  /* Cards — 2 columns */
+
   .vg{grid-template-columns:repeat(2,1fr);gap:.5rem;}
   .vti{font-size:.68rem;}
   .vm{font-size:.55rem;}
-  /* Hero compact */
+
   .hero{height:180px;}
   .hero-b{padding:.85rem 1rem;}
   .hero-t{font-size:clamp(1rem,4vw,1.5rem);}
   .hero-pill,.hero-m{display:none;}
   .hero-a .btn:last-child{display:none;}
-  /* Player */
+
   .pm{padding:.3rem;}
   .ps{max-height:100dvh;border-radius:0;}
   .ps-scroll{max-height:42vh;}
@@ -839,29 +786,28 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .pxtra{padding:.4rem .9rem .6rem;font-size:.55rem;}
   .prl{padding:.6rem .9rem;}
   .rlg{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
-  /* Settings panel full screen */
+
   .sm-panel{width:100vw;}
-  /* Iso pages (Reddit/R34) */
+
   .iso-page{padding:0;}
   .iso-row{flex-direction:column;}
   .iso-f{min-width:unset;}
   .iso-quick{gap:.3rem;}
   .iso-qc{font-size:.54rem;padding:.16rem .5rem;}
-  /* Reddit grid */
+
   #rgrid{grid-template-columns:repeat(2,1fr);gap:.5rem;}
-  /* R34 masonry */
+
   .r4-masonry{columns:2 120px;column-gap:.4rem;}
-  /* Bottom nav text even smaller */
+
   .bn{font-size:.42rem;}
   .bn .bni{font-size:1rem;}
-  /* Toast */
+
   .tbox{bottom:.7rem;right:.7rem;left:.7rem;}
   .tst{min-width:unset;font-size:.6rem;}
-  /* Offline banner */
+
   #offline-banner{font-size:.56rem;padding:.35rem .85rem;}
 }
 
-/* ── Very small phones (≤380px) ── */
 @media(max-width:380px){
   .vg{grid-template-columns:repeat(2,1fr);gap:.4rem;}
   .vti{font-size:.63rem;}
@@ -870,19 +816,18 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .hero{height:155px;}
 }
 
-/* ── Landscape phone (short viewport) ── */
 @media(max-height:500px) and (max-width:900px){
-  /* Hide bottom nav in landscape — use swipe/back instead */
+
   #bnav{display:none !important;}
   #app{padding-bottom:0 !important;}
-  /* Compact topbar */
+
   .topbar{padding:.3rem .7rem;}
-  /* Hide hero in landscape — wastes vertical space */
+
   .hero{display:none;}
-  /* Tighter grid */
+
   .vg{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.4rem;}
   .ca{padding:.5rem .7rem;}
-  /* Player in landscape — video takes full width, info scrolls beside it */
+
   .pm{padding:0;}
   .ps{max-height:100dvh;max-height:100vh;border-radius:0;flex-direction:row !important;align-items:stretch;}
   .ps-media{flex:0 0 60vw;max-width:60vw;}
@@ -890,16 +835,15 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   #mf{aspect-ratio:unset !important;height:100dvh;height:100vh;}
   .ps-scroll{flex:1;min-width:0;overflow-y:auto;height:100dvh;height:100vh;}
   .pclose{top:.4rem;right:.4rem;}
-  /* Iso pages tighter */
+
   .iso-page{padding:0 .5rem;}
   .iso-hdr{padding:.5rem .7rem;}
-  /* Filter bar compact */
+
   #fbar{padding:.3rem .7rem;}
-  /* Bottom nav hidden so no padding needed */
+
   .tbox{bottom:.5rem;}
 }
 
-/* ── Safe area for notched phones (iPhone X+) ── */
 @supports(padding: max(0px)){
   .topbar{
     padding-left: max(.8rem, env(safe-area-inset-left));
@@ -919,7 +863,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   }
 }
 
-/* Touch targets — all tappable elements min 44×44px */
 @media(pointer:coarse){
   .sb-lnk{padding:.6rem .5rem;}
   .fchip,.fsel{min-height:36px;}
@@ -929,7 +872,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   .r4-go,.iso-btn{padding:.5rem 1rem;}
   .cb{min-width:36px;min-height:36px;}
   .pclose{width:36px;height:36px;}
-  /* Easier tap on cards */
+
   .vc,.rc,.r4c{cursor:pointer;}
 }
 
@@ -938,7 +881,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 </head>
 <body>
 
-<!-- ══ AGE GATE ════════════════════════════════════════════ -->
 <div id="age-gate" role="dialog" aria-modal="true" aria-labelledby="ag-h">
   <div class="ag-logo">OBSIDIAN</div>
   <div class="ag-rule"></div>
@@ -951,7 +893,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <p class="ag-legal">18 U.S.C. 2257 — All depicted individuals are 18+. Content sourced via third-party APIs. This platform stores no user data.</p>
 </div>
 
-<!-- ══ API DOWN POPUP ════════════════════════════════════════ -->
 <div id="api-down" role="alertdialog" aria-modal="true" aria-labelledby="apd-title">
   <div class="apd-logo">OBSIDIAN</div>
   <div class="apd-icon">📡</div>
@@ -967,7 +908,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ SPLASH ══════════════════════════════════════════════ -->
 <div id="splash">
   <canvas id="pc" aria-hidden="true"></canvas>
   <div class="sp-in">
@@ -979,7 +919,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <div class="sp-bar"><div class="sp-bf"></div></div>
 </div>
 
-<!-- ══ APP ═════════════════════════════════════════════════ -->
 <div id="app" aria-hidden="true">
 
   <header class="topbar">
@@ -995,7 +934,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div id="bell-badge"></div>
       </div>
 
-<!-- ══ NOTIFICATION CENTER ════════════════════════════════════ -->
 <div id="notif-panel">
   <div class="np-head">
     <span class="np-title">🔔 Notifications</span>
@@ -1014,7 +952,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ CUSTOM EMOJI PICKER ═════════════════════════════════════ -->
 <div id="emoji-picker">
   <div class="ep-quick" id="ep-quick"></div>
   <div class="ep-tabs" id="ep-tabs"></div>
@@ -1022,7 +959,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   <div class="ep-grid" id="ep-grid"></div>
 </div>
 
-<!-- ══ MEDIA IMPORT MODAL ══════════════════════════════════════ -->
 <div id="media-modal" onclick="if(event.target===$('media-modal'))closeMediaModal()">
   <div class="media-box">
     <div class="media-box-head">
@@ -1053,22 +989,21 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ CUSTOM CONTEXT MENU ══════════════════════════════════════ -->
 <div id="ctx-menu">
-  <!-- filled dynamically -->
+
 </div>
       <button class="bico" onclick="openSM()" aria-label="Settings" title="Settings">⚙</button>
     </nav>
   </header>
 
-  <!-- Offline mode banner -->
+
   <div id="offline-banner">
     <span class="ob-dot"></span>
     <span>Reddit-only mode — laptop server is offline</span>
     <button class="btn" onclick="retryServer()" style="height:20px;font-size:.52rem;padding:0 .55rem;margin-left:.5rem;">Retry</button>
   </div>
 
-  <!-- Filter bar — main content only -->
+
   <div id="fbar" role="toolbar">
     <span class="fl">Filter:</span>
     <select class="fsel" id="fc" aria-label="Category">
@@ -1134,7 +1069,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 
   <div class="ml">
-    <!-- SIDEBAR -->
+
     <aside class="sb" aria-label="Navigation">
       <div class="sb-sec">
         <div class="sb-ttl">Browse</div>
@@ -1167,7 +1102,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
     <main class="ca">
 
-      <!-- ── MAIN VIEW (API 2 Redtube + API 3 Redgifs) ── -->
+
       <div id="view-main" class="view on">
         <div class="hero" id="hero">
           <div class="hero-bg"></div><div class="hero-g"></div>
@@ -1191,7 +1126,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="pag" id="pag"></div>
       </div>
 
-      <!-- ── LIKED VIEW ── -->
+
       <div id="view-liked" class="view">
         <div class="sh">
           <h2 class="st">♥ Liked Videos</h2>
@@ -1205,7 +1140,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
-      <!-- ── REDDIT VIEW (API 1 — isolated) ── -->
+
       <div id="view-reddit" class="view">
         <div class="iso-page">
           <div class="iso-hdr r">
@@ -1273,7 +1208,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
-      <!-- ── RULE34 VIEW (API 4 — isolated) ── -->
+
       <div id="view-r34" class="view">
         <div class="iso-page">
           <div class="iso-hdr p">
@@ -1348,7 +1283,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         </div>
       </div>
 
-      <!-- ── FRIENDS VIEW ── -->
+
       <div id="view-friends" class="view">
         <div class="iso-page" style="max-width:700px">
           <div class="iso-hdr" style="border-color:rgba(100,200,150,.3)">
@@ -1359,7 +1294,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             </div>
           </div>
 
-          <!-- Not logged in -->
+
           <div id="fr-no-account" style="text-align:center;padding:3rem;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--tm);line-height:2.2;display:none">
             <div style="font-size:2.5rem;margin-bottom:.8rem">👤</div>
             Create an account in <strong style="color:var(--gold)">⚙ Settings</strong> to use Friends.
@@ -1367,7 +1302,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <button class="btn g" onclick="openSM()" style="margin-top:.8rem">Open Settings</button>
           </div>
 
-          <!-- Logged in -->
+
           <div id="fr-main" style="display:none">
             <div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--bdr);margin-bottom:1rem">
               <div id="fr-avatar" style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;flex-shrink:0"></div>
@@ -1384,7 +1319,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               </div>
             </div>
 
-            <!-- Add friend -->
+
             <div style="margin-bottom:1.2rem">
               <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Add Friend</div>
               <div style="display:flex;gap:.4rem">
@@ -1394,7 +1329,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
               <div id="fr-add-err" style="font-family:'DM Mono',monospace;font-size:.56rem;color:#C0392B;margin-top:.3rem;display:none"></div>
             </div>
 
-            <!-- Friends list -->
+
             <div style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem">Friends (<span id="fr-count">0</span>)</div>
             <div id="fr-list" style="display:flex;flex-direction:column;gap:.5rem"></div>
             <div id="fr-empty" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--tm);text-align:center;padding:2rem;display:none">
@@ -1408,11 +1343,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ PLAYER MODAL ═════════════════════════════════════════ -->
 <div class="pm" id="pm" role="dialog" aria-modal="true" aria-labelledby="ptitle">
   <div class="ps" id="pshell">
     <button class="pclose" id="pclose" aria-label="Close">✕</button>
-    <!-- Media — fixed, never scrolls -->
+
     <div class="ps-media">
       <div class="pvw" id="pvw" style="display:none">
         <video id="mv" playsinline preload="auto" x-webkit-airplay="allow">Your browser does not support video.</video>
@@ -1436,7 +1370,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <iframe id="mf" allowfullscreen allow="autoplay; fullscreen"></iframe>
       </div>
     </div>
-    <!-- Scrollable info below -->
+
     <div class="ps-scroll">
       <div class="pinfo">
         <div>
@@ -1454,7 +1388,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ SETTINGS PANEL ═══════════════════════════════════════ -->
 <div id="settings-modal" onclick="if(event.target===this)closeSM()">
   <div class="sm-panel">
     <div class="sm-head">
@@ -1528,7 +1461,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <span id="sm-acc-name" style="color:var(--gold);font-family:'DM Mono',monospace;font-size:.72rem;font-weight:700"></span>
             <button class="btn" onclick="accLogout()" style="font-size:.58rem">Log Out</button>
           </div>
-          <!-- Profile customization -->
+
           <div style="display:flex;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--bdr);margin-bottom:.7rem">
             <div id="sm-pfp-preview" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1.3rem;flex-shrink:0;transition:all .2s"></div>
             <div style="display:flex;flex-direction:column;gap:.4rem;flex:1">
@@ -1568,7 +1501,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ PROFILE VIEWER ════════════════════════════════════════ -->
 <div id="profile-modal" style="display:none;position:fixed;inset:0;z-index:1200;background:rgba(4,4,4,.88);align-items:center;justify-content:center;backdrop-filter:blur(8px)" onclick="if(event.target===$('profile-modal'))closeProfile()">
   <div style="width:min(440px,94vw);background:var(--bg1);border:1px solid var(--bdr);box-shadow:0 24px 60px rgba(0,0,0,.7);">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.1rem;border-bottom:1px solid var(--bdr);background:var(--bg0)">
@@ -1590,7 +1522,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ CUSTOM DIALOG ══════════════════════════════════════════ -->
 <div id="obs-dialog" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(4,4,4,.88);align-items:center;justify-content:center;backdrop-filter:blur(6px)">
   <div style="background:var(--bg1);border:1px solid var(--gold-d);width:min(380px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.8);animation:mIn .18s ease">
     <div style="padding:.7rem 1rem;border-bottom:1px solid var(--bdr);background:var(--bg0);display:flex;align-items:center;gap:.6rem">
@@ -1610,11 +1541,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
   </div>
 </div>
 
-<!-- ══ CHAT MODAL ════════════════════════════════════════════ -->
 <div id="chat-modal" onclick="if(event.target===$('chat-modal'))closeChat()">
   <div class="chat-box">
 
-    <!-- Header -->
+
     <div class="chat-hdr">
       <div class="chat-hdr-av" id="chat-hdr-av"></div>
       <div style="flex:1;min-width:0">
@@ -1625,28 +1555,28 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       <button class="chat-ico" onclick="closeChat()" style="font-size:.85rem">✕</button>
     </div>
 
-    <!-- Messages -->
+
     <div class="chat-msgs" id="chat-msgs">
       <div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">Loading…</div>
     </div>
 
-    <!-- Footer (all popups are absolute inside .chat-foot so they stay inside .chat-box) -->
+
     <div class="chat-foot">
 
-      <!-- Reply bar -->
+
       <div id="chat-reply-bar">
         <span style="color:var(--gold)">↩</span>
         <span id="chat-reply-text" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ts)"></span>
         <button onclick="clearReply()" style="background:none;border:none;color:var(--tm);cursor:pointer;font-size:.8rem;padding:0 .3rem;margin-left:.3rem">✕</button>
       </div>
 
-      <!-- Edit bar -->
+
       <div id="chat-edit-bar">
         <span>✏ Editing</span>
         <button onclick="cancelEdit()" style="background:none;border:none;color:var(--tm);cursor:pointer;font-size:.75rem;margin-left:auto;padding:0 .3rem">✕ Cancel</button>
       </div>
 
-      <!-- Attach menu popup (position:absolute, inside .chat-foot) -->
+
       <div class="chat-attach-menu" id="chat-attach-menu">
         <label class="cam-item">
           <input type="file" id="chat-file-inp" style="display:none" onchange="handleMediaFile(event)" accept="image/*,image/gif"/>
@@ -1660,7 +1590,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="cam-item" onclick="showUrlInput()">🔗 Paste URL</div>
       </div>
 
-      <!-- Inline emoji panel (position:absolute, inside .chat-foot) -->
+
       <div class="chat-emoji-panel" id="chat-emoji-panel">
         <div class="cep-quick" id="cep-quick"></div>
         <div class="cep-tabs" id="cep-tabs"></div>
@@ -1668,14 +1598,14 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="cep-grid" id="cep-grid"></div>
       </div>
 
-      <!-- URL input bar (shown when "Paste URL" clicked) -->
+
       <div id="chat-url-bar" style="display:none;align-items:center;gap:.4rem;padding:.32rem .75rem;border-top:1px solid var(--bdr);background:var(--bg0);">
         <input class="chat-inp" id="chat-url-inp" type="url" placeholder="https://… (image, gif, video)" style="min-height:28px;max-height:28px;font-size:.64rem" onkeydown="if(event.key==='Enter')sendUrlMedia();if(event.key==='Escape')hideUrlInput()"/>
         <button class="chat-send" onclick="sendUrlMedia()" style="width:28px;height:28px;font-size:.78rem">➤</button>
         <button class="chat-ico" onclick="hideUrlInput()" style="width:26px;height:26px;font-size:.78rem">✕</button>
       </div>
 
-      <!-- Input row -->
+
       <div class="chat-foot-row">
         <button class="chat-ico" id="chat-plus-btn" onclick="toggleAttachMenu()" title="Attach">＋</button>
         <textarea class="chat-inp" id="chat-inp" placeholder="Message…  *italic*  **bold**  # heading"
@@ -1684,11 +1614,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button class="chat-send" id="chat-send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
       </div>
 
-    </div><!-- /chat-foot -->
-  </div><!-- /chat-box -->
+    </div>
+  </div>
 </div>
 
-<!-- ══ FRIEND REQUESTS PANEL ════════════════════════════════ -->
 <div id="fr-req-panel">
   <div class="frp-head">
     <span class="frp-title">Friend Requests</span>
@@ -1703,7 +1632,6 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 <div class="tbox" id="tbox" role="status" aria-live="polite"></div>
 
-<!-- ══ BOTTOM NAV (mobile) ══════════════════════════════════ -->
 <nav id="bnav" aria-label="Mobile navigation">
   <button class="bn on" id="bn-home" onclick="bnav('home')">
     <span class="bni">◈</span><span>Home</span>
@@ -1723,16 +1651,9 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 </nav>
 
 <script>
-/* ══════════════════════════════════════════════════════════
-   ★  PASTE YOUR CLOUDFLARE TUNNEL URL HERE  ★
-   Example: 'https://abc-def-123.trycloudflare.com'
-   Leave as '' to use direct public APIs only.
-══════════════════════════════════════════════════════════ */
+
 const HARDCODED_SERVER = 'https://illustration-picture-governing-cookie.trycloudflare.com';
 
-/* ══════════════════════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const deh=s=>String(s||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
@@ -1742,9 +1663,6 @@ const fmtV=n=>{if(!n)return'—';n=Number(n);if(n>=1e6)return(n/1e6).toFixed(1)+
 const dbn=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
 const slp=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* ══════════════════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════════════════ */
 function toast(msg,type='ok',ms=3000){
   const el=document.createElement('div');el.className=`tst ${type}`;
   el.innerHTML=`<span>${type==='err'?'✕':type==='pur'?'🔞':type==='info'?'👽':'✓'}</span><span>${esc(msg)}</span>`;
@@ -1752,10 +1670,6 @@ function toast(msg,type='ok',ms=3000){
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .28s';setTimeout(()=>el.remove(),300);},ms);
 }
 
-/* ══════════════════════════════════════════════════════════
-/* ══════════════════════════════════════════════════════════
-   STATE
-══════════════════════════════════════════════════════════ */
 const S={
   page:1,totalPages:1,curVid:null,curView:'home',loading:false,
   f:{cat:'',dur:'',qual:'',sort:'views',tag:'all',q:''},
@@ -1766,9 +1680,6 @@ const S={
   redditOnly: false,
 };
 
-/* ══════════════════════════════════════════════════════════
-   SETTINGS
-══════════════════════════════════════════════════════════ */
 const DEF_SETTINGS={theme:'dark',chatLayout:'modal',api1:'pornhub',api2:'none',gifApi:'redgifs',autoplay:true};
 let ST=JSON.parse(localStorage.getItem('obs_settings')||'{}');
 ST={...DEF_SETTINGS,...ST};
@@ -1777,9 +1688,9 @@ function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));
 
 function openSM(){
   const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
-  /* Sync theme chips */
+
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===ST.theme));
-  /* Sync layout chips */
+
   document.querySelectorAll('[data-cl]').forEach(c=>c.classList.toggle('on',c.dataset.cl===(ST.chatLayout||'modal')));
   const ss=$('sm-server-status');
   if(ss)ss.textContent=S.serverOk
@@ -1795,11 +1706,10 @@ function retryServer(){
   else fetchServerUrlFromGithub().then(()=>checkServer(2));
 }
 
-/* ── Theme (inside settings) ── */
 function applyTheme(t){
   document.documentElement.setAttribute('data-theme',t);
   ST.theme=t;saveSettings();
-  /* Sync chips */
+
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===t));
 }
 applyTheme(ST.theme);
@@ -1810,13 +1720,13 @@ async function checkServer(retries=3){
     try{
       const r=await fetch(`${S.serverUrl}/health`,{
         mode:'cors',
-        signal:AbortSignal.timeout(10000), /* 10s per attempt */
+        signal:AbortSignal.timeout(10000),
       });
       if(r.ok){S.serverOk=true;return true;}
     }catch(e){
       console.warn(`[Server] attempt ${i+1} failed:`,e.message);
     }
-    /* Wait before retry: 1s, 2s */
+
     if(i<retries-1)await new Promise(r=>setTimeout(r,1000*(i+1)));
   }
   S.serverOk=false;return false;
@@ -1835,13 +1745,7 @@ async function retryServer(){
   }
 }
 
-/* ══════════════════════════════════════════════════════════
-   ACCOUNT & FRIENDS — backed by Python server /api/users/*
-   Session cached in localStorage for offline use.
-══════════════════════════════════════════════════════════ */
-
-/* Session storage — password kept only in memory for API calls */
-let _SESSION = null; /* { username, display, friends, password (plaintext for API) } */
+let _SESSION = null;
 
 function getSession(){
   if(_SESSION)return _SESSION;
@@ -1855,7 +1759,6 @@ function setSession(data){
 
 const API = ()=>S.serverUrl;
 
-/* Safe JSON parse — returns null instead of throwing on HTML error pages */
 async function safeJson(response){
   try{
     const ct=response.headers.get('content-type')||'';
@@ -1874,7 +1777,7 @@ async function apiCall(path,body=null,method='POST',timeoutMs=12000){
       ...(body?{body:JSON.stringify(body)}:{}),
       signal:AbortSignal.timeout(timeoutMs),
     });
-    /* Check Content-Type before parsing — HTML means server returned an error page */
+
     const ct=r.headers.get('content-type')||'';
     if(!ct.includes('application/json')){
       const text=await r.text().catch(()=>'');
@@ -1919,7 +1822,7 @@ async function accLogin(){
   const d=await apiCall('/api/users/login',{username:user,password:pass});
   err.style.color='#C0392B';
   if(d.error||!d.user){err.textContent=d.error||'Login failed — check server connection';return;}
-  /* Also fetch public profile to get bio, pfpColor, etc. */
+
   try{
     const r=await fetch(`${API()}/api/users/${user}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
     if(r.ok){const full=await safeJson(r);if(full)setSession({...d.user,...full,password:pass});else setSession({...d.user,password:pass});}
@@ -1969,7 +1872,7 @@ async function addFriend(){
   if(!name){if(err){err.textContent='Enter a username';err.style.display='block';}return;}
   const d=await apiCall(`/api/users/${s.username}/friends/add`,{password:s.password,friend:name});
   if(d.error){if(err){err.textContent=d.error;err.style.display='block';}return;}
-  /* Update local session */
+
   const ns={...s,friends:d.friends};setSession(ns);
   if(inp)inp.value='';
   toast(`Added ${name}!`,'ok');
@@ -1991,7 +1894,6 @@ function updateFriendCount(){
   const fc=$('fr-count');if(fc)fc.textContent=n;
 }
 
-/* ── Sync session from server (refreshes friends, bio, pfp etc) ── */
 async function syncSessionFromServer(){
   const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
   try{
@@ -2003,7 +1905,6 @@ async function syncSessionFromServer(){
   }catch(e){console.warn('[syncSession]',e.message);}
 }
 
-/* ── Update unread badge on friend card ── */
 function updateFriendUnread(username){
   const n=_unread[username]||0;
   const badge=document.querySelector(`[data-chat-unread="${username}"]`);
@@ -2012,7 +1913,6 @@ function updateFriendUnread(username){
   badge.classList.toggle('on',n>0);
 }
 
-/* ── Profile viewer modal ── */
 async function viewProfile(username){
   const modal=$('profile-modal');
   if(!modal)return;
@@ -2053,8 +1953,6 @@ async function viewProfile(username){
 }
 function closeProfile(){const m=$('profile-modal');if(m)m.style.display='none';}
 
-/* ── Fetch and render the friends list ── */
-/* Stores fetched profiles for chat opening */
 window._friendProfileCache={};
 
 async function renderFriendsList(){
@@ -2064,7 +1962,7 @@ async function renderFriendsList(){
   const friends=s.friends||[];
   if(!friends.length){list.innerHTML='';if(empty)empty.style.display='block';return;}
   if(empty)empty.style.display='none';
-  /* Fetch all friend profiles in parallel */
+
   const profiles={};
   await Promise.allSettled(friends.map(async f=>{
     try{
@@ -2098,25 +1996,23 @@ async function renderFriendsList(){
   }).join('');
 }
 
-/* ── Markdown renderer (safe subset, no links) ── */
 function renderMarkdown(raw){
   let s=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  /* Headers (line-start only) */
+
   s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
   s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
   s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  /* Bold italic, then bold, then italic */
+
   s=s.replace(/\*\*\*(.+?)\*\*\*/gs,'<strong><em>$1</em></strong>');
   s=s.replace(/\*\*(.+?)\*\*/gs,'<strong>$1</strong>');
   s=s.replace(/\*(.+?)\*/gs,'<em>$1</em>');
-  /* Code */
+
   s=s.replace(/`(.+?)`/g,'<code>$1</code>');
-  /* Newlines */
+
   s=s.replace(/\n/g,'<br>');
   return s;
 }
 
-/* ── Profile preview & save ── */
 function updatePfpPreview(){
   const color=$('sm-pfp-color').value||'#C9A84C';
   const letter=($('sm-pfp-letter').value||'?')[0].toUpperCase();
@@ -2142,7 +2038,6 @@ async function saveProfile(){
   refreshAccountUI();
 }
 
-/* ── Friend request system ── */
 async function sendFriendRequest(){
   const s=getSession();if(!s){toast('Log in first','err');return;}
   const inp=$('fr-add-inp')||$('sm-add-friend');
@@ -2155,7 +2050,7 @@ async function sendFriendRequest(){
   if(inp)inp.value='';
   toast(`Friend request sent to ${target}!`,'ok');
 }
-/* Override addFriend to use request system */
+
 async function addFriend(){await sendFriendRequest();}
 
 async function respondRequest(fromUser, action){
@@ -2164,7 +2059,7 @@ async function respondRequest(fromUser, action){
     {password:s.password,from:fromUser,action});
   if(d.error){toast(d.error,'err');return;}
   if(action==='accept'){
-    /* Refresh full profile from server so we get the updated friends list */
+
     try{
       const r=await fetch(`${API()}/api/users/${s.username}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
       if(r.ok){
@@ -2209,14 +2104,13 @@ async function loadFriendRequests(){
         </div>
       </div>`).join('');
   }catch(e){
-    /* Network error (tunnel down etc.) — silently ignore, will retry on next poll */
+
     console.warn('[loadFriendRequests]',e.message);
   }
 }
 function openFrReqPanel(){$('fr-req-panel').classList.add('on');loadFriendRequests();}
 function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
 
-/* ── Chat system ── */
 let _chatWith=null,_chatPoll=null,_chatLastTs=0,_unread={};
 let _replyTo=null,_editingId=null;
 let _notifTimer=null;
@@ -2258,13 +2152,13 @@ function startEdit(msg){
   _editingId=msg.id;
   const isMedia=msg.mtype==='image'||msg.mtype==='gif'||msg.mtype==='video';
   if(isMedia){
-    /* For media: open attach menu pre-set to the right tab, with editing context */
+
     const bar=$('chat-edit-bar');
     bar.style.display='flex';
     bar.querySelector('span').textContent=`✏ Replace ${msg.mtype}`;
-    /* Open attach menu */
+
     toggleAttachMenu();
-    /* Mark file inputs so they know to replace not send new */
+
     $('chat-file-inp').dataset.editId=msg.id;
     $('chat-video-inp').dataset.editId=msg.id;
     toast(`Choose a new ${msg.mtype} to replace it`,'ok',3000);
@@ -2281,7 +2175,7 @@ function cancelEdit(){
   const bar=$('chat-edit-bar');bar.style.display='none';
   if(bar.querySelector('span'))bar.querySelector('span').textContent='✏ Editing';
   $('chat-inp').value='';$('chat-inp').style.height='34px';
-  /* Clear edit context from file inputs */
+
   if($('chat-file-inp'))delete $('chat-file-inp').dataset.editId;
   if($('chat-video-inp'))delete $('chat-video-inp').dataset.editId;
   closeAttachMenu();
@@ -2343,10 +2237,9 @@ function renderMsg(msg,myUsername,_,friendData){
   if(deleted)content='<em style="opacity:.5">[Message deleted]</em>';
   else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia(this.src,'image')" referrerpolicy="no-referrer"/>`;
   else if(msg.mtype==='gif'){
-    /* Use <video autoplay loop muted> for GIFs — more efficient, plays instantly, no flicker */
+
     const s=msg.content;
-    /* If it's a data URI (uploaded), use as video src — browsers can handle gif data URIs in video */
-    /* If it's a URL, check if it ends in .gif or is a known gif host */
+
     const isDataUri=s.startsWith('data:');
     if(isDataUri||s.match(/\.gif(\?|$)/i)||s.includes('giphy')||s.includes('tenor')){
       content=`<video class="chat-gif" src="${esc(s)}" autoplay loop muted playsinline
@@ -2369,7 +2262,6 @@ function renderMsg(msg,myUsername,_,friendData){
   const reactsHtml=renderReactions(msg.reactions,msg.id,myUsername);
   const reactsEl=reactsHtml?`<div class="msg-reacts">${reactsHtml}</div>`:'';
 
-  /* Action buttons — rendered ABOVE bubble inside .msg-col */
   const actions=deleted?'':`<div class="msg-actions">
     ${mine?`<button class="msg-act" onclick="startEdit(window._msgCache[${msg.id}])" title="Edit">✏</button>`:''}
     <button class="msg-act" onclick="startReply(window._msgCache[${msg.id}],window._friendCache)" title="Reply">↩</button>
@@ -2388,14 +2280,13 @@ function renderMsg(msg,myUsername,_,friendData){
     </div>`;
 
   row.querySelectorAll('.react-chip').forEach(c=>c.addEventListener('click',()=>toggleReact(msg.id,c.dataset.emoji)));
-  /* Close react picker on outside click */
+
   document.addEventListener('click',e=>{if(!row.contains(e.target))row.querySelector('.react-picker')?.classList.remove('on');},{passive:true,once:false});
-  /* Dismiss dbl-active when tapping elsewhere */
+
   document.addEventListener('touchend',e=>{
     if(!row.contains(e.target)){row.classList.remove('dbl-active');clearTimeout(row._dblTimer);}
   },{passive:true});
-  /* ── PC: mouseenter/mouseleave with a 300ms hide-delay grace period ── */
-  /* This means the actions won't vanish while the mouse is still travelling toward them */
+
   let _hideTimer=null;
   function showActs(){
     clearTimeout(_hideTimer);
@@ -2407,14 +2298,13 @@ function renderMsg(msg,myUsername,_,friendData){
   }
   row.addEventListener('mouseenter',showActs,{passive:true});
   row.addEventListener('mouseleave',hideActs,{passive:true});
-  /* When mouse enters the action bar itself, keep visible */
+
   const actBar=row.querySelector('.msg-actions');
   if(actBar){
     actBar.addEventListener('mouseenter',showActs,{passive:true});
     actBar.addEventListener('mouseleave',hideActs,{passive:true});
   }
 
-  /* ── Mobile: double-tap ── */
   let _lastTap=0;
   row.addEventListener('touchend',e=>{
     const now=Date.now();
@@ -2428,6 +2318,159 @@ function renderMsg(msg,myUsername,_,friendData){
     _lastTap=now;
   },{passive:false});
   return row;
+}
+
+function applyChatLayout(layout){
+  ST.chatLayout=layout;saveSettings();
+  document.querySelectorAll('[data-cl]').forEach(c=>c.classList.toggle('on',c.dataset.cl===layout));
+  const modal=$('chat-modal');
+  modal.classList.remove('layout-sidebar','layout-full');
+  if(layout==='sidebar')modal.classList.add('layout-sidebar');
+  else if(layout==='full')modal.classList.add('layout-full');
+}
+function cycleChatLayout(){
+  const order=['modal','sidebar','full'];
+  const next=order[(order.indexOf(ST.chatLayout||'modal')+1)%order.length];
+  applyChatLayout(next);
+  toast(`Chat: ${next}`,'ok',1200);
+}
+function _applyLayoutOnOpen(){
+  const modal=$('chat-modal');
+  modal.classList.remove('layout-sidebar','layout-full');
+  if(ST.chatLayout==='sidebar')modal.classList.add('layout-sidebar');
+  else if(ST.chatLayout==='full')modal.classList.add('layout-full');
+}
+
+function toggleAttachMenu(){
+  const m=$('chat-attach-menu');
+  const ep=$('chat-emoji-panel');
+  ep.classList.remove('on');
+  m.classList.toggle('on');
+}
+function closeAttachMenu(){$('chat-attach-menu')?.classList.remove('on');}
+
+function showUrlInput(){
+  closeAttachMenu();
+  const bar=$('chat-url-bar');bar.style.display='flex';
+  $('chat-url-inp').focus();
+}
+function hideUrlInput(){
+  const bar=$('chat-url-bar');if(bar)bar.style.display='none';
+  const inp=$('chat-url-inp');if(inp)inp.value='';
+}
+function sendUrlMedia(){
+  const url=$('chat-url-inp').value.trim();
+  if(!url){toast('Enter a URL','err');return;}
+  const isVid=url.match(/\.(mp4|webm|mov|m3u8)(\?|$)/i);
+  const isGif=url.match(/\.gif(\?|$)/i)||url.includes('giphy')||url.includes('tenor');
+  const type=isVid?'video':isGif?'gif':'image';
+  const editId=_editingId||null;
+  sendMediaMsg(url,type,editId);
+  hideUrlInput();
+  if(editId)cancelEdit();
+}
+
+const CEP_CATS={
+  '😊':['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😋','😛','😜','😝','🤑','🤗','🤭','🤔','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','😷','🤒','🤕','🤢','🤧','🥵','🥶','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡'],
+  '👋':['👋','🤚','🖐️','✋','🖖','👌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','💪','🫶','🫂','👀','💅','🤳'],
+  '❤️':['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','❤️‍🔥','❤️‍🩹','🩷','🩵','🩶'],
+  '🎮':['🎮','🎲','🎯','🎳','🎰','🎱','🏆','🥇','🎖️','🎪','🎭','🎨','🎬','🎤','🎧','🎼','🎵','🎶','🎷','🎸','🎹','🎺','🎻','🥁','🎙️','📻','📺','📷','🎥'],
+  '🍔':['🍎','🍊','🍋','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🍅','🥑','🥦','🌽','🌶️','🧄','🥕','🍔','🍟','🍕','🌮','🌯','🍜','🍝','🍣','🍱','🍤','🎂','🍰','🧁','🍫','🍬','🍭','🍺','🍷','🥂','☕','🍵','🧃'],
+  '✈️':['✈️','🚗','🚕','🚙','🚌','🏎️','🚓','🚑','🚒','🚲','🛵','🏍️','🚢','⛵','🚁','🛸','🌍','🌎','🌏','🗺️','🏔️','🌋','🏕️','🏖️','🏝️','🏛️','🏰','🗼','🗽','⛩️','🕌','🕍'],
+  '#️⃣':['✅','❎','⭕','❌','❓','❗','💯','⚠️','🚫','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🔔','🔕','🎵','🔥','💫','⭐','🌟','💥','🔮','💎','🚩','🎌'],
+};
+const CEP_RECENT_KEY='obs_ep_recent';
+let _cepForReaction=null;
+
+function _cepLoadRecent(){try{return JSON.parse(localStorage.getItem(CEP_RECENT_KEY)||'[]');}catch{return[];}}
+function _cepSaveRecent(e){let r=_cepLoadRecent().filter(x=>x!==e);r.unshift(e);localStorage.setItem(CEP_RECENT_KEY,JSON.stringify(r.slice(0,24)));}
+
+function _buildCepQuick(){
+  const quick=['👍','❤️','😂','😮','😢','🔥','💯','🎉','😍','🙌','💀','✅'];
+  $('cep-quick').innerHTML=quick.map(e=>`<button class="cep-qe" onclick="_cepPick('${e}')">${e}</button>`).join('');
+}
+function _buildCepTabs(){
+  const cats=Object.keys(CEP_CATS);
+  $('cep-tabs').innerHTML=cats.map((c,i)=>`<button class="cep-tab${i===0?' on':''}" onclick="_cepShowCat('${c}',this)" title="${c}">${c}</button>`).join('');
+  _cepShowCat(cats[0]);
+}
+function _cepShowCat(cat,btn){
+  document.querySelectorAll('.cep-tab').forEach(t=>t.classList.remove('on'));
+  btn?.classList.add('on');
+  _cepRenderGrid(CEP_CATS[cat]||[]);
+}
+function _cepRenderGrid(emojis){
+  $('cep-grid').innerHTML=emojis.map(e=>`<button class="cep-emoji" onclick="_cepPick('${e}')">${e}</button>`).join('');
+}
+function cepFilter(q){
+  if(!q.trim()){_cepShowCat(Object.keys(CEP_CATS)[0]);return;}
+  const all=[..._cepLoadRecent(),...Object.values(CEP_CATS).flat()];
+  _cepRenderGrid([...new Set(all)].slice(0,64));
+}
+function _cepPick(e){
+  _cepSaveRecent(e);
+  if(_cepForReaction!=null){toggleReact(_cepForReaction,e);_cepForReaction=null;}
+  else{
+    const inp=$('chat-inp');if(!inp)return;
+    const s=inp.selectionStart,en=inp.selectionEnd;
+    inp.value=inp.value.slice(0,s)+e+inp.value.slice(en);
+    inp.selectionStart=inp.selectionEnd=s+[...e].length;
+    inp.focus();autoResizeChatInp(inp);
+  }
+  toggleChatEmoji(true);
+}
+function toggleChatEmoji(forceClose){
+  const ep=$('chat-emoji-panel');
+  $('chat-attach-menu').classList.remove('on');
+  if(forceClose===true){ep.classList.remove('on');return;}
+  const opening=!ep.classList.contains('on');
+  ep.classList.toggle('on');
+  if(opening){_cepForReaction=null;_buildCepQuick();_buildCepTabs();$('cep-search').value='';setTimeout(()=>$('cep-search').focus(),60);}
+}
+function openReactionPicker(msgId){
+  _cepForReaction=msgId;
+  $('chat-attach-menu').classList.remove('on');
+  $('chat-emoji-panel').classList.add('on');
+  _buildCepQuick();_buildCepTabs();$('cep-search').value='';
+}
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.chat-foot')){
+    $('chat-attach-menu')?.classList.remove('on');
+    $('chat-emoji-panel')?.classList.remove('on');
+  }
+},{passive:true});
+
+function chatKeyDown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+  if(e.key==='Escape'){
+    if($('chat-emoji-panel')?.classList.contains('on')){toggleChatEmoji(true);return;}
+    if($('chat-attach-menu')?.classList.contains('on')){closeAttachMenu();return;}
+    if(_editingId){cancelEdit();return;}
+    if(_replyTo){clearReply();return;}
+  }
+}
+function autoResizeChatInp(el){
+  if(!el)return;
+  el.style.height='34px';
+  el.style.height=Math.min(el.scrollHeight,110)+'px';
+}
+function updateFriendUnread(username){
+  const n=_unread[username]||0;
+  const badge=document.querySelector(`[data-chat-unread="${username}"]`);
+  if(!badge)return;
+  badge.textContent=n>9?'9+':n||'';
+  badge.classList.toggle('on',n>0);
+}
+function openChatEmoji(){toggleChatEmoji();}
+function toggleMediaPop(){toggleAttachMenu();}
+function openMediaModal(){toggleAttachMenu();}
+function closeMediaModal(){}
+async function promptGif(){
+  const url=await _obsDialog({title:'Add GIF / Video',msg:'Paste a URL:',icon:'🎞',okLabel:'Send',input:true,cancelLabel:'Cancel'});
+  if(!url||typeof url!=='string')return;
+  const isVid=url.match(/\.(mp4|webm|mov)(\?|$)/i);
+  sendMediaMsg(url.trim(),isVid?'video':'gif');
 }
 
 async function openChat(friendUsername,friendData){
@@ -2484,7 +2527,7 @@ function renderChatHistory(msgs,myUsername,friendData){
   });
   el.scrollTop=el.scrollHeight;
 }
-/* ── Sent message IDs — prevents poll from adding duplicates ── */
+
 const _sentIds=new Set();
 
 async function sendMessage(){
@@ -2514,7 +2557,7 @@ async function sendMessage(){
   stopTyping();
   const body={from:s.username,password:s.password,to:_chatWith,content:text,type:'text'};
   if(_replyTo){body.reply_to=_replyTo.id;}
-  /* Optimistic render */
+
   const nowTs=Date.now();
   const fakeMsg={id:'p'+nowTs,sender:s.username,content:text,mtype:'text',
     ts:nowTs,reply_to:_replyTo?.id||null,reactions:'{}',edited:0,deleted:0};
@@ -2582,18 +2625,16 @@ async function pollNewMessages(friendUsername,friendData){
     const el=$('chat-msgs');if(!el)return;
     const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
     msgs.forEach(msg=>{
-      if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;} /* skip our optimistic */
-      if(document.querySelector(`[data-msg-id="${msg.id}"]`))return; /* already rendered */
+      if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
+      if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
       el.appendChild(renderMsg(msg,s.username,null,friendData));
     });
     if(wasBottom)el.scrollTop=el.scrollHeight;
-    /* Poll typing */
+
     pollTyping(friendUsername);
   }catch{}
 }
 
-
-/* ── Updated checkNotifications: feeds addNotif ── */
 async function checkNotifications(){
   const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
   try{
@@ -2622,7 +2663,6 @@ async function checkNotifications(){
   }catch{}
 }
 
-/* ── Updated pollUnreadCounts: feeds addNotif ── */
 async function pollUnreadCounts(){
   const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
   const friends=s.friends||[];if(!friends.length)return;
@@ -2639,7 +2679,7 @@ async function pollUnreadCounts(){
       if(!_unread._lastSince)_unread._lastSince={};
       _unread._lastSince[f]=msgs[msgs.length-1].ts;
       updateFriendUnread(f);
-      /* Show notification for each new message */
+
       const fr=window._friendProfileCache?.[f]||{};
       msgs.forEach(m=>{
         addNotif({type:'message',from:f,fromDisplay:fr.display||f,
@@ -2652,9 +2692,6 @@ async function pollUnreadCounts(){
   }));
 }
 
-/* ══════════════════════════════════════════════════════════
-   CUSTOM DIALOG — replaces confirm() prompt() alert()
-══════════════════════════════════════════════════════════ */
 let _dialogResolve=null;
 
 function _obsDialog({title,msg,icon='⚠️',okLabel='OK',cancelLabel='Cancel',input=false,danger=false,defaultVal=''}){
@@ -2684,19 +2721,15 @@ function _dialogCancel(){
   $('obs-dialog').style.display='none';
   if(_dialogResolve){_dialogResolve(null);_dialogResolve=null;}
 }
-/* Close on backdrop click */
+
 $('obs-dialog').addEventListener('click',e=>{if(e.target===$('obs-dialog'))_dialogCancel();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('obs-dialog').style.display!=='none')_dialogCancel();});
 document.addEventListener('keydown',e=>{
   if(e.key==='n'&&!e.target.closest('input,textarea'))openNotifPanel();
 });
 
-/* ── Emoji button in chat footer ── */
 function openChatEmoji(btn){openEmojiPicker('message',null,btn||$('chat-send-btn'));}
 
-/* ══════════════════════════════════════════════════════════
-   TYPING INDICATOR
-══════════════════════════════════════════════════════════ */
 let _typingTimer=null,_isTyping=false;
 function onChatInput(el){
   if(el)autoResizeChatInp(el);
@@ -2745,9 +2778,6 @@ async function pollTyping(friendUsername){
   }catch{}
 }
 
-/* ══════════════════════════════════════════════════════════
-   NOTIFICATION CENTER
-══════════════════════════════════════════════════════════ */
 const _notifStore={items:[],unread:0};
 let _notifTab='all';
 
@@ -2804,9 +2834,6 @@ function _notifAction(idx){
   closeNotifPanel();
 }
 
-/* ══════════════════════════════════════════════════════════
-   EMOJI PICKER
-══════════════════════════════════════════════════════════ */
 const EMOJI_CATS={
   'Recent':[],
   '😊 Smileys':['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','😋','😛','😜','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡'],
@@ -2859,7 +2886,7 @@ function openEmojiPicker(target,msgId,anchorEl){
   buildEmojiPicker();
   $('ep-search').value='';
   const ep=$('emoji-picker');ep.classList.add('on');
-  /* Position */
+
   const rect=anchorEl?anchorEl.getBoundingClientRect():{top:window.innerHeight/2,left:window.innerWidth/2,bottom:window.innerHeight/2};
   const epW=320,epH=290;
   let top=rect.top-epH-6;let left=rect.left;
@@ -2872,9 +2899,6 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('#emoji-picker')&&!e.target.closest('[data-ep-trigger]'))closeEmojiPicker();
 },{passive:true});
 
-/* ══════════════════════════════════════════════════════════
-   MEDIA IMPORT MODAL
-══════════════════════════════════════════════════════════ */
 let _mediaType='image';
 function openMediaModal(){switchMediaTab('image');if($('media-url-inp'))$('media-url-inp').value='';$('media-modal').classList.add('on');}
 function closeMediaModal(){$('media-modal').classList.remove('on');}
@@ -2908,7 +2932,7 @@ function handleMediaFile(e){
   if(!file)return;
   closeAttachMenu();
   if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
-  /* GIFs over 1MB: steer to URL — base64 of animated GIFs times out */
+
   if(file.type==='image/gif'&&file.size>1024*1024){
     toast('GIF too big to upload — paste a Giphy/Tenor URL instead','err',4500);
     showUrlInput();return;
@@ -2940,7 +2964,7 @@ function _compressAndSend(file,editId){
     canvas.toBlob(blob=>{
       const r=new FileReader();
       r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);
-      r.onerror=()=>{/* fallback raw */const r2=new FileReader();r2.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r2.readAsDataURL(file);};
+      r.onerror=()=>{const r2=new FileReader();r2.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r2.readAsDataURL(file);};
       r.readAsDataURL(blob||file);
     },'image/webp',0.85);
   };
@@ -2948,7 +2972,6 @@ function _compressAndSend(file,editId){
   img.src=url;
 }
 
-/* Legacy media modal compat */
 function processMediaFile(file){
   if(!file)return;
   handleMediaFile({target:{files:[file],value:'',dataset:{}}});
@@ -2960,10 +2983,6 @@ function sendMediaFromModal(){
   closeMediaModal();
 }
 
-
-/* ══════════════════════════════════════════════════════════
-   CUSTOM CONTEXT MENU
-══════════════════════════════════════════════════════════ */
 function showCtxMenu(e,items){
   e.preventDefault();
   const menu=$('ctx-menu');
@@ -3000,9 +3019,6 @@ document.addEventListener('contextmenu',e=>{
   ]);
 },{passive:false});
 
-/* ══════════════════════════════════════════════════════════
-   REAL-TIME UPDATE POLL (edits, deletes, reactions)
-══════════════════════════════════════════════════════════ */
 let _updatePoll=null,_lastUpdateTs=0;
 async function pollChatUpdates(friendUsername,friendData){
   const s=getSession();if(!s||_chatWith!==friendUsername)return;
@@ -3011,7 +3027,7 @@ async function pollChatUpdates(friendUsername,friendData){
     const d=await safeJson(r)||{};
     const updates=d.updates||[];
     updates.forEach(msg=>{
-      /* Always advance the watermark */
+
       const lm=msg.last_modified||msg.ts||0;
       if(lm>_lastUpdateTs)_lastUpdateTs=lm;
       window._msgCache[msg.id]=msg;
@@ -3046,13 +3062,8 @@ async function pollChatUpdates(friendUsername,friendData){
   }catch{}
 }
 
-/* cache friend profiles for notification display */
 window._friendProfileCache={};
 
-
-
-
-/* ── refreshAccountUI ── */
 function refreshAccountUI(){
   const s=getSession();
   const lo=$('sm-logged-out');const li=$('sm-logged-in');
@@ -3067,7 +3078,7 @@ function refreshAccountUI(){
       const prev=$('sm-pfp-preview');
       if(prev){prev.style.background=color;prev.textContent=letter;
         prev.style.color=isLight(color)?'#080808':'#fff';}
-      /* Pre-fill bio field */
+
       const bioEl=$('sm-bio');if(bioEl&&s.bio!==undefined)bioEl.value=s.bio||'';
     }
   }
@@ -3080,7 +3091,7 @@ function refreshAccountUI(){
       const av=$('fr-avatar');if(av){av.style.background=color;av.textContent=letter;
         av.style.color=isLight(color)?'#080808':'#fff';}
       const un=$('fr-username');if(un)un.textContent=s.display||s.username;
-      /* Show bio on friends page */
+
       const bio=$('fr-bio');if(bio)bio.textContent=s.bio||'';
       renderFriendsList();
       loadFriendRequests();
@@ -3091,16 +3102,15 @@ function refreshAccountUI(){
   if(s&&S.serverOk){checkNotifications();_notifTimer=setInterval(checkNotifications,60000);}
 }
 
-/* Auto-fetch server URL from GitHub on every boot */
 async function fetchServerUrlFromGithub(){
   try{
-    /* raw.githubusercontent.com gives plain text content */
+
     const r=await fetch(
       'https://raw.githubusercontent.com/iamdookie1/website2/main/website-api-link',
       {signal:AbortSignal.timeout(8000),cache:'no-store'}
     );
     const ct=r.headers.get('content-type')||'';
-    if(!r.ok||ct.includes('text/html'))return;  /* got an error page, not the URL file */
+    if(!r.ok||ct.includes('text/html'))return;
     const url=(await r.text()).trim().split('\n')[0].trim().replace(/\/$/,'');
     if(!url||!url.startsWith('http'))return;
     if(url!==S.serverUrl){
@@ -3114,9 +3124,6 @@ async function fetchServerUrlFromGithub(){
   }
 }
 
-/* ══════════════════════════════════════════════════════════
-   LIKED VIDEOS
-══════════════════════════════════════════════════════════ */
 function getLiked(){try{return JSON.parse(localStorage.getItem('obs_liked')||'[]');}catch{return[];}}
 function saveLiked(arr){localStorage.setItem('obs_liked',JSON.stringify(arr));}
 function toggleLike(v){
@@ -3126,7 +3133,7 @@ function toggleLike(v){
   if(idx>=0){
     liked.splice(idx,1);saveLiked(liked);toast('Removed from Liked','ok');
   }else{
-    /* Normalise any content type into a storable shape */
+
     const item={
       id,
       title:v.title||v.sub||id,
@@ -3136,14 +3143,14 @@ function toggleLike(v){
       rating:v.rating||'—',
       qual:v.qual||v.mType||'',
       src:v.src||'Unknown',
-      /* playback */
+
       url:v.url||v.embedUrl||v.directUrl||v.mUrl||v.fileUrl||'',
       embedUrl:v.embedUrl||'',
       directUrl:v.directUrl||v.mUrl||v.fileUrl||'',
       useIframe:!!v.useIframe,
       bc:v.bc||'b-hot',
       tags:v.tags||[],
-      /* reddit-specific */
+
       mType:v.mType||'video',
       mUrl:v.mUrl||v.directUrl||'',
       tUrl:v.tUrl||v.thumb||'',
@@ -3154,7 +3161,7 @@ function toggleLike(v){
       comments:v.comments||0,
       nsfw:v.nsfw||false,
       gallery:v.gallery||[],
-      /* r34-specific */
+
       fileUrl:v.fileUrl||v.directUrl||'',
       previewUrl:v.previewUrl||v.thumb||'',
       apiSrc:v.apiSrc||'',
@@ -3183,7 +3190,7 @@ function renderLiked(){
   if(!liked.length){$('liked-empty').style.display='block';return;}
   $('liked-empty').style.display='none';
   liked.forEach(v=>{
-    /* Route to correct player based on what was liked */
+
     const isReddit=!!(v.sub||v.link||v.author);
     const isR34=!!(v.apiSrc||v.fileUrl);
     const open=()=>{
@@ -3211,7 +3218,7 @@ function renderLiked(){
         <button onclick="event.stopPropagation();toggleLike(this.__v)" style="background:none;border:none;color:var(--crim);cursor:pointer;font-family:'DM Mono',monospace;font-size:.55rem;padding:0;" title="Remove">✕ Remove</button>
       </div>
     </div>`;
-    /* Attach the item to the remove button */
+
     el.querySelector('button').__v=v;
     el.addEventListener('click',open);
     el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open();});
@@ -3234,11 +3241,8 @@ function exitRedditOnly(){
   $('offline-banner').classList.remove('show');
 }
 
-/* ══════════════════════════════════════════════════════════
-   BOTTOM NAV (mobile)
-══════════════════════════════════════════════════════════ */
 function bnav(name){
-  /* Map gif tab */
+
   if(name==='gif'){
     S.f.tag='gif';S.f.q='';S.page=1;
     document.querySelectorAll('.fchip').forEach(c=>{
@@ -3259,11 +3263,6 @@ function syncBnav(name){
   if(active)active.classList.add('on');
 }
 
-
-
-/* ══════════════════════════════════════════════════════════
-   VIEW SWITCHING
-══════════════════════════════════════════════════════════ */
 function switchView(name){
   S.curView=name;
   const iso=name==='reddit'||name==='r34';
@@ -3289,7 +3288,7 @@ function switchView(name){
   if(isLikedView){renderLiked();return;}
   if(isFriendsView){
     refreshAccountUI();
-    /* Always re-fetch friends list from server when opening Friends view */
+
     syncSessionFromServer().then(()=>{refreshAccountUI();});
     return;
   }
@@ -3313,13 +3312,6 @@ document.querySelectorAll('.sb-lnk[data-nav]').forEach(l=>{
   });
 });
 
-/* ══════════════════════════════════════════════════════════
-   ╔══════════════════════════════════════════╗
-   ║  API 2 — PORNHUB  (main featured feed)   ║
-   ║  API 3 — REDGIFS  (gif feed)             ║
-   ╚══════════════════════════════════════════╝
-   Both are public APIs — no keys needed.
-══════════════════════════════════════════════════════════ */
 const CFG_PAGE=24;
 const PROXY_LIST=[
   u=>`https://corsproxy.io/?url=${encodeURIComponent(u)}`,
@@ -3339,7 +3331,6 @@ async function proxyFetch(url,parse='json'){
   throw new Error('All proxies failed for: '+url);
 }
 
-/* ── API 2: Pornhub via Python server ── */
 const PH_SORT={views:'mostviewed',newest:'newest',rating:'rating',trending:'trending'};
 async function fetchPornhub(q='',page=1,sort='views'){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
@@ -3349,11 +3340,10 @@ async function fetchPornhub(q='',page=1,sort='views'){
   if(!r.ok)throw new Error(`PH server ${r.status}`);
   const d=await r.json();
   if(d.error)throw new Error(d.error);
-  /* Return empty gracefully instead of throwing — lets search show "no results" */
+
   return{videos:d.videos||[],total:d.total||0};
 }
 
-/* ── API: RedTube via server ── */
 async function fetchRedTube(q='',page=1,sort='views'){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
   const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
@@ -3364,7 +3354,6 @@ async function fetchRedTube(q='',page=1,sort='views'){
   return{videos:d.videos||[],total:d.total||0};
 }
 
-/* ── API: YouPorn via server ── */
 async function fetchYouPorn(q='',page=1,sort='views'){
   if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
   const p=new URLSearchParams({page,sort,limit:CFG_PAGE});
@@ -3375,7 +3364,6 @@ async function fetchYouPorn(q='',page=1,sort='views'){
   return{videos:d.videos||[],total:d.total||0};
 }
 
-/* ── Fetch by API name ── */
 function fetchByName(name,q,page,sort,opts={}){
   if(name==='pornhub')  return fetchPornhub(q,page,sort);
   if(name==='redtube')  return fetchRedTube(q,page,sort);
@@ -3412,12 +3400,10 @@ async function fetchRedgifs(q='',page=1){
   };
 }
 
-/* ── Combined fetch using settings-selected APIs ── */
 async function fetchMain(params={}){
   const{q='',page=1,sort='views',tag='all',cat='',dur='',qual=''}=params;
   const up=S.serverUrl&&S.serverOk;
 
-  /* GIF tab → ALWAYS stay in gif mode, never show PH/RT */
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
     if(up&&ST.gifApi!=='none'){
@@ -3430,10 +3416,8 @@ async function fetchMain(params={}){
     return{videos:[],total:0,notice:'server-offline'};
   }
 
-  /* Build effective query — category/tags become part of search */
   const effQ=buildQuery(q,cat);
 
-  /* Primary + Secondary video APIs in parallel */
   const api1=ST.api1||'pornhub';
   const api2=ST.api2||'none';
   const opts={cat,dur,qual};
@@ -3446,7 +3430,6 @@ async function fetchMain(params={}){
   let v2=results[1].status==='fulfilled'?results[1].value.videos:[];
   if(results[0].status==='rejected')console.warn(`[${api1}]`,results[0].reason);
 
-  /* Client-side filter by duration and quality */
   const durFilter=v=>filterDur(v,dur);
   const qualFilter=v=>filterQual(v,qual);
   v1=v1.filter(v=>durFilter(v)&&qualFilter(v));
@@ -3461,14 +3444,12 @@ async function fetchMain(params={}){
   return{videos:merged,total};
 }
 
-/* Build search query from base query + category */
 function buildQuery(q,cat){
   if(!cat)return q;
-  /* Append category as search term */
+
   return q?`${q} ${cat}`:cat;
 }
 
-/* Client-side duration filter */
 function filterDur(v,dur){
   if(!dur)return true;
   const s=v.dur||0;
@@ -3479,7 +3460,6 @@ function filterDur(v,dur){
   return true;
 }
 
-/* Client-side quality filter */
 function filterQual(v,qual){
   if(!qual)return true;
   const q=(v.qual||'').toLowerCase();
@@ -3489,7 +3469,6 @@ function filterQual(v,qual){
   return true;
 }
 
-/* Mock */
 function mockVids(n){
   const T=['Midnight Session','Golden Hour Cut','Studio Exclusive','Raw Collection','After Hours','VIP Access','Late Night','Premium Cut','Director\'s Edition','Studio Release'];
   const Q=['HD','1080p','4K'],B=['b-hot','b-hd','b-4k','b-new'];
@@ -3503,7 +3482,6 @@ function mockVids(n){
   }));
 }
 
-/* ── Render main grid ── */
 function skels(){const g=$('vgrid');g.innerHTML='';for(let i=0;i<CFG_PAGE;i++)g.innerHTML+=`<div class="skc"><div class="sk skt"></div><div class="ski"><div class="sk sk1"></div><div class="sk sk2"></div></div></div>`;}
 
 function mkCard(v,idx=0){
@@ -3511,7 +3489,7 @@ function mkCard(v,idx=0){
   const tgs=(v.tags||[]).slice(0,3).map(t=>`<span class="vtg">${esc(t)}</span>`).join('');
   const b=v.qual?.includes('GIF')?'<span class="bdg b-rg">GIF</span>':v.qual?.includes('4K')?'<span class="bdg b-4k">4K</span>':v.qual?.includes('1080')||v.qual?.includes('HD')?'<span class="bdg b-hd">HD</span>':v.bc?`<span class="bdg ${v.bc}">${v.bc.replace('b-','').toUpperCase()}</span>`:'';
   const vidUrl=(!v.useIframe&&v.url&&(v.url.match(/\.(mp4|webm)(\?|$)/i)||v.src==='Redgifs'))?v.url:'';
-  /* First 8 cards: eager load + high priority for instant LCP */
+
   const isAboveFold=idx<8;
   const loadAttr=isAboveFold?'eager':'lazy';
   const fetchAttr=isAboveFold?'high':'auto';
@@ -3592,7 +3570,6 @@ function mkPag(){
   if(rng.at(-1)<t){if(rng.at(-1)<t-1)pag.insertAdjacentHTML('beforeend','<span class="pgb" style="cursor:default;border:none;">…</span>');mk(t,'»');}
 }
 
-/* Filters */
 $('fc').addEventListener('change',()=>{S.f.cat=$('fc').value;S.page=1;loadVideos();});
 $('fd').addEventListener('change',()=>{S.f.dur=$('fd').value;S.page=1;loadVideos();});
 $('fq').addEventListener('change',()=>{S.f.qual=$('fq').value;S.page=1;loadVideos();});
@@ -3611,7 +3588,6 @@ $('clf').addEventListener('click',()=>{
   S.page=1;loadVideos();toast('Filters cleared','ok',2000);
 });
 
-/* Search */
 const SUGG=['amateur','milf','lesbian','hentai','animated','teen','blowjob','creampie','solo','threesome'];
 const doS=dbn(()=>{S.f.q=$('srch').value.trim();S.page=1;loadVideos();},400);
 function execSearch(){acl.classList.remove('open');S.f.q=$('srch').value.trim();S.page=1;loadVideos();}
@@ -3628,73 +3604,64 @@ $('srch').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();
 $('srch-btn').addEventListener('click',()=>execSearch());
 document.addEventListener('click',e=>{if(!e.target.closest('.nsw'))acl.classList.remove('open');});
 
-/* ══════════════════════════════════════════════════════════
-   ╔══════════════════════════════════╗
-   ║  API 1 — REDDIT NSFW (isolated)  ║
-   ╚══════════════════════════════════╝
-══════════════════════════════════════════════════════════ */
-/* ══════════════════════════════════════════════════════════
-   REDDIT SUBREDDIT AUTOCOMPLETE — curated NSFW list
-   All subs have 2k+ weekly active users
-══════════════════════════════════════════════════════════ */
 const NSFW_SUBS = [
-  /* ── Mainstream ── */
+
   'nsfw','sex','porn','realgirls','gonewild','holdthemoan','cumsluts',
   'altgonewild','GoneWildPlus','RealGirls','Amateur','sexybutnotporn',
   'adorableporn','NaughtySluts','gwpublic','gonewildstories','dirtyr4r',
   'PetiteGoneWild','gonemild','wifepictures','sexygirls','dirtysnapchat',
   'snapchat_nsfw','realsex','OnOff','collegesluts','homemadexxx','amateurporn',
-  /* ── Body types ── */
+
   'Boobies','ass','pussy','bigboobs','bigasses','busty','pawg','bbw','chubby',
   'thick','curvy','slim','petite','boltedonnaturals','TinyTits','hugeboobs',
   'nipples','bodyperfection','gonewildcurvy','GoneWildPlus','naturalboobs',
   'titstogether','asshole','labia','innie','nsfwoutfits',
-  /* ── Hair/Appearance ── */
+
   'brunette','blonde','redheads','ginger','palegirls','tattoos','pierced',
   'pokies','midriff','tightshirts','yoga','fitgirls','workoutwomen',
-  /* ── Orientation/Gender ── */
+
   'lesbians','lesbian','gay','bisexual','traps','transgender','femboys',
   'gayporn','freeuse','feminineboys','GayBros','bisexual','queer',
   'futanari','femboyhentai','gonewildtrans','transadorable','traps',
   'femboyporn','femboys','sissies','crossdressing','cdsgonewild',
-  /* ── Ethnicity ── */
+
   'ebony','asian','latina','realasians','latinasgw','blackchicks',
   'polishnsfw','ukgonewild','canadagonewild','australiagw','eurogonewild',
   'AsiansGoneWild','WomenOfColor','indiansgonewild','arabsgonewild',
   'latinasgonewild','AsianNSFW','BlackGirls','Mixed','exoticgirls',
-  /* ── Age category ── */
+
   'milf','teenagers','MatureNSFW','cougars','MILFVideo','over30',
   'over60','teens','realteens','collegegirls','youngporn',
-  /* ── Acts ── */
+
   'blowjobs','anal','creampie','gangbang','threesome','bdsm','bondage',
   'dominant','squirt','facials','cumshots','deepthroat','doggystyle',
   'cowgirl','missionary','handjob','footjob','rimjob','fisting','pegging',
   'spankingforreal','femdom','maledom','roughsex','publicsex','exhibitionism',
   'PublicFlashing','strangers','dogging','gloryholes','swapping',
-  /* ── Fetish ── */
+
   'feet','pantyhose','stockings','latex','leather','lingerie','thongs',
   'swimwear','sporty','schoolgirl','nurse','maid','cosplay','roleplay',
   'oilwrestling','massage','wetandmessy','foodporn_nsfw','ballbusting',
   'cuckolding','wifesharing','hotwife','cuckold','swingers','voyeur',
   'creepshots','upskirt','flashing','gonewild_pics','NSFWFunny',
-  /* ── Content format ── */
+
   'nsfw_gif','nsfwgif','porn_gifs','gifsgonewild','porngifs','nsfwvideos',
   'nsfw_videos','amateurvideos','homeporn','sextapes','onlyfans',
   'pornstars','pornhub','xvideos','brazzers','realitykings',
-  /* ── Hentai/Anime ── */
+
   'hentai','ecchi','animehentai','rule34','rule34_irl','realhentai',
   'NSFWart','hentaifemboys','futanari','yaoi','yuri','shoujoai',
   'hentaiGifs','hentaivideoclips','doujinshi','mangansfw','lewd',
   'lewdanime','animeboobs','animegirls_nsfw','waifu','ahegao',
   'femboyhentai','feralhentai','monstergirl','tentacles','inflation',
-  /* ── Gay specific ── */
+
   'gayporn','gaynsfw','gaybros','twinks','bears','cubs','daddies',
   'gaycock','gaycumsluts','gaysex','gayfetish','gaybdsm','asiansgonewild',
   'blackcock','bbc','Massive_Cock','bigdickproblems','dickpics','cock',
-  /* ── Celeb/Famous-ish ── */
+
   'celebnsfw','OnlyFans101','onlyfansreviews','InfluencersGoneWild',
   'TikTokNSFW','instagramreality','SluttyConfessions','confessions',
-  /* ── Other ── */
+
   'Incest_Captions','GILF','voyeur','rape_is_wrong','consensualnonconsent',
   'solofemalefun','weddingring','wifes_gone_wild','slutwife','hotwife',
   'slutsgoingwild','Swingers','openrelationships','sexstories',
@@ -3705,7 +3672,7 @@ let acFocusIdx=-1;
 
 function showSubAC(val){
   const ac=$('r-sub-ac');
-  const q=val.trim().replace(/^r\//i,'').toLowerCase();
+  const q=val.trim().replace(/^r\
   if(q.length<1){ac.style.display='none';return;}
   const matches=NSFW_SUBS.filter(s=>s.startsWith(q)).slice(0,10);
   if(!matches.length){ac.style.display='none';return;}
@@ -3753,7 +3720,7 @@ $('r-sub').addEventListener('focus',()=>{if($('r-sub').value.length>=1)showSubAC
 function qs_r(name){$('r-sub').value=name;$('r-sub-ac').style.display='none';fetchReddit();}
 
 async function fetchReddit(append=false){
-  const sub=$('r-sub').value.trim().replace(/^r\//,'').toLowerCase();
+  const sub=$('r-sub').value.trim().replace(/^r\
   if(!sub){toast('Enter a subreddit name','err');return;}
   if(S.rd.loading)return;S.rd.loading=true;
   const btn=$('r-go');btn.disabled=true;btn.textContent='Loading…';
@@ -3775,7 +3742,7 @@ async function fetchReddit(append=false){
       .filter(p=>p.mUrl||p.gallery?.length||p.tUrl);
     S.rd.all=append?[...S.rd.all,...posts]:posts;
     if(append){
-      /* On append — filter and render only new posts */
+
       let f=S.rd.all;
       if(S.rd.mf==='video')f=f.filter(p=>p.mType==='video'||p.mType==='gif-v');
       if(S.rd.mf==='image')f=f.filter(p=>p.mType==='image'||p.mType==='gallery');
@@ -3802,37 +3769,36 @@ function normRedditPost(p){
   const url=p.url||'';
   const hint=p.post_hint||'';
 
-  /* ── VIDEO ── */
   if(p.is_video&&p.media?.reddit_video){
     mType='video';
-    /* Remove source param and get clean URL */
+
     mUrl=(p.media.reddit_video.fallback_url||'').split('?')[0];
-    /* Reddit video audio is separate — attach for reference (can't mix in browser) */
+
     audioUrl=mUrl.replace(/DASH_\d+/,'DASH_audio').replace(/\.mp4$/,'');
   }
-  /* External video hosts */
+
   else if(hint==='hosted:video'&&p.secure_media?.oembed?.html){
     mType='video';
-    /* Best we can do is extract a thumbnail */
+
     mUrl=url;
   }
-  /* v.redd.it links */
+
   else if(url.includes('v.redd.it')){
     mType='video';
-    /* Try to find the direct MP4 from preview */
+
     const rv=p.media?.reddit_video||p.crosspost_parent_list?.[0]?.media?.reddit_video;
     if(rv)mUrl=(rv.fallback_url||'').split('?')[0];
     else mUrl=url;
   }
-  /* Streamable, gfycat etc. embeds — treat as gif-v using preview mp4 */
+
   else if(p.preview?.reddit_video_preview?.fallback_url){
     mType='gif-v';
     mUrl=p.preview.reddit_video_preview.fallback_url.split('?')[0];
   }
-  /* GIF/GIFV */
+
   else if(url.match(/\.(gif|gifv)(\?|$)/i)){
     mType='gif';
-    /* Imgur gifv → mp4 */
+
     if(url.includes('imgur.com')&&url.endsWith('.gifv')){
       mUrl=url.replace('.gifv','.mp4');
       mType='gif-v';
@@ -3843,11 +3809,11 @@ function normRedditPost(p){
       mUrl=url.replace('.gifv','.mp4');
     }
   }
-  /* Direct MP4/WebM */
+
   else if(url.match(/\.(mp4|webm)(\?|$)/i)){
     mType='video';mUrl=url;
   }
-  /* Gallery */
+
   else if(p.is_gallery&&p.gallery_data){
     mType='gallery';
     const fid=p.gallery_data.items?.[0]?.media_id;
@@ -3856,7 +3822,7 @@ function normRedditPost(p){
       mUrl=deh(m.s?.u||m.s?.gif||'');
     }
   }
-  /* Image */
+
   else {
     mType='image';
     if(url.match(/\.(jpg|jpeg|png|webp)(\?|$)/i)){
@@ -3866,14 +3832,12 @@ function normRedditPost(p){
     }
   }
 
-  /* ── THUMBNAIL ── best resolution available ── */
   const res=p.preview?.images?.[0]?.resolutions||[];
-  /* Pick ~640px wide if available */
+
   const bestRes=res.slice().reverse().find(r=>parseInt(r.width||0)>=480)||res[res.length-1];
   tUrl=deh(bestRes?.url||p.preview?.images?.[0]?.source?.url||p.thumbnail||'');
   if(!tUrl||['self','nsfw','default','spoiler','image'].includes(tUrl))tUrl='';
 
-  /* Gallery items */
   const gallery=p.is_gallery&&p.gallery_data?.items?.map(it=>{
     const m=p.media_metadata?.[it.media_id];
     return m?deh(m.s?.u||m.s?.gif||''):'';
@@ -3887,7 +3851,6 @@ function normRedditPost(p){
   };
 }
 
-/* Better filter — accept more post types */
 function isMediaPost(p){
   const url=p.url||'';
   const hint=p.post_hint||'';
@@ -3919,7 +3882,7 @@ function renderRGrid(append=false){
     const isV=post.mType==='video'||post.mType==='gif-v';
     const isG=post.mType==='gif';
     const hasVid=isV||isG;
-    /* Type badge */
+
     const tLbl=isV?'VIDEO':isG?'GIF':post.mType==='gallery'?'GALLERY':'IMAGE';
     const tCls=isV?'rt-v':isG?'rt-g':post.mType==='gallery'?'rt-gl':'rt-i';
     const el=document.createElement('article');
@@ -3948,7 +3911,7 @@ function renderRGrid(append=false){
           <span>💬 ${fmtV(post.comments)}</span>
         </div>
       </div>`;
-    /* Hover autoplay */
+
     if(vidUrl){
       const hv=el.querySelector('.hov-vid');
       el.addEventListener('mouseenter',()=>{if(hv){hv.play().catch(()=>{});}});
@@ -3956,7 +3919,7 @@ function renderRGrid(append=false){
     }
     el.addEventListener('click',()=>openRedditPost(post));
     el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openRedditPost(post);});
-    /* Preload media on hover */
+
     if((post.mType==='image'||post.mType==='gallery')&&post.mUrl){
       let preloaded=false;
       el.addEventListener('mouseenter',()=>{
@@ -3967,27 +3930,21 @@ function renderRGrid(append=false){
   });
 }
 
-/* ══════════════════════════════════════════════════════════
-   API 4 — BOORU BROWSER
-   Sources: Gelbooru, e621, Danbooru, Konachan, Yande.re,
-            Paheal (server), Safebooru
-══════════════════════════════════════════════════════════ */
 $('r4-tag').addEventListener('keydown',e=>{if(e.key==='Enter')fetchR34();});
 function qs_r4(tag){$('r4-tag').value=tag;fetchR34();}
 
-/* Board display names */
 const R4_NAMES={
   gelbooru:'Gelbooru',e621:'e621',danbooru:'Danbooru',
   konachan:'Konachan',yandere:'Yande.re',paheal:'Paheal',safebooru:'Safebooru'
 };
 
 async function _fetchBooru(apiSrc,tags,limit,pid){
-  /* All except paheal work via proxy/direct */
+
   const page=pid+1;
   const tag=encodeURIComponent(tags);
 
   if(apiSrc==='gelbooru'){
-    /* Gelbooru v2 JSON API — fully public */
+
     const url=`https://gelbooru.com/index.php?page=dapi&s=post&q=index&json=1&limit=${limit}&pid=${pid}&tags=${tag}`;
     for(const mkP of PROXY_LIST){
       try{
@@ -4032,7 +3989,7 @@ async function _fetchBooru(apiSrc,tags,limit,pid){
   }
 
   if(apiSrc==='danbooru'){
-    /* Danbooru API — max 2 tags on free tier */
+
     const twoTags=tags.split(' ').slice(0,2).join('+');
     const url=`https://danbooru.donmai.us/posts.json?tags=${encodeURIComponent(twoTags)}&limit=${limit}&page=${page}`;
     for(const mkP of PROXY_LIST){
@@ -4208,9 +4165,6 @@ function loadMoreR4(){
 }
 function loadMoreR(){if(!S.rd.after||S.rd.loading)return;$('r-sub').value=S.rd.sub;$('r-sort').value=S.rd.sort;$('r-time').value=S.rd.time;fetchReddit(true);}
 
-/* ══════════════════════════════════════════════════════════
-   INFINITE SCROLL (IntersectionObserver for all 3 grids)
-══════════════════════════════════════════════════════════ */
 function showAutoLoad(id,color=''){
   const el=$(id);if(!el)return;
   el.classList.remove('hidden');
@@ -4220,7 +4174,6 @@ function hideAutoLoad(id){const el=$(id);if(el)el.classList.add('hidden');}
 
 const iOpts={rootMargin:'0px 0px 300px 0px',threshold:0};
 
-/* Main grid infinite scroll */
 const mainSentinel=$('main-sentinel');
 if(mainSentinel){
   new IntersectionObserver((entries)=>{
@@ -4233,7 +4186,6 @@ if(mainSentinel){
   },iOpts).observe(mainSentinel);
 }
 
-/* Reddit infinite scroll */
 const rSentinel=$('r-sentinel');
 if(rSentinel){
   new IntersectionObserver((entries)=>{
@@ -4245,7 +4197,6 @@ if(rSentinel){
   },iOpts).observe(rSentinel);
 }
 
-/* R34 infinite scroll */
 const r4Sentinel=$('r4-sentinel');
 if(r4Sentinel){
   new IntersectionObserver((entries)=>{
@@ -4298,7 +4249,7 @@ function renderR4Grid(append=false){
     }
     el.addEventListener('click',()=>openR34Post(post));
     el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openR34Post(post);});
-    /* Preload full image on hover so it's ready when clicked */
+
     if(post.mType==='image'&&post.fileUrl){
       let preloaded=false;
       el.addEventListener('mouseenter',()=>{
@@ -4308,11 +4259,7 @@ function renderR4Grid(append=false){
     g.appendChild(el);
   });
 }
-/* ══════════════════════════════════════════════════════════
-   UNIFIED PLAYER — all content uses the same UI
-══════════════════════════════════════════════════════════ */
 
-/* Shared image overlay inside pvw — for images shown in video wrap */
 function setPlayerImage(src,alt=''){
   if(!src)return;
   const pvw=$('pvw');
@@ -4326,23 +4273,23 @@ function setPlayerImage(src,alt=''){
   img.alt=alt;
   img.referrerPolicy='no-referrer';
   img.decoding='async';
-  /* Preload into a hidden Image() first — when decoded, swap src instantly */
+
   const preload=new Image();
   preload.referrerPolicy='no-referrer';
   preload.src=src;
-  img.style.opacity='0.4'; /* dim during load */
+  img.style.opacity='0.4';
   preload.onload=()=>{
     img.src=src;
     img.style.display='block';
     img.style.opacity='1';
   };
   preload.onerror=()=>{
-    /* Try direct src as fallback anyway */
+
     img.src=src;
     img.style.display='block';
     img.style.opacity='1';
   };
-  /* Show immediately too (for fast connections) */
+
   img.src=src;
   img.style.display='block';
 }
@@ -4351,7 +4298,6 @@ function clearPlayerImage(){
   if(img)img.style.display='none';
 }
 
-/* Gallery overlay inside pvw */
 let GAL={items:[],idx:0};
 function setGallery(items){
   GAL={items,idx:0};
@@ -4383,15 +4329,12 @@ function clearGallery(){
   GAL={items:[],idx:0};
 }
 
-/* Core player launcher */
-
-/* ── Open chat media in the full player/lightbox ── */
 function openChatMedia(src, type, title){
-  /* For base64 images, just use image lightbox mode */
+
   launchPlayer({
     src,
     title: title||'',
-    mediaType: type==='gif' ? 'video'   /* gifs play as looped video */
+    mediaType: type==='gif' ? 'video'
              : type==='video' ? 'video'
              : 'image',
     loop: type==='gif',
@@ -4403,12 +4346,10 @@ function openChatMedia(src, type, title){
 }
 
 function launchPlayer(opts){
-  /* opts: {src, title, meta (html), actions (html), accent, extra (html),
-            showRelated, mediaType, galleryItems, loop, thumb} */
+
   const{src='',title='',meta='',actions='',accent='gr',extra='',
         showRelated=false,mediaType='video',galleryItems=[],loop=false}=opts;
 
-  /* Shell accent */
   $('pshell').className=`ps ${accent}`;
   $('ptitle').textContent=title;
   $('pmeta').innerHTML=meta;
@@ -4418,7 +4359,6 @@ function launchPlayer(opts){
   else xtra.classList.add('hidden');
   $('prl').style.display=showRelated?'':'none';
 
-  /* Kill any previous dead notice */
   const dn=$('pvw').querySelector('.dead-notice');if(dn)dn.remove();
 
   $('pvw').style.display='block';
@@ -4435,31 +4375,31 @@ function launchPlayer(opts){
     $('pvw').style.display='block';
     $('pfw').style.display='none';
     vidPause();
-    /* Hide video controls — they don't apply to images */
+
     $('pvw').querySelector('.co').style.display='none';
     if(galleryItems.length>1)setGallery(galleryItems);
     else setPlayerImage(src,title);
     $('ctime').textContent='— / —';pf.style.width='0%';
   } else {
-    /* video/gif — show controls */
+
     $('pvw').querySelector('.co').style.display='';
     vidPause();
     const v=$('mv');
     v.loop=loop||mediaType==='gif';
-    /* Set src synchronously here to keep user gesture context for autoplay */
+
     v.preload='auto';
     if(src){
       v.src=src;
       v.load();
       if(ST.autoplay!==false){
-        /* play() must be called in the same synchronous call stack as the user gesture */
+
         v.play().catch(()=>{
-          /* If blocked (e.g. no audio unlock yet), retry on canplay */
+
           v.addEventListener('canplay',()=>v.play().catch(()=>{}),{once:true});
         });
       }
     }
-    /* Still call loadStream for HLS detection */
+
     if(src&&(src.includes('.m3u8')||src.includes('m3u8?'))){
       loadStream(src);
     }
@@ -4530,7 +4470,6 @@ function openR34Post(post){
 
 function cpLink(url){navigator.clipboard?.writeText(url).then(()=>toast('Link copied','ok')).catch(()=>toast('Copy failed','err'));}
 
-/* Related (main videos) */
 async function loadRelated(v){
   const g=$('rlg');g.innerHTML='';
   try{
@@ -4546,7 +4485,6 @@ async function loadRelated(v){
   }catch{g.innerHTML=`<p style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm)">—</p>`;}
 }
 
-/* ── Video controls ── */
 const mv=$('mv'),pw=$('pw'),pf=$('pf'),pb=$('pb');
 let drag=false;
 function vidPause(){
@@ -4558,7 +4496,7 @@ mv.addEventListener('progress',()=>{if(!mv.duration)return;const b=mv.buffered;i
 mv.addEventListener('play',()=>{$('bplay').textContent='⏸';$('bplay').setAttribute('aria-label','Pause');});
 mv.addEventListener('pause',()=>{$('bplay').textContent='▶';$('bplay').setAttribute('aria-label','Play');});
 mv.addEventListener('error',()=>{
-  /* Dead stream — show a message in the player */
+
   const vw=$('pvw');
   if(vw.querySelector('.dead-notice'))return;
   const n=document.createElement('div');
@@ -4592,7 +4530,7 @@ function loadStream(url){
       document.head.appendChild(s);
     }else initHls(url);
   }else{
-    /* Direct mp4/webm — set src, set preload auto, play immediately */
+
     v.preload='auto';
     v.src=url;
     v.load();
@@ -4609,7 +4547,7 @@ function initHls(url){
     hlsI=new Hls({
       enableWorker:true,
       lowLatencyMode:false,
-      startLevel:-1,        /* auto quality */
+      startLevel:-1,
       maxBufferLength:30,
       maxBufferSize:60*1000*1000,
     });
@@ -4628,21 +4566,7 @@ function closePlayer(){
 }
 $('pclose').addEventListener('click',closePlayer);
 $('pm').addEventListener('click',e=>{if(e.target===$('pm'))closePlayer();});
-/* ══════════════════════════════════════════════════════════
-   KEYBOARD SHORTCUTS
-   Space        Play/Pause
-   F            Fullscreen
-   M            Mute
-   ← →          Seek ±5s  (+ Shift = ±30s)
-   ↑ ↓          Volume ±5%
-   0-9          Jump to 0-90% of video
-   K            Play/Pause (YouTube style)
-   J / L        Seek -10s / +10s
-   T            Theatre mode (toggle sidebar)
-   Escape       Close player / modal
-   ?            Show shortcut help
-   /            Focus search
-══════════════════════════════════════════════════════════ */
+
 let _kbHelp=false;
 function _kbHelpToggle(){
   let d=$('kb-help');
@@ -4668,7 +4592,7 @@ function _kbHelpToggle(){
     <div><kbd>?</kbd> — Toggle this help</div>
     <button onclick="document.getElementById('kb-help').remove();_kbHelp=false;" style="margin-top:.6rem;background:none;border:1px solid var(--bdr);color:var(--tm);font-family:'DM Mono',monospace;font-size:.56rem;padding:.2rem .55rem;cursor:pointer;width:100%">✕ Close</button>`;
   document.body.appendChild(d);
-  /* Auto-dismiss after 8 seconds */
+
   setTimeout(()=>{const h=$('kb-help');if(h)h.remove();_kbHelp=false;},8000);
 }
 
@@ -4679,11 +4603,10 @@ document.addEventListener('keydown',e=>{
   const chatOpen=$('chat-modal').classList.contains('on');
   const mv=$('mv');
 
-  /* Always: / focuses search */
   if(e.key==='/'&&!typing){e.preventDefault();$('srch')?.focus();return;}
-  /* Always: ? toggles help */
+
   if(e.key==='?'&&!typing){_kbHelpToggle();return;}
-  /* Always: Escape closes things */
+
   if(e.key==='Escape'){
     if(chatOpen){closeChat();return;}
     if(playerOpen){closePlayer();return;}
@@ -4691,14 +4614,13 @@ document.addEventListener('keydown',e=>{
     if($('fr-req-panel')?.classList.contains('on')){closeFrReqPanel();return;}
     return;
   }
-  /* Always: T toggles sidebar */
+
   if(e.key==='t'&&!typing&&!playerOpen){
     const sb=document.querySelector('.sb');
     if(sb)sb.style.display=sb.style.display==='none'?'':'none';
     return;
   }
 
-  /* Player shortcuts — only when player is open and not typing */
   if(!playerOpen||typing||!mv)return;
 
   switch(e.key){
@@ -4753,7 +4675,7 @@ document.addEventListener('keydown',e=>{
       if(mv.duration)mv.currentTime=Math.min(mv.duration,mv.currentTime+10);
       break;
     default:
-      /* 0-9 jump to % */
+
       if(e.key>='0'&&e.key<='9'&&!e.ctrlKey&&!e.metaKey){
         e.preventDefault();
         if(mv.duration)mv.currentTime=(parseInt(e.key)/10)*mv.duration;
@@ -4761,14 +4683,10 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-/* kbd style */
 (function(){const s=document.createElement('style');
 s.textContent=`kbd{display:inline-block;padding:.08rem .38rem;background:var(--bg3);border:1px solid var(--bdr);border-radius:2px;font-family:'DM Mono',monospace;font-size:.55rem;color:var(--gold);}`;
 document.head.appendChild(s);})();
 
-/* ══════════════════════════════════════════════════════════
-   PARTICLES
-══════════════════════════════════════════════════════════ */
 function initParticles(){
   const cv=$('pc'),ctx=cv.getContext('2d');let W,H,pts=[];
   const rsz=()=>{W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight;};
@@ -4778,22 +4696,17 @@ function initParticles(){
   return()=>cancelAnimationFrame(raf);
 }
 
-/* ══════════════════════════════════════════════════════════
-   BOOT
-══════════════════════════════════════════════════════════ */
 function confirmAge(){localStorage.setItem('obs_age','1');const g=$('age-gate');g.classList.add('out');setTimeout(()=>{g.style.display='none';showSplash();},500);}
 if(localStorage.getItem('obs_age')==='1')$('age-gate').style.display='none';
 function showSplash(){const sp=$('splash');sp.classList.add('active');const stop=initParticles();const go=()=>{clearTimeout(auto);document.removeEventListener('keydown',onKey);exitSplash(stop);};const onKey=e=>{if(e.key==='Enter')go();};document.addEventListener('keydown',onKey);const auto=setTimeout(go,8000);sp.addEventListener('click',go,{once:true});}
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  /* 1. Always fetch latest tunnel URL from GitHub first — before anything else */
+
   await fetchServerUrlFromGithub();
 
-  /* 2. Init account UI (uses cached session, safe offline) */
   refreshAccountUI();
 
-  /* 3. Now check server with the freshest URL */
   if(S.serverUrl){
     skels();
     const ok=await checkServer(3);
@@ -4801,7 +4714,7 @@ async function bootApp(){
       toast('Server connected ✓','ok',2000);
       loadVideos();
     }else{
-      /* URL may have changed while we were checking — try GitHub once more */
+
       await fetchServerUrlFromGithub();
       const ok2=await checkServer(1);
       if(ok2){loadVideos();}
