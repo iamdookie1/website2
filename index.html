@@ -693,32 +693,32 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 
 /* ═══ NOTIFICATION CENTER ════════════════════════════════════ */
 #notif-panel{position:fixed;top:0;right:0;bottom:0;z-index:1500;
-  width:min(360px,94vw);background:var(--bg1);border-left:1px solid var(--gold-d);
+  width:min(420px,96vw);background:var(--bg1);border-left:1px solid var(--gold-d);
   display:none;flex-direction:column;box-shadow:-16px 0 50px rgba(0,0,0,.6);}
 #notif-panel.on{display:flex;animation:slideRight .22s ease;}
 @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
 .np-head{display:flex;align-items:center;justify-content:space-between;
-  padding:.85rem 1.1rem;border-bottom:1px solid var(--bdr);background:var(--bg0);}
-.np-title{font-family:"Playfair Display",serif;font-size:1rem;font-weight:700;color:var(--gold);}
-.np-tabs{display:flex;border-bottom:1px solid var(--bdr);}
-.np-tab{flex:1;padding:.42rem;font-family:"DM Mono",monospace;font-size:.6rem;cursor:pointer;
+  padding:1rem 1.25rem;border-bottom:1px solid var(--bdr);background:var(--bg0);flex-shrink:0;}
+.np-title{font-family:"Playfair Display",serif;font-size:1.15rem;font-weight:700;color:var(--gold);}
+.np-tabs{display:flex;border-bottom:1px solid var(--bdr);flex-shrink:0;}
+.np-tab{flex:1;padding:.55rem;font-family:"DM Mono",monospace;font-size:.72rem;cursor:pointer;
   text-align:center;border-bottom:2px solid transparent;color:var(--tm);
   transition:all .18s;background:none;border-left:none;border-right:none;border-top:none;}
 .np-tab.on{border-bottom-color:var(--gold);color:var(--gold);}
-.np-body{flex:1;overflow-y:auto;padding:.65rem;}
-.np-item{display:flex;gap:.6rem;padding:.62rem .75rem;background:var(--bg2);
-  border:1px solid var(--bdr);margin-bottom:.32rem;cursor:pointer;transition:all .15s;
+.np-body{flex:1;overflow-y:auto;padding:.75rem;}
+.np-item{display:flex;gap:.75rem;padding:.85rem 1rem;background:var(--bg2);
+  border:1px solid var(--bdr);margin-bottom:.4rem;cursor:pointer;transition:all .15s;
   align-items:flex-start;}
 .np-item:hover{border-color:var(--gold-d);background:rgba(201,168,76,.04);}
-.np-item.unread{border-left:2px solid var(--gold);}
-.np-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-family:"Playfair Display",serif;font-weight:900;font-size:.85rem;flex-shrink:0;}
+.np-item.unread{border-left:3px solid var(--gold);}
+.np-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-family:"Playfair Display",serif;font-weight:900;font-size:1.05rem;flex-shrink:0;}
 .np-info{flex:1;min-width:0;}
-.np-name{font-family:"Playfair Display",serif;font-size:.8rem;font-weight:700;color:var(--tp);}
-.np-text{font-family:"DM Mono",monospace;font-size:.6rem;color:var(--ts);line-height:1.6;
-  margin-top:.12rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.np-time{font-family:"DM Mono",monospace;font-size:.5rem;color:var(--tm);white-space:nowrap;margin-top:.15rem;}
-.np-empty{text-align:center;padding:2.5rem 1rem;font-family:"DM Mono",monospace;font-size:.65rem;color:var(--tm);}
+.np-name{font-family:"Playfair Display",serif;font-size:.95rem;font-weight:700;color:var(--tp);}
+.np-text{font-family:"DM Mono",monospace;font-size:.7rem;color:var(--ts);line-height:1.65;
+  margin-top:.18rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.np-time{font-family:"DM Mono",monospace;font-size:.58rem;color:var(--tm);white-space:nowrap;margin-top:.2rem;}
+.np-empty{text-align:center;padding:3rem 1rem;font-family:"DM Mono",monospace;font-size:.75rem;color:var(--tm);}
 
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 @media(max-width:870px){.tbox{bottom:calc(56px + .7rem);right:.7rem;left:.7rem;}}
@@ -1990,6 +1990,68 @@ function updateFriendCount(){
   const el=$('sb-friend-count');if(el)el.textContent=n||'';
   const fc=$('fr-count');if(fc)fc.textContent=n;
 }
+
+/* ── Sync session from server (refreshes friends, bio, pfp etc) ── */
+async function syncSessionFromServer(){
+  const s=getSession();if(!s||!S.serverUrl||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/users/${s.username}`,
+      {mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return;
+    const fresh=await safeJson(r);
+    if(fresh)setSession({...s,...fresh,password:s.password});
+  }catch(e){console.warn('[syncSession]',e.message);}
+}
+
+/* ── Update unread badge on friend card ── */
+function updateFriendUnread(username){
+  const n=_unread[username]||0;
+  const badge=document.querySelector(`[data-chat-unread="${username}"]`);
+  if(!badge)return;
+  badge.textContent=n>9?'9+':n||'';
+  badge.classList.toggle('on',n>0);
+}
+
+/* ── Profile viewer modal ── */
+async function viewProfile(username){
+  const modal=$('profile-modal');
+  if(!modal)return;
+  modal.style.display='flex';
+  $('pv-avatar').textContent='…';
+  $('pv-display').textContent='Loading…';
+  $('pv-username').textContent='';
+  $('pv-bio').style.display='none';
+  $('pv-stats').textContent='';
+  $('pv-actions').innerHTML='';
+  try{
+    const r=await fetch(`${API()}/api/users/${username}`,
+      {mode:'cors',signal:AbortSignal.timeout(6000)});
+    if(!r.ok){$('pv-display').textContent='User not found';return;}
+    const u=await safeJson(r);if(!u){$('pv-display').textContent='Failed to load';return;}
+    const color=u.pfpColor||'#C9A84C';const letter=u.pfpLetter||'?';
+    const av=$('pv-avatar');
+    av.style.background=color;av.textContent=letter;
+    av.style.color=isLight(color)?'#080808':'#fff';
+    $('pv-display').textContent=u.display||u.username;
+    $('pv-username').textContent=`@${u.username}`;
+    if(u.bio){$('pv-bio').textContent=u.bio;$('pv-bio').style.display='block';}
+    const joined=u.created
+      ?new Date(u.created*1000).toLocaleDateString([],{year:'numeric',month:'long'}):'—';
+    $('pv-stats').textContent=`${(u.friends||[]).length} friends · Joined ${joined}`;
+    const s=getSession();const acts=$('pv-actions');
+    if(s&&s.username!==username){
+      const isFriend=(s.friends||[]).includes(username);
+      if(isFriend){
+        acts.innerHTML=`
+          <button class="btn g" onclick="openChat('${esc(username)}',${JSON.stringify(u).replace(/"/g,'&quot;')});closeProfile()" style="font-size:.65rem">💬 Message</button>
+          <button class="btn" onclick="removeFriend('${esc(username)}');closeProfile()" style="font-size:.65rem">Remove Friend</button>`;
+      }else{
+        acts.innerHTML=`<button class="btn g" onclick="$('fr-add-inp').value='${esc(username)}';sendFriendRequest();closeProfile()" style="font-size:.65rem">+ Add Friend</button>`;
+      }
+    }
+  }catch(e){$('pv-display').textContent='Failed to load profile';console.warn('[viewProfile]',e.message);}
+}
+function closeProfile(){const m=$('profile-modal');if(m)m.style.display='none';}
 
 /* ── Fetch and render the friends list ── */
 /* Stores fetched profiles for chat opening */
@@ -4725,15 +4787,13 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  /* Init account system */
+  /* 1. Always fetch latest tunnel URL from GitHub first — before anything else */
+  await fetchServerUrlFromGithub();
+
+  /* 2. Init account UI (uses cached session, safe offline) */
   refreshAccountUI();
 
-  /* Fetch latest server URL from GitHub (non-blocking) */
-  fetchServerUrlFromGithub().then(()=>{
-    /* After GitHub fetch, re-check if URL changed */
-    if(S.serverUrl&&!S.serverOk)checkServer(1).then(ok=>{if(ok)loadVideos();});
-  });
-
+  /* 3. Now check server with the freshest URL */
   if(S.serverUrl){
     skels();
     const ok=await checkServer(3);
@@ -4741,7 +4801,11 @@ async function bootApp(){
       toast('Server connected ✓','ok',2000);
       loadVideos();
     }else{
-      showApiDownPopup();
+      /* URL may have changed while we were checking — try GitHub once more */
+      await fetchServerUrlFromGithub();
+      const ok2=await checkServer(1);
+      if(ok2){loadVideos();}
+      else{showApiDownPopup();}
     }
   }else{
     loadVideos();
