@@ -3065,12 +3065,6 @@ async function checkBroadcast(){
     });
   }catch{}
 }
-  document.querySelectorAll('.soc-tab').forEach(el=>el.classList.remove('on'));
-  $('soc-tab-'+t)?.classList.add('on');
-  $('soc-friends-panel').style.display=t==='friends'?'':'none';
-  $('soc-groups-panel').style.display=t==='groups'?'':'none';
-  if(t==='groups')loadUserGroups();
-}
 
 let _userGroups=[];
 function switchSocTab(t){
