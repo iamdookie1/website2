@@ -2425,7 +2425,6 @@ function renderMsg(msg,myUsername,_,friendData){
   const reactsHtml=renderReactions(msg.reactions,msg.id,myUsername);
   const reactsEl=reactsHtml?`<div class="msg-reacts">${reactsHtml}</div>`:'';
 
-  const s=getSession();
   const canDelete=mine||(!!_chatGroupId&&_hasGroupPerm('can_delete_msg'));
   const actions=deleted?'':`<div class="msg-actions">
     ${mine?`<button class="msg-act" onclick="startEdit(window._msgCache[${msg.id}])" title="Edit">✏</button>`:''}
@@ -4972,12 +4971,14 @@ function launchPlayer(opts){
     $('pfw').style.display='block';
     $('pvw').querySelector('.co').style.display='';
     vidPause();
+    const v=$('mv');v.src='';v.removeAttribute('src');
     $('mf').src=src;
   } else if(mediaType==='image'){
     $('pvw').style.display='block';
     $('pfw').style.display='none';
     vidPause();
-
+    const v=$('mv');
+    v.src='';v.removeAttribute('src');
     $('pvw').querySelector('.co').style.display='none';
     if(galleryItems.length>1)setGallery(galleryItems);
     else setPlayerImage(src,title);
@@ -5098,9 +5099,10 @@ mv.addEventListener('progress',()=>{if(!mv.duration)return;const b=mv.buffered;i
 mv.addEventListener('play',()=>{$('bplay').textContent='⏸';$('bplay').setAttribute('aria-label','Pause');});
 mv.addEventListener('pause',()=>{$('bplay').textContent='▶';$('bplay').setAttribute('aria-label','Play');});
 mv.addEventListener('error',()=>{
-
+  if(!$('mv').src||$('mv').src===window.location.href)return;
   const vw=$('pvw');
   if(vw.querySelector('.dead-notice'))return;
+  if(vw.querySelector('.co')?.style.display==='none')return;
   const n=document.createElement('div');
   n.className='dead-notice';
   n.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;background:var(--bg1);font-family:"DM Mono",monospace;text-align:center;';
