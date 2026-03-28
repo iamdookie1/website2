@@ -721,7 +721,17 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .mention-opt{padding:.42rem .75rem;font-family:'DM Mono',monospace;font-size:.65rem;cursor:pointer;display:flex;align-items:center;gap:.5rem;color:var(--ts);}
 .mention-opt:hover,.mention-opt.sel{background:rgba(201,168,76,.1);color:var(--gold);}
 .mention-opt-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:.6rem;flex-shrink:0;}
-.bc-progress{position:absolute;bottom:0;left:0;height:2px;background:var(--gold);transition:width 1s linear;}
+/* Custom range slider */
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--bdr);outline:none;cursor:pointer;width:100%;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg0);box-shadow:0 0 0 2px var(--gold-d);transition:transform .15s,box-shadow .15s;}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid var(--bg0);box-shadow:0 0 0 2px var(--gold-d);}
+input[type=range]::-webkit-slider-runnable-track{background:linear-gradient(to right,var(--gold) 0%,var(--gold) var(--val,50%),var(--bdr) var(--val,50%));height:4px;border-radius:2px;}
+input[type=range]::-moz-range-track{background:var(--bdr);height:4px;border-radius:2px;}
+input[type=range]::-moz-range-progress{background:var(--gold);height:4px;border-radius:2px;}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 0 0 3px var(--gold-d);}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.1);}
+@media(max-width:480px){input[type=range]::-webkit-slider-thumb{width:22px;height:22px;}input[type=range]::-moz-range-thumb{width:22px;height:22px;}}
+
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
 .tst.err{border-left-color:#C0392B;}.tst.ok{border-left-color:#4CAF50;}.tst.info{border-left-color:var(--red);}.tst.pur{border-left-color:var(--pur);}
@@ -1457,7 +1467,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div class="sm-row">
           <span>Videos per page</span>
           <div style="display:flex;align-items:center;gap:.5rem">
-            <input type="range" id="st-pagesize" min="6" max="96" step="6" style="width:90px;accent-color:var(--gold)"
+            <input type="range" id="st-pagesize" min="6" max="96" step="6" style="width:90px"
               oninput="$('st-pagesize-lbl').textContent=this.value;ST.pageSize=parseInt(this.value);saveSettings();"/>
             <span id="st-pagesize-lbl" style="font-family:'DM Mono',monospace;font-size:.65rem;color:var(--gold);min-width:24px">24</span>
           </div>
@@ -1751,7 +1761,14 @@ function saveSettings(){localStorage.setItem('obs_settings',JSON.stringify(ST));
 
 function openSM(){
   const ap=$('st-autoplay');if(ap)ap.checked=ST.autoplay!==false;
-  const ps=$('st-pagesize');if(ps){ps.value=ST.pageSize||24;$('st-pagesize-lbl').textContent=ST.pageSize||24;}
+  const ps=$('st-pagesize');
+  if(ps){
+    ps.value=ST.pageSize||24;
+    $('st-pagesize-lbl').textContent=ST.pageSize||24;
+    const setPct=el=>{const pct=((el.value-el.min)/(el.max-el.min)*100).toFixed(1)+'%';el.style.setProperty('--val',pct);};
+    setPct(ps);
+    ps.oninput=function(){$('st-pagesize-lbl').textContent=this.value;ST.pageSize=parseInt(this.value);saveSettings();setPct(this);};
+  }
   const rg=$('st-region');if(rg)rg.value=ST.region||'';
 
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===ST.theme));
@@ -2578,6 +2595,14 @@ async function openChat(friendUsername,friendData,groupId){
   if(statusEl)statusEl.textContent=groupId?`${friendData?.member_count||'?'} members`:'';
   $('chat-msgs').innerHTML=`<div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">Loading…</div>`;
   _applyLayoutOnOpen();$('chat-modal').classList.add('on');document.body.style.overflow='hidden';
+  // Silently preload group member/role data so _hasGroupPerm works from the start
+  if(groupId&&s){
+    try{
+      const gr=await fetch(`${API()}/api/groups/${groupId}?user=${s.username}&password=${encodeURIComponent(s.password)}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      const gd=await safeJson(gr)||{};
+      if(gd.group)_mlData=gd;
+    }catch{}
+  }
   try{
     const params=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
     const r=await fetch(`${API()}/api/chat/history?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&limit=80`,{mode:'cors',signal:AbortSignal.timeout(8000)});
@@ -2675,7 +2700,7 @@ async function sendMessage(){
 }
 
 async function sendMediaMsg(content,type,editId){
-  const s=getSession();if(!s||!_chatWith)return;
+  const s=getSession();if(!s||(!_chatWith&&!_chatGroupId))return;
   if(editId){
     const d=await apiCall('/api/chat/edit',{id:editId,from:s.username,password:s.password,content,media_type:type},'POST',120000);
     if(d.error){toast(d.error,'err');return;}
