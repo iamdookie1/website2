@@ -3223,30 +3223,128 @@ function renderMemberList(data){
   const myMember=members.find(m=>m.username===s.username);
   const myRolePos=myMember?.position??100;
   const isOwner=g.owner===s.username;
-  const canManage=isOwner||roles.find(r=>r.id===myMember?.role_id)?.perms?.includes?.('can_manage_roles');
+  let myPerms={};
+  try{const mr=roles.find(r=>r.id===myMember?.role_id);myPerms=JSON.parse(mr?.perms||'{}');}catch{}
+  const canManage=isOwner||myPerms.can_manage_roles;
+  const canInvite=isOwner||myPerms.can_invite||g.invite_perm==='member';
+  const gJson=JSON.stringify(g).replace(/"/g,'&quot;');
 
   body.innerHTML=`
-    <div style="display:flex;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap">
-      ${isOwner?`<button class="btn" onclick="openRoleManager(${g.id})" style="font-size:.6rem">⚙ Roles</button>`:''}
-      <button class="btn g" onclick="openInviteModal()" style="font-size:.6rem">+ Invite</button>
-      ${!isOwner?`<button class="btn" onclick="confirmLeaveGroup(${g.id})" style="font-size:.6rem;border-color:#8b2222;color:#999">Leave</button>`:''}
-      ${isOwner?`<button class="btn" onclick="openGroupChat(${g.id},${JSON.stringify(g).replace(/"/g,'&quot;')});closeMemberList()" style="font-size:.6rem">💬 Open Chat</button>`:`<button class="btn" onclick="openGroupChat(${g.id},${JSON.stringify(g).replace(/"/g,'&quot;')});closeMemberList()" style="font-size:.6rem">💬 Chat</button>`}
+    <div style="display:flex;gap:.35rem;margin-bottom:.8rem;flex-wrap:wrap">
+      <button class="btn" onclick="openGroupChat(${g.id},${gJson});closeMemberList()" style="font-size:.6rem">💬 Chat</button>
+      ${canInvite?`<button class="btn g" onclick="openInviteModal()" style="font-size:.6rem">+ Invite</button>`:''}
+      ${canManage?`<button class="btn" onclick="openRoleManager(${g.id})" style="font-size:.6rem">⚙ Roles</button>`:''}
+      ${isOwner?`<button class="btn" onclick="openGroupSettings(${g.id})" style="font-size:.6rem">✏ Settings</button>`:''}
+      ${!isOwner?`<button class="btn" onclick="confirmLeaveGroup(${g.id})" style="font-size:.6rem;border-color:#8b2222;color:#c0392b">Leave</button>`:''}
     </div>
-    <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--tm);margin-bottom:.5rem">${members.length} / ${g.max_members} members</div>
+    <div style="font-family:'DM Mono',monospace;font-size:.56rem;color:var(--tm);margin-bottom:.6rem">${members.length} / ${g.max_members} members</div>
     ${members.map(m=>{
-      const role=roles.find(r=>r.id===m.role_id)||{name:'Member',color:'#888',position:100};
-      const canAct=isOwner||(m.position>myRolePos&&canManage);
+      const role=roles.find(r=>r.id===m.role_id)||{name:'Member',color:'#888888',position:100};
+      const canAct=(isOwner||canManage)&&m.username!==s.username&&(role.position>myRolePos||isOwner);
       const ltxt=isLight(m.pfpColor||'#555')?'#080808':'#fff';
+      const isGrpOwner=g.owner===m.username;
       return`<div class="member-row">
         <div class="member-row-av" style="background:${m.pfpColor||'#555'};color:${ltxt}">${esc(m.pfpLetter||'?')}</div>
         <div style="flex:1;min-width:0">
           <span style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp)">${esc(m.display||m.username)}</span>
-          <span class="role-badge" style="background:${role.color}22;color:${role.color};border:1px solid ${role.color}44">${esc(role.name)}</span>
+          ${isGrpOwner?`<span style="font-size:.52rem;color:var(--gold);font-family:'DM Mono',monospace;margin-left:.3rem">👑 owner</span>`:`<span class="role-badge" style="background:${role.color}22;color:${role.color};border:1px solid ${role.color}44">${esc(role.name)}</span>`}
           <div style="font-family:'DM Mono',monospace;font-size:.52rem;color:var(--tm)">@${esc(m.username)}</div>
         </div>
-        ${canAct&&m.username!==s.username?`<button class="btn" onclick="kickMember(${g.id},'${esc(m.username)}')" style="font-size:.56rem;padding:.18rem .45rem;border-color:#8b2222;color:#999">Kick</button>`:''}
+        <div style="display:flex;gap:.25rem">
+          ${canManage&&!isGrpOwner&&m.username!==s.username?`<select onchange="assignRole(${g.id},'${esc(m.username)}',this.value)" style="background:var(--bg3);border:1px solid var(--bdr);color:var(--ts);font-family:'DM Mono',monospace;font-size:.52rem;padding:.1rem .25rem"><option value="">Role…</option>${roles.filter(r=>r.position>0&&r.position>(myRolePos)).map(r=>`<option value="${r.id}"${r.id===m.role_id?' selected':''}>${esc(r.name)}</option>`).join('')}</select>`:''}
+          ${canAct?`<button class="btn" onclick="kickMember(${g.id},'${esc(m.username)}')" style="font-size:.52rem;padding:.14rem .38rem;border-color:#8b2222;color:#c0392b">Kick</button>`:''}
+        </div>
       </div>`;
     }).join('')}`;
+}
+
+async function openGroupSettings(gid){
+  const data=_mlData;if(!data)return;
+  const g=data.group||{};
+  const members=data.members||[];
+  const notSelf=members.filter(m=>m.username!==getSession()?.username);
+  const transferOpts=notSelf.map(m=>`<option value="${esc(m.username)}">${esc(m.display||m.username)}</option>`).join('');
+  const body=$('ml-body');if(!body)return;
+  body.innerHTML=`
+    <div style="margin-bottom:.8rem">
+      <button class="btn" onclick="openGroupDetail(${gid})" style="font-size:.6rem;margin-bottom:.8rem">← Back to Members</button>
+      <div class="gm-label" style="margin-top:.6rem">Group Name</div>
+      <input class="cfg-inp" id="gs-name" value="${esc(g.name||'')}" style="width:100%"/>
+      <div class="gm-label">Description</div>
+      <input class="cfg-inp" id="gs-desc" value="${esc(g.description||'')}" style="width:100%"/>
+      <div class="gm-label">Avatar Letter</div>
+      <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+        <div id="gs-prev" style="width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:900;font-size:1.1rem;background:${g.avatar_color||'#C9A84C'};color:${isLight(g.avatar_color||'#C9A84C')?'#080808':'#fff'}">${esc(g.avatar_letter||'G')}</div>
+        <input class="cfg-inp" id="gs-letter" maxlength="2" value="${esc(g.avatar_letter||'G')}" style="width:50px" oninput="updateGsPreview()"/>
+        <input type="color" id="gs-color" value="${g.avatar_color||'#C9A84C'}" style="width:34px;height:28px;border:none;background:none;cursor:pointer" oninput="updateGsPreview()"/>
+      </div>
+      <div class="gm-label">Max Members (2–30)</div>
+      <input class="cfg-inp" id="gs-max" type="number" min="2" max="30" value="${g.max_members||30}" style="width:80px;margin-bottom:.5rem"/>
+      <div class="gm-label">Who can invite</div>
+      <select class="cfg-inp" id="gs-invite" style="width:100%;margin-bottom:.8rem">
+        <option value="member"${g.invite_perm==='member'?' selected':''}>All members</option>
+        <option value="admin"${g.invite_perm==='admin'?' selected':''}>Admins only</option>
+        <option value="owner"${g.invite_perm==='owner'?' selected':''}>Owner only</option>
+      </select>
+      <button class="btn g" onclick="saveGroupSettings(${gid})" style="width:100%;margin-bottom:.5rem">Save Changes</button>
+    </div>
+    <hr style="border-color:var(--bdr);margin:.8rem 0"/>
+    <div class="gm-label">Transfer Ownership</div>
+    <div style="display:flex;gap:.4rem;margin-bottom:.8rem">
+      <select class="cfg-inp" id="gs-transfer" style="flex:1">${transferOpts||'<option disabled>No members</option>'}</select>
+      <button class="btn" onclick="doTransferOwnership(${gid})" style="font-size:.6rem;flex-shrink:0">Transfer</button>
+    </div>
+    <hr style="border-color:var(--bdr);margin:.8rem 0"/>
+    <button class="btn" onclick="confirmDeleteGroup(${gid})" style="width:100%;border-color:#8b2222;color:#c0392b;font-size:.65rem">🗑 Delete Group</button>`;
+}
+
+function updateGsPreview(){
+  const color=$('gs-color')?.value||'#C9A84C';
+  const letter=($('gs-letter')?.value||'G')[0]||'G';
+  const prev=$('gs-prev');
+  if(prev){prev.style.background=color;prev.textContent=letter;prev.style.color=isLight(color)?'#080808':'#fff';}
+}
+
+async function saveGroupSettings(gid){
+  const s=getSession();if(!s)return;
+  const body={user:s.username,password:s.password};
+  const name=$('gs-name')?.value.trim();if(name)body.name=name;
+  const desc=$('gs-desc')?.value;if(desc!==undefined)body.description=desc;
+  const letter=$('gs-letter')?.value.trim();if(letter)body.avatar_letter=letter[0];
+  const color=$('gs-color')?.value;if(color)body.avatar_color=color;
+  const max=$('gs-max')?.value;if(max)body.max_members=Math.min(30,Math.max(2,parseInt(max)));
+  const inv=$('gs-invite')?.value;if(inv)body.invite_perm=inv;
+  const d=await apiCall(`/api/groups/${gid}/update`,body);
+  if(d.error){toast(d.error,'err');return;}
+  toast('Saved!','ok',2000);await openGroupDetail(gid);
+}
+
+async function doTransferOwnership(gid){
+  const target=$('gs-transfer')?.value;
+  if(!target){toast('Select a member','err');return;}
+  const confirmed=await _obsDialog({title:'Transfer Ownership',msg:`Transfer ownership to @${target}? You will become a regular member.`,icon:'👑',okLabel:'Transfer',danger:true});
+  if(!confirmed)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${gid}/transfer`,{user:s.username,password:s.password,target});
+  if(d.error){toast(d.error,'err');return;}
+  toast('Ownership transferred!','ok',3000);closeMemberList();loadUserGroups();
+}
+
+async function confirmDeleteGroup(gid){
+  const confirmed=await _obsDialog({title:'Delete Group',msg:'This will permanently delete the group and all messages. Cannot be undone.',icon:'🗑',okLabel:'Delete Forever',danger:true});
+  if(!confirmed)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${gid}/delete`,{user:s.username,password:s.password});
+  if(d.error){toast(d.error,'err');return;}
+  closeMemberList();toast('Group deleted','ok',2500);loadUserGroups();
+}
+
+async function assignRole(gid,target,roleId){
+  if(!roleId)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${gid}/assign_role`,{user:s.username,password:s.password,target,role_id:parseInt(roleId)});
+  if(d.error){toast(d.error,'err');}
+  else{toast(`Role updated`,'ok',1500);await openGroupDetail(gid);}
 }
 
 async function confirmLeaveGroup(gid){
@@ -3257,6 +3355,7 @@ async function confirmLeaveGroup(gid){
   if(d.error){toast(d.error,'err');return;}
   closeMemberList();toast('Left group','ok',2000);loadUserGroups();
 }
+
 async function kickMember(gid,target){
   const confirmed=await _obsDialog({title:'Kick Member',msg:`Remove ${target} from the group?`,icon:'🥾',okLabel:'Kick',danger:true});
   if(!confirmed)return;
@@ -3269,39 +3368,108 @@ async function kickMember(gid,target){
 let _rmGid=null;
 function openRoleManager(gid){_rmGid=gid;$('role-manager-modal').classList.add('on');renderRoleManager();}
 function closeRoleManager(){$('role-manager-modal').classList.remove('on');}
+
 function renderRoleManager(){
   const body=$('rm-body');if(!body||!_mlData)return;
   const roles=(_mlData.roles||[]).sort((a,b)=>a.position-b.position);
   const s=getSession();if(!s)return;
+  const g=_mlData.group||{};
+  const isOwner=g.owner===s.username;
   const myMember=(_mlData.members||[]).find(m=>m.username===s.username);
   const myPos=myMember?.position??100;
   const allPerms=['can_invite','can_kick','can_delete_msg','can_manage_roles','can_rename_group','can_change_desc','can_change_avatar'];
   body.innerHTML=roles.map(r=>{
     let perms={};try{perms=JSON.parse(r.perms||'{}');}catch{}
-    const canEdit=r.position>0&&r.position>myPos;
-    return`<div class="role-row">
-      <div class="role-swatch" style="background:${r.color}"></div>
-      <div style="flex:1">
-        <div style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp)">${esc(r.name)} <span style="font-size:.54rem;color:var(--tm);font-family:'DM Mono',monospace">pos:${r.position}</span></div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:.2rem">
-          ${allPerms.map(p=>`<span style="font-family:'DM Mono',monospace;font-size:.5rem;padding:.05rem .3rem;background:${perms[p]?'rgba(201,168,76,.15)':'var(--bg3)'};color:${perms[p]?'var(--gold)':'var(--tm)'};border-radius:2px">${p.replace('can_','')}</span>`).join('')}
+    const canEdit=(isOwner||r.position>myPos)&&r.position>0;
+    return`<div class="role-row" id="rolerow-${r.id}">
+      <div class="role-swatch" style="background:${r.color||'#888'}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Playfair Display',serif;font-size:.82rem;font-weight:700;color:var(--tp);display:flex;align-items:center;gap:.4rem">
+          ${esc(r.name)}
+          <span style="font-size:.52rem;color:var(--tm);font-family:'DM Mono',monospace">pos:${r.position}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:.3rem">
+          ${allPerms.map(p=>`<span style="font-family:'DM Mono',monospace;font-size:.5rem;padding:.05rem .3rem;background:${perms[p]?'rgba(201,168,76,.18)':'rgba(0,0,0,.3)'};color:${perms[p]?'var(--gold)':'var(--tm)'};border-radius:3px;cursor:${canEdit?'pointer':'default'}" ${canEdit?`onclick="togglePerm(${r.id},'${p}')"`:''}>${p.replace('can_','')}</span>`).join('')}
         </div>
       </div>
-      ${canEdit?`<button class="btn" onclick="editRole(${r.id})" style="font-size:.56rem;padding:.18rem .42rem">Edit</button>`:''}
+      <div style="display:flex;gap:.25rem;flex-shrink:0">
+        ${canEdit?`<button class="btn g" onclick="openEditRole(${r.id})" style="font-size:.52rem;padding:.14rem .38rem">Edit</button>`:''}
+        ${canEdit&&r.position!==100?`<button class="btn" onclick="deleteRole(${r.id})" style="font-size:.52rem;padding:.14rem .38rem;border-color:#8b2222;color:#c0392b">Del</button>`:''}
+      </div>
     </div>`;
   }).join('');
 }
+
 async function createRole(){
   const name=await _obsDialog({title:'New Role',msg:'Role name:',icon:'🎭',okLabel:'Create',input:true,cancelLabel:'Cancel'});
   if(!name||typeof name!=='string')return;
   const s=getSession();if(!s)return;
-  const d=await apiCall(`/api/groups/${_rmGid}/roles`,{user:s.username,password:s.password,name,position:50});
+  const d=await apiCall(`/api/groups/${_rmGid}/roles`,{user:s.username,password:s.password,name:name.trim(),position:50});
   if(d.error){toast(d.error,'err');return;}
-  toast('Role created','ok');await openGroupDetail(_rmGid);renderRoleManager();
+  toast('Role created','ok');await openGroupDetail(_rmGid);openRoleManager(_rmGid);
 }
-async function editRole(rid){
-  toast('Role editing coming soon','ok',2000);
+
+let _editRoleId=null;
+function openEditRole(rid){
+  _editRoleId=rid;
+  const body=$('rm-body');if(!body||!_mlData)return;
+  const role=(_mlData.roles||[]).find(r=>r.id===rid);if(!role)return;
+  let perms={};try{perms=JSON.parse(role.perms||'{}');}catch{}
+  const allPerms=['can_invite','can_kick','can_delete_msg','can_manage_roles','can_rename_group','can_change_desc','can_change_avatar'];
+  body.innerHTML=`
+    <button class="btn" onclick="renderRoleManager()" style="font-size:.58rem;margin-bottom:.7rem">← Back</button>
+    <div class="gm-label">Role Name</div>
+    <input class="cfg-inp" id="er-name" value="${esc(role.name)}" style="width:100%;margin-bottom:.4rem"/>
+    <div class="gm-label">Color</div>
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem">
+      <input type="color" id="er-color" value="${role.color||'#888888'}" style="width:34px;height:28px;border:none;background:none;cursor:pointer"/>
+      <span style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm)">Role colour</span>
+    </div>
+    <div class="gm-label">Position (1=highest, 99=lowest custom)</div>
+    <input class="cfg-inp" id="er-pos" type="number" min="1" max="99" value="${role.position}" style="width:80px;margin-bottom:.6rem"/>
+    <div class="gm-label">Permissions</div>
+    ${allPerms.map(p=>`
+      <div class="perm-row">
+        <span class="perm-label">${p.replace('can_','').replace(/_/g,' ')}</span>
+        <input type="checkbox" id="er-perm-${p}" ${perms[p]?'checked':''} style="cursor:pointer;accent-color:var(--gold)"/>
+      </div>`).join('')}
+    <button class="btn g" onclick="saveEditRole(${rid})" style="width:100%;margin-top:.8rem">Save Role</button>`;
 }
+
+async function saveEditRole(rid){
+  const s=getSession();if(!s)return;
+  const allPerms=['can_invite','can_kick','can_delete_msg','can_manage_roles','can_rename_group','can_change_desc','can_change_avatar'];
+  const newPerms={};
+  allPerms.forEach(p=>{newPerms[p]=!!$(`er-perm-${p}`)?.checked;});
+  const body={user:s.username,password:s.password,
+    name:$('er-name').value.trim(),
+    color:$('er-color').value,
+    position:Math.min(99,Math.max(1,parseInt($('er-pos').value)||50)),
+    perms:newPerms};
+  const d=await apiCall(`/api/groups/${_rmGid}/roles/${rid}`,body);
+  if(d.error){toast(d.error,'err');return;}
+  toast('Role saved!','ok',1500);await openGroupDetail(_rmGid);openRoleManager(_rmGid);
+}
+
+async function togglePerm(rid,perm){
+  const role=(_mlData?.roles||[]).find(r=>r.id===rid);if(!role)return;
+  const s=getSession();if(!s)return;
+  let perms={};try{perms=JSON.parse(role.perms||'{}');}catch{}
+  perms[perm]=!perms[perm];
+  const d=await apiCall(`/api/groups/${_rmGid}/roles/${rid}`,{user:s.username,password:s.password,perms});
+  if(d.error){toast(d.error,'err');return;}
+  role.perms=JSON.stringify(perms);renderRoleManager();
+}
+
+async function deleteRole(rid){
+  const confirmed=await _obsDialog({title:'Delete Role',msg:'Members with this role will be set to Member.',icon:'🗑',okLabel:'Delete',danger:true});
+  if(!confirmed)return;
+  const s=getSession();if(!s)return;
+  const d=await apiCall(`/api/groups/${_rmGid}/roles/${rid}/delete`,{user:s.username,password:s.password});
+  if(d.error){toast(d.error,'err');return;}
+  toast('Role deleted','ok',1500);await openGroupDetail(_rmGid);openRoleManager(_rmGid);
+}
+
 
 let _invGid=null,_invSelected=new Set();
 function openInviteModal(){
