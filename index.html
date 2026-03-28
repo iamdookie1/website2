@@ -3454,7 +3454,6 @@ document.addEventListener('contextmenu',e=>{
   ]);
 },{passive:false});
 
-let _updatePoll=null,_lastUpdateTs=0;
 async function pollChatUpdates(friendUsername,friendData){
   const s=getSession();if(!s||_chatWith!==friendUsername)return;
   try{
