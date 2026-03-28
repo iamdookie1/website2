@@ -3213,7 +3213,7 @@ async function checkBroadcast(){
           ts:(n.time||0)*1000,
           action:()=>{switchView('friends');}});
         showBroadcast(`📣 ${n.fromDisplay||n.from} mentioned you: "${n.content}"`,10);
-      }
+      }else if(n.type==='group_invite'){
         addNotif({type:'group_invite',from:n.from,fromDisplay:n.fromDisplay||n.from,
           fromColor:n.fromPfpColor||'#C9A84C',fromLetter:n.fromPfpLetter||'G',
           text:`Invited to group: ${n.group_name||'a group'}`,ts:(n.time||0)*1000,
