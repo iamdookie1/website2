@@ -1679,7 +1679,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
       <div class="chat-foot-row">
         <button class="chat-ico" id="chat-plus-btn" onclick="toggleAttachMenu()" title="Attach">＋</button>
         <textarea class="chat-inp" id="chat-inp" placeholder="Message…  *italic*  **bold**  # heading"
-          onkeydown="chatKeyDown(event)" rows="1" oninput="autoResizeChatInp(this)"></textarea>
+          onkeydown="chatKeyDown(event)" rows="1" oninput="onChatInput(this)"></textarea>
         <button class="chat-ico" id="chat-emoji-btn" onclick="toggleChatEmoji()" title="Emoji">😊</button>
         <button class="chat-send" id="chat-send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
       </div>
@@ -2279,8 +2279,20 @@ function renderMsg(msg,myUsername,_,friendData){
   const deleted=msg.deleted===1||msg.content==='[Message deleted]';
   let content='';
   if(deleted)content='<em style="opacity:.5">[Message deleted]</em>';
-  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia('${esc(msg.content)}','image')" referrerpolicy="no-referrer"/>`;
-  else if(msg.mtype==='gif')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia('${esc(msg.content)}','gif')" style="cursor:pointer" referrerpolicy="no-referrer"/>`;
+  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia(this.src,'image')" referrerpolicy="no-referrer"/>`;
+  else if(msg.mtype==='gif'){
+    /* Use <video autoplay loop muted> for GIFs — more efficient, plays instantly, no flicker */
+    const s=msg.content;
+    /* If it's a data URI (uploaded), use as video src — browsers can handle gif data URIs in video */
+    /* If it's a URL, check if it ends in .gif or is a known gif host */
+    const isDataUri=s.startsWith('data:');
+    if(isDataUri||s.match(/\.gif(\?|$)/i)||s.includes('giphy')||s.includes('tenor')){
+      content=`<video class="chat-gif" src="${esc(s)}" autoplay loop muted playsinline
+        onclick="openChatMedia('${esc(s)}','gif')" style="cursor:pointer;max-width:100%;max-height:260px;display:block;border-radius:6px;margin-top:.3rem;border:1px solid var(--bdr)"></video>`;
+    }else{
+      content=`<img class="chat-img" src="${esc(s)}" loading="lazy" onclick="openChatMedia(this.src,'gif')" referrerpolicy="no-referrer"/>`;
+    }
+  }
   else if(msg.mtype==='video'){const u=msg.content;content=u.match(/\.(mp4|webm|mov|m3u8)(\?|$)/i)
       ?`<div class="chat-vid-thumb" onclick="openChatMedia('${esc(u)}','video')" title="Play video">
           <video src="${esc(u)}" preload="metadata" style="max-width:100%;max-height:220px;display:block;border-radius:6px;pointer-events:none;border:1px solid var(--bdr)"></video>
@@ -2382,6 +2394,16 @@ async function openChat(friendUsername,friendData){
   $('chat-inp').focus();
 }
 
+function closeChat(){
+  clearInterval(_chatPoll);clearInterval(_updatePoll);
+  _chatPoll=null;_updatePoll=null;_chatWith=null;
+  stopTyping();
+  const status=$('chat-hdr-status');if(status)status.textContent='';
+  cancelEdit();clearReply();
+  toggleChatEmoji(true);closeAttachMenu();hideUrlInput();
+  $('chat-modal').classList.remove('on');document.body.style.overflow='';
+}
+
 function renderChatHistory(msgs,myUsername,friendData){
   const el=$('chat-msgs');if(!el)return;
   el.innerHTML='';
@@ -2400,6 +2422,26 @@ function renderChatHistory(msgs,myUsername,friendData){
   });
   el.scrollTop=el.scrollHeight;
 }
+  const el=$('chat-msgs');if(!el)return;
+  el.innerHTML='';
+  if(!msgs.length){
+    el.innerHTML=`<div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+  let lastDay='';
+  msgs.forEach(msg=>{
+    const day=fmtDay(msg.ts);
+    if(day!==lastDay){
+      const sep=document.createElement('div');sep.className='chat-day';sep.textContent=day;
+      el.appendChild(sep);lastDay=day;
+    }
+    el.appendChild(renderMsg(msg,myUsername,null,friendData));
+  });
+  el.scrollTop=el.scrollHeight;
+}
+
+/* ── Sent message IDs — prevents poll from adding duplicates ── */
+const _sentIds=new Set();
 
 async function sendMessage(){
   const s=getSession();if(!s||!_chatWith)return;
@@ -2411,7 +2453,6 @@ async function sendMessage(){
     if(el){
       const b=el.querySelector('.msg-bubble');
       if(b){
-        /* Update content nodes only */
         const rp=b.querySelector('.msg-reply-preview');
         const reacts=b.querySelector('.msg-reacts');
         [...b.childNodes].forEach(n=>{if(n!==rp&&n!==reacts)b.removeChild(n);});
@@ -2421,290 +2462,73 @@ async function sendMessage(){
       }
       if(window._msgCache[_editingId])window._msgCache[_editingId].content=text;
     }
-    cancelEdit();inp.value='';inp.style.height='36px';
+    cancelEdit();inp.value='';inp.style.height='34px';
     return;
   }
-  inp.value='';inp.style.height='36px';
+  inp.value='';inp.style.height='34px';
   $('chat-send-btn').disabled=true;
+  stopTyping();
   const body={from:s.username,password:s.password,to:_chatWith,content:text,type:'text'};
   if(_replyTo){body.reply_to=_replyTo.id;}
+  /* Optimistic render */
+  const nowTs=Date.now();
+  const fakeMsg={id:'p'+nowTs,sender:s.username,content:text,mtype:'text',
+    ts:nowTs,reply_to:_replyTo?.id||null,reactions:'{}',edited:0,deleted:0};
+  const msgEl=$('chat-msgs');
+  const wasBot=msgEl.scrollHeight-msgEl.scrollTop-msgEl.clientHeight<80;
+  const fakeRow=renderMsg(fakeMsg,s.username,null,window._friendCache);
+  fakeRow.style.opacity='.65';fakeRow.style.transition='opacity .3s';
+  msgEl.appendChild(fakeRow);
+  if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+  clearReply();
   const d=await apiCall('/api/chat/send',body);
   $('chat-send-btn').disabled=false;
-  if(d.error){toast(d.error,'err');inp.value=text;return;}
-  clearReply();
+  if(d.error){fakeRow.remove();inp.value=text;toast(d.error,'err');return;}
+  fakeRow.remove();
+  if(d.id)_sentIds.add(d.id);
+  if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
+  inp.focus();
 }
 
 async function sendMediaMsg(content,type,editId){
   const s=getSession();if(!s||!_chatWith)return;
-  /* Use a long timeout — base64 media can be large and tunnels can be slow */
   if(editId){
-    /* Replacing media on an existing message */
     const d=await apiCall('/api/chat/edit',{id:editId,from:s.username,password:s.password,content,media_type:type},'POST',120000);
     if(d.error){toast(d.error,'err');return;}
-    /* Update DOM in place */
     const el=document.querySelector(`[data-msg-id="${editId}"]`);
     if(el){
       const b=el.querySelector('.msg-bubble');if(!b)return;
-      let newContent='';
-      if(type==='image')newContent=`<img class="chat-img" src="${content}" loading="lazy" onclick="openChatMedia('${content}','image')" referrerpolicy="no-referrer"/>`;
-      else if(type==='gif')newContent=`<img class="chat-img" src="${content}" loading="lazy" onclick="openChatMedia('${content}','gif')" style="cursor:pointer" referrerpolicy="no-referrer"/>`;
-      else if(type==='video')newContent=`<div class="chat-vid-thumb" onclick="openChatMedia('${content}','video')"><video src="${content}" preload="metadata" style="max-width:100%;max-height:220px;display:block;border-radius:6px;pointer-events:none;border:1px solid var(--bdr)"></video><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(0,0,0,.3)"><div style="width:48px;height:48px;border-radius:50%;background:rgba(201,168,76,.9);display:flex;align-items:center;justify-content:center;font-size:1.4rem;padding-left:4px">▶</div></div></div>`;
-      const rp=b.querySelector('.msg-reply-preview');
-      const reacts=b.querySelector('.msg-reacts');
+      let nc='';
+      if(type==='image')nc=`<img class="chat-img" src="${esc(content)}" loading="lazy" onclick="openChatMedia(this.src,'image')" referrerpolicy="no-referrer"/>`;
+      else if(type==='gif')nc=`<video class="chat-gif" src="${esc(content)}" autoplay loop muted playsinline onclick="openChatMedia(this.src,'gif')" style="cursor:pointer"></video>`;
+      else nc=`<div class="chat-vid-thumb" onclick="openChatMedia('${esc(content)}','video')"><video src="${esc(content)}" preload="metadata" style="max-width:100%;max-height:220px;display:block;border-radius:6px;pointer-events:none;border:1px solid var(--bdr)"></video><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(0,0,0,.3)"><div style="width:48px;height:48px;border-radius:50%;background:rgba(201,168,76,.9);display:flex;align-items:center;justify-content:center;font-size:1.4rem;padding-left:4px">&#9654;</div></div></div>`;
+      const rp=b.querySelector('.msg-reply-preview');const reacts=b.querySelector('.msg-reacts');
       [...b.childNodes].forEach(n=>{if(n!==rp&&n!==reacts)b.removeChild(n);});
-      const span=document.createElement('span');span.innerHTML=newContent;
+      const span=document.createElement('span');span.innerHTML=nc;
       rp?rp.after(span):b.prepend(span);
       if(window._msgCache[editId]){window._msgCache[editId].content=content;window._msgCache[editId].mtype=type;}
     }
-    toast('Media updated','ok');
-    cancelEdit();
-    return;
+    toast('Media updated','ok');cancelEdit();return;
   }
+  const nowTs=Date.now();
+  const fakeMsg={id:'p'+nowTs,sender:s.username,content,mtype:type,
+    ts:nowTs,reply_to:_replyTo?.id||null,reactions:'{}',edited:0,deleted:0};
+  const msgEl=$('chat-msgs');
+  const wasBot=msgEl.scrollHeight-msgEl.scrollTop-msgEl.clientHeight<80;
+  const fakeRow=renderMsg(fakeMsg,s.username,null,window._friendCache);
+  fakeRow.style.opacity='.65';
+  msgEl.appendChild(fakeRow);
+  if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+  clearReply();
   const body={from:s.username,password:s.password,to:_chatWith,content,type};
   if(_replyTo){body.reply_to=_replyTo.id;}
   const d=await apiCall('/api/chat/send',body,'POST',120000);
-  if(d.error)toast(d.error,'err');
-  else clearReply();
+  if(d.error){fakeRow.remove();toast(d.error,'err');return;}
+  fakeRow.remove();
+  if(d.id)_sentIds.add(d.id);
+  if(d.ts&&d.ts>_chatLastTs)_chatLastTs=d.ts;
 }
 
-/* ══════════════════════════════════════════════════════════
-   CHAT LAYOUT
-══════════════════════════════════════════════════════════ */
-function applyChatLayout(layout){
-  ST.chatLayout=layout;saveSettings();
-  /* Update chips */
-  document.querySelectorAll('[data-cl]').forEach(c=>c.classList.toggle('on',c.dataset.cl===layout));
-  /* Apply to open chat immediately */
-  const modal=$('chat-modal');
-  modal.classList.remove('layout-sidebar','layout-full');
-  if(layout==='sidebar')modal.classList.add('layout-sidebar');
-  else if(layout==='full')modal.classList.add('layout-full');
-}
-function cycleChatLayout(){
-  const order=['modal','sidebar','full'];
-  const next=order[(order.indexOf(ST.chatLayout||'modal')+1)%order.length];
-  applyChatLayout(next);
-  toast(`Chat: ${next}`,'ok',1200);
-}
-function _applyLayoutOnOpen(){
-  const modal=$('chat-modal');
-  modal.classList.remove('layout-sidebar','layout-full');
-  if(ST.chatLayout==='sidebar')modal.classList.add('layout-sidebar');
-  else if(ST.chatLayout==='full')modal.classList.add('layout-full');
-}
-
-/* ══════════════════════════════════════════════════════════
-   INLINE ATTACH MENU
-══════════════════════════════════════════════════════════ */
-function toggleAttachMenu(){
-  const m=$('chat-attach-menu');
-  const ep=$('chat-emoji-panel');
-  ep.classList.remove('on');
-  m.classList.toggle('on');
-}
-function closeAttachMenu(){$('chat-attach-menu')?.classList.remove('on');}
-
-function showUrlInput(){
-  closeAttachMenu();
-  const bar=$('chat-url-bar');bar.style.display='flex';
-  $('chat-url-inp').focus();
-}
-function hideUrlInput(){
-  const bar=$('chat-url-bar');bar.style.display='none';
-  $('chat-url-inp').value='';
-}
-function sendUrlMedia(){
-  const url=$('chat-url-inp').value.trim();
-  if(!url){toast('Enter a URL','err');return;}
-  const isVid=url.match(/\.(mp4|webm|mov|m3u8)(\?|$)/i);
-  const isGif=url.match(/\.gif(\?|$)/i)||url.includes('giphy')||url.includes('tenor');
-  const type=isVid?'video':isGif?'gif':'image';
-  const editId=_editingId||null;
-  sendMediaMsg(url,type,editId);
-  hideUrlInput();
-  if(editId)cancelEdit();
-}
-
-function handleMediaFile(e){
-  const file=e.target.files?.[0];
-  const editId=e.target.dataset.editId?parseInt(e.target.dataset.editId):null;
-  e.target.value='';
-  if(!file)return;
-  closeAttachMenu();
-  if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
-  if(file.type.startsWith('image/')&&file.type!=='image/gif'){
-    _compressAndSend(file,editId);
-  }else{
-    const reader=new FileReader();
-    const type=file.type.startsWith('video/')?'video':file.type==='image/gif'?'gif':'image';
-    reader.onload=ev=>sendMediaMsg(ev.target.result,type,editId);
-    reader.readAsDataURL(file);
-  }
-  if(editId)cancelEdit();
-}
-function handleVideoFile(e){handleMediaFile(e);}
-
-function _compressAndSend(file,editId){
-  const img=new Image();
-  const url=URL.createObjectURL(file);
-  img.onload=()=>{
-    URL.revokeObjectURL(url);
-    const MAX=1400;
-    let w=img.width,h=img.height;
-    if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
-    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
-    canvas.toBlob(blob=>{
-      const reader=new FileReader();
-      reader.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);
-      reader.readAsDataURL(blob||file);
-    },'image/webp',0.85);
-  };
-  img.onerror=()=>{/* fallback */const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r.readAsDataURL(file);};
-  img.src=url;
-}
-
-/* ══════════════════════════════════════════════════════════
-   INLINE EMOJI PANEL  (inside .chat-box — no z-index issues)
-══════════════════════════════════════════════════════════ */
-const CEP_CATS={
-  '😊':['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😋','😛','😜','😝','🤑','🤗','🤭','🤔','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','😷','🤒','🤕','🤢','🤧','🥵','🥶','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡'],
-  '👋':['👋','🤚','🖐️','✋','🖖','👌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','💪','🫶','🫂','👀','💅','🤳'],
-  '❤️':['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️','❤️‍🔥','❤️‍🩹','🩷','🩵','🩶'],
-  '🎮':['🎮','🎲','🎯','🎳','🎰','🎱','🏆','🥇','🎖️','🎪','🎭','🎨','🎬','🎤','🎧','🎼','🎵','🎶','🎷','🎸','🎹','🎺','🎻','🥁','🎙️','📻','📺','📷','🎥'],
-  '🍔':['🍎','🍊','🍋','🍇','🍓','🍒','🍑','🥭','🍍','🥥','🍅','🥑','🥦','🌽','🌶️','🧄','🥕','🍔','🍟','🍕','🌮','🌯','🍜','🍝','🍣','🍱','🍤','🎂','🍰','🧁','🍫','🍬','🍭','🍺','🍷','🥂','☕','🍵','🧃'],
-  '✈️':['✈️','🚗','🚕','🚙','🚌','🏎️','🚓','🚑','🚒','🚲','🛵','🏍️','🚢','⛵','🚁','🛸','🌍','🌎','🌏','🗺️','🏔️','🌋','🏕️','🏖️','🏝️','🏛️','🏰','🗼','🗽','⛩️','🕌','🕍'],
-  '#️⃣':['✅','❎','⭕','❌','❓','❗','💯','⚠️','🚫','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🔔','🔕','🎵','🔥','💫','⭐','🌟','💥','🔮','💎','🏳️','🏴','🚩','🎌'],
-};
-const CEP_RECENT_KEY='obs_ep_recent';
-let _cepForReaction=null; /* {msgId} if opened for reaction, else null */
-
-function _cepLoadRecent(){try{return JSON.parse(localStorage.getItem(CEP_RECENT_KEY)||'[]');}catch{return[];}}
-function _cepSaveRecent(e){
-  let r=_cepLoadRecent().filter(x=>x!==e);
-  r.unshift(e);localStorage.setItem(CEP_RECENT_KEY,JSON.stringify(r.slice(0,24)));
-}
-
-function _buildCepQuick(){
-  const quick=['👍','❤️','😂','😮','😢','🔥','💯','🎉','😍','🙌','💀','✅'];
-  $('cep-quick').innerHTML=quick.map(e=>`<button class="cep-qe" onclick="_cepPick('${e}')">${e}</button>`).join('');
-}
-function _buildCepTabs(){
-  const cats=Object.keys(CEP_CATS);
-  $('cep-tabs').innerHTML=cats.map((c,i)=>
-    `<button class="cep-tab${i===0?' on':''}" onclick="_cepShowCat('${c}',this)" title="${c}">${c}</button>`
-  ).join('');
-  _cepShowCat(cats[0]);
-}
-function _cepShowCat(cat,btn){
-  document.querySelectorAll('.cep-tab').forEach(t=>t.classList.remove('on'));
-  btn?.classList.add('on');
-  _cepRenderGrid(CEP_CATS[cat]||[]);
-}
-function _cepRenderGrid(emojis){
-  $('cep-grid').innerHTML=emojis.map(e=>`<button class="cep-emoji" onclick="_cepPick('${e}')">${e}</button>`).join('');
-}
-function cepFilter(q){
-  if(!q.trim()){_cepShowCat(Object.keys(CEP_CATS)[0]);return;}
-  const all=[..._cepLoadRecent(),...Object.values(CEP_CATS).flat()];
-  const uniq=[...new Set(all)];
-  _cepRenderGrid(uniq.slice(0,64)); /* show all on any search — emoji search by feel */
-}
-function _cepPick(e){
-  _cepSaveRecent(e);
-  if(_cepForReaction!=null){
-    toggleReact(_cepForReaction,e);
-    _cepForReaction=null;
-  }else{
-    const inp=$('chat-inp');if(!inp)return;
-    /* Insert at cursor */
-    const s=inp.selectionStart,en=inp.selectionEnd;
-    inp.value=inp.value.slice(0,s)+e+inp.value.slice(en);
-    inp.selectionStart=inp.selectionEnd=s+[...e].length;
-    inp.focus();autoResizeChatInp(inp);
-  }
-  toggleChatEmoji(true); /* close */
-}
-
-function toggleChatEmoji(forceClose){
-  const ep=$('chat-emoji-panel');
-  const am=$('chat-attach-menu');
-  am.classList.remove('on');
-  if(forceClose===true){ep.classList.remove('on');return;}
-  const opening=!ep.classList.contains('on');
-  ep.classList.toggle('on');
-  if(opening){
-    _cepForReaction=null;
-    _buildCepQuick();
-    _buildCepTabs();
-    $('cep-search').value='';
-    setTimeout(()=>$('cep-search').focus(),60);
-  }
-}
-function openReactionPicker(msgId){
-  _cepForReaction=msgId;
-  const ep=$('chat-emoji-panel');
-  $('chat-attach-menu').classList.remove('on');
-  ep.classList.add('on');
-  _buildCepQuick();_buildCepTabs();$('cep-search').value='';
-}
-
-/* Close panels when clicking outside chat-foot */
-document.addEventListener('click',e=>{
-  if(!e.target.closest('.chat-foot')){
-    $('chat-attach-menu')?.classList.remove('on');
-    $('chat-emoji-panel')?.classList.remove('on');
-  }
-},{passive:true});
-
-function chatKeyDown(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
-  if(e.key==='Escape'){
-    if($('chat-emoji-panel')?.classList.contains('on')){toggleChatEmoji(true);return;}
-    if($('chat-attach-menu')?.classList.contains('on')){closeAttachMenu();return;}
-    if(_editingId){cancelEdit();return;}
-    if(_replyTo){clearReply();return;}
-  }
-}
-function autoResizeChatInp(el){
-  if(!el)return;
-  el.style.height='34px';el.style.height=Math.min(el.scrollHeight,110)+'px';
-}
-function updateFriendUnread(username){
-  const n=_unread[username]||0;
-  const badge=document.querySelector(`[data-chat-unread="${username}"]`);
-  if(!badge)return;
-  badge.textContent=n>9?'9+':n||'';
-  badge.classList.toggle('on',n>0);
-}
-/* Kept for compat */
-function toggleMediaPop(){toggleAttachMenu();}
-function openMediaModal(){toggleAttachMenu();}
-function closeMediaModal(){}
-function openChatEmoji(){toggleChatEmoji();}
-async function promptGif(){
-  const url=await _obsDialog({title:'Add GIF / Video',msg:'Paste a URL:',icon:'🎞',okLabel:'Send',input:true,cancelLabel:'Cancel'});
-  if(!url||typeof url!=='string')return;
-  const isVid=url.match(/\.(mp4|webm|mov)(\?|$)/i);
-  sendMediaMsg(url.trim(),isVid?'video':'gif');
-}
-
-function updateFriendUnread(username){
-  const n=_unread[username]||0;
-  const badge=document.querySelector(`[data-chat-unread="${username}"]`);
-  if(!badge)return;
-  badge.textContent=n>9?'9+':n||'';
-  badge.classList.toggle('on',n>0);
-}
-
-function closeChat(){
-  clearInterval(_chatPoll);clearInterval(_updatePoll);
-  _chatPoll=null;_updatePoll=null;_chatWith=null;
-  cancelEdit();clearReply();
-  $('chat-modal').classList.remove('on');document.body.style.overflow='';
-}
-
-/* Updated pollNewMessages — feeds notifications */
 async function pollNewMessages(friendUsername,friendData){
   const s=getSession();if(!s||_chatWith!==friendUsername)return;
   try{
@@ -2713,10 +2537,17 @@ async function pollNewMessages(friendUsername,friendData){
     _chatLastTs=msgs[msgs.length-1].ts;
     const el=$('chat-msgs');if(!el)return;
     const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
-    msgs.forEach(msg=>{el.appendChild(renderMsg(msg,s.username,null,friendData));});
+    msgs.forEach(msg=>{
+      if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;} /* skip our optimistic */
+      if(document.querySelector(`[data-msg-id="${msg.id}"]`))return; /* already rendered */
+      el.appendChild(renderMsg(msg,s.username,null,friendData));
+    });
     if(wasBottom)el.scrollTop=el.scrollHeight;
+    /* Poll typing */
+    pollTyping(friendUsername);
   }catch{}
 }
+
 
 /* ── Updated checkNotifications: feeds addNotif ── */
 async function checkNotifications(){
@@ -2818,6 +2649,57 @@ document.addEventListener('keydown',e=>{
 
 /* ── Emoji button in chat footer ── */
 function openChatEmoji(btn){openEmojiPicker('message',null,btn||$('chat-send-btn'));}
+
+/* ══════════════════════════════════════════════════════════
+   TYPING INDICATOR
+══════════════════════════════════════════════════════════ */
+let _typingTimer=null,_isTyping=false;
+function onChatInput(el){
+  if(el)autoResizeChatInp(el);
+  if(!_chatWith||!S.serverOk)return;
+  if(!_isTyping){_isTyping=true;_sendTyping();}
+  clearTimeout(_typingTimer);
+  _typingTimer=setTimeout(stopTyping,3500);
+}
+function autoResizeChatInp(el){
+  if(!el)return;
+  el.style.height='34px';
+  el.style.height=Math.min(el.scrollHeight,110)+'px';
+}
+function chatKeyDown(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+  if(e.key==='Escape'){
+    if($('chat-emoji-panel')?.classList.contains('on')){toggleChatEmoji(true);return;}
+    if($('chat-attach-menu')?.classList.contains('on')){closeAttachMenu();return;}
+    if(_editingId){cancelEdit();return;}
+    if(_replyTo){clearReply();return;}
+  }
+}
+function stopTyping(){clearTimeout(_typingTimer);_isTyping=false;}
+async function _sendTyping(){
+  const s=getSession();if(!s||!_chatWith)return;
+  try{
+    await fetch(`${API()}/api/chat/typing`,{method:'POST',mode:'cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({from:s.username,password:s.password,to:_chatWith}),
+      signal:AbortSignal.timeout(3000)});
+  }catch{}
+  if(_isTyping)setTimeout(()=>{if(_isTyping)_sendTyping();},3000);
+}
+async function pollTyping(friendUsername){
+  const s=getSession();if(!s||!S.serverOk)return;
+  try{
+    const r=await fetch(`${API()}/api/chat/typing?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}`,{mode:'cors',signal:AbortSignal.timeout(3000)});
+    const d=await safeJson(r)||{};
+    const typers=d.typing||[];
+    const status=$('chat-hdr-status');if(!status)return;
+    if(typers.length){
+      const p=window._friendProfileCache?.[friendUsername]||{};
+      const name=p.display||friendUsername;
+      status.innerHTML=`<span style="color:var(--gold)">${esc(name)} is typing<span style="animation:blink 1s infinite;display:inline-block">…</span></span>`;
+    }else{status.textContent='';}
+  }catch{}
+}
 
 /* ══════════════════════════════════════════════════════════
    NOTIFICATION CENTER
@@ -2971,19 +2853,61 @@ function switchMediaTab(t){
 }
 function handleMediaDrop(e){
   e.preventDefault();const dd=$('media-drop');if(dd)dd.classList.remove('drag-over');
-  processMediaFile(e.dataTransfer.files?.[0]);
+  const file=e.dataTransfer.files?.[0];
+  if(file)handleMediaFile({target:{files:[file],value:'',dataset:{}}});
 }
+
+function handleMediaFile(e){
+  const file=e.target.files?.[0];
+  const editId=e.target.dataset?.editId?parseInt(e.target.dataset.editId):null;
+  if(e.target.value!==undefined)e.target.value='';
+  if(!file)return;
+  closeAttachMenu();
+  if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
+  /* GIFs over 1MB: steer to URL — base64 of animated GIFs times out */
+  if(file.type==='image/gif'&&file.size>1024*1024){
+    toast('GIF too big to upload — paste a Giphy/Tenor URL instead','err',4500);
+    showUrlInput();return;
+  }
+  if(file.type.startsWith('image/')&&file.type!=='image/gif'){
+    _compressAndSend(file,editId);
+  }else{
+    const reader=new FileReader();
+    const type=file.type.startsWith('video/')?'video':file.type==='image/gif'?'gif':'image';
+    reader.onload=ev=>sendMediaMsg(ev.target.result,type,editId);
+    reader.onerror=()=>toast('Could not read file','err');
+    reader.readAsDataURL(file);
+  }
+  if(editId)cancelEdit();
+}
+
+function handleVideoFile(e){handleMediaFile(e);}
+
+function _compressAndSend(file,editId){
+  const img=new Image();
+  const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    const MAX=1400;
+    let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r);}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    canvas.toBlob(blob=>{
+      const r=new FileReader();
+      r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);
+      r.onerror=()=>{/* fallback raw */const r2=new FileReader();r2.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r2.readAsDataURL(file);};
+      r.readAsDataURL(blob||file);
+    },'image/webp',0.85);
+  };
+  img.onerror=()=>{const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r.readAsDataURL(file);};
+  img.src=url;
+}
+
+/* Legacy media modal compat */
 function processMediaFile(file){
   if(!file)return;
-  if(file.size>25*1024*1024){toast('File too large (max 25MB)','err');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const type=file.type.startsWith('image/gif')?'gif':file.type.startsWith('video/')?'video':'image';
-    sendMediaMsg(ev.target.result,type);
-    closeMediaModal();
-    toast('Media sent ✓','ok');
-  };
-  reader.readAsDataURL(file);
+  handleMediaFile({target:{files:[file],value:'',dataset:{}}});
 }
 function sendMediaFromModal(){
   const url=$('media-url-inp')?.value.trim();
@@ -2991,6 +2915,7 @@ function sendMediaFromModal(){
   sendMediaMsg(url,_mediaType);
   closeMediaModal();
 }
+
 
 /* ══════════════════════════════════════════════════════════
    CUSTOM CONTEXT MENU
