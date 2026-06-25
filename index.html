@@ -46,6 +46,34 @@
   --ov:rgba(18,13,9,.97);
 }
 
+[data-theme=red]{
+  --bg0:#0D0101;--bg1:#160303;--bg2:#200505;--bg3:#2B0808;--sf:#180404;
+  --bdr:rgba(210,40,40,.18);--tp:#F5DADA;--ts:#B06060;--tm:#6A3A3A;
+  --gold:#E03535;--gold-d:#A01818;--gold-g:rgba(220,40,40,.2);
+  --ov:rgba(13,1,1,.97);
+}
+
+[data-theme=blue]{
+  --bg0:#01060E;--bg1:#030D1A;--bg2:#051426;--bg3:#091C33;--sf:#040B16;
+  --bdr:rgba(40,100,220,.18);--tp:#D8E8FA;--ts:#5888C8;--tm:#3A5278;
+  --gold:#3A8EE0;--gold-d:#1A58A8;--gold-g:rgba(50,110,220,.2);
+  --ov:rgba(1,6,14,.97);
+}
+
+[data-theme=rose]{
+  --bg0:#0E0107;--bg1:#18040F;--bg2:#230617;--bg3:#2E0A20;--sf:#1A0512;
+  --bdr:rgba(210,50,110,.18);--tp:#F5D8EA;--ts:#B05880;--tm:#6A3858;
+  --gold:#D83A80;--gold-d:#9E1A52;--gold-g:rgba(218,50,120,.2);
+  --ov:rgba(14,1,7,.97);
+}
+
+[data-theme=pink]{
+  --bg0:#0E030A;--bg1:#18060F;--bg2:#240A18;--bg3:#300E22;--sf:#1C0812;
+  --bdr:rgba(240,80,170,.18);--tp:#FFE0F2;--ts:#CC70AA;--tm:#884068;
+  --gold:#FF5BB5;--gold-d:#CC2880;--gold-g:rgba(255,90,180,.2);
+  --ov:rgba(14,3,10,.97);
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
 body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp);min-height:100vh;overflow-x:hidden;transition:background .4s,color .4s;}
@@ -731,6 +759,23 @@ input[type=range]::-moz-range-progress{background:var(--gold);height:4px;border-
 input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 0 0 3px var(--gold-d);}
 input[type=range]:active::-webkit-slider-thumb{transform:scale(1.1);}
 @media(max-width:480px){input[type=range]::-webkit-slider-thumb{width:22px;height:22px;}input[type=range]::-moz-range-thumb{width:22px;height:22px;}}
+
+/* Voice message recording bar */
+.vm-bar{display:none;align-items:center;gap:.5rem;padding:.36rem .75rem;border-top:1px solid var(--bdr);background:var(--bg0);}
+.vm-bar.on{display:flex;animation:tIn .2s ease;}
+.vm-rec{width:9px;height:9px;border-radius:50%;background:#E74C3C;flex-shrink:0;animation:blink .75s ease infinite;}
+.vm-timer{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--ts);min-width:34px;}
+.vm-label{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--tm);flex:1;}
+.vm-warn{font-family:'DM Mono',monospace;font-size:.54rem;color:#E74C3C;display:none;}
+.vm-cancel{padding:.24rem .56rem;background:transparent;border:1px solid var(--bdr);color:var(--tm);font-family:'DM Mono',monospace;font-size:.56rem;cursor:pointer;transition:all .15s;}
+.vm-cancel:hover{border-color:#E74C3C;color:#E74C3C;}
+.vm-send{padding:.24rem .72rem;background:var(--gold);border:none;color:#080808;font-family:'DM Mono',monospace;font-size:.58rem;font-weight:700;cursor:pointer;transition:background .15s;}
+.vm-send:hover{background:var(--gold-d);}
+/* Audio message bubble */
+.chat-audio{display:flex;align-items:center;gap:.5rem;padding:.3rem 0;}
+.chat-audio audio{width:190px;height:30px;outline:none;border-radius:4px;opacity:.92;}
+.chat-audio-icon{font-size:.9rem;flex-shrink:0;}
+.chat-mic-active{color:#E74C3C!important;border-color:#E74C3C!important;}
 
 .tbox{position:fixed;bottom:1.6rem;right:1.6rem;display:flex;flex-direction:column;gap:.42rem;z-index:9999;}
 .tst{padding:.52rem .95rem;background:var(--bg2);border:1px solid var(--bdr);border-left:3px solid var(--gold);font-family:'DM Mono',monospace;font-size:.64rem;color:var(--ts);letter-spacing:.05em;animation:tIn .28s ease;min-width:205px;display:flex;align-items:center;gap:.48rem;}
@@ -1462,6 +1507,10 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
             <button class="theme-chip" data-t="dim"     onclick="applyTheme('dim')"   title="Dimmed blue-grey">🌒 Dim</button>
             <button class="theme-chip" data-t="mocha"   onclick="applyTheme('mocha')" title="Warm cinema brown">☕ Mocha</button>
             <button class="theme-chip" data-t="light"   onclick="applyTheme('light')" title="Light">☀ Light</button>
+            <button class="theme-chip" data-t="red"     onclick="applyTheme('red')"   title="Crimson red">🔴 Red</button>
+            <button class="theme-chip" data-t="blue"    onclick="applyTheme('blue')"  title="Deep blue">🔵 Blue</button>
+            <button class="theme-chip" data-t="rose"    onclick="applyTheme('rose')"  title="Rose">🌹 Rose</button>
+            <button class="theme-chip" data-t="pink"    onclick="applyTheme('pink')"  title="Hot pink">🩷 Pink</button>
           </div>
         </div>
         <div class="sm-row">
@@ -1513,6 +1562,12 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);line-height:1.9;padding:.2rem 0">
           Server URL is fetched automatically from GitHub on every load.<br/>
           Update <code style="color:var(--gold)">website-api-link</code> on your repo and it updates for everyone.<br/>
+        </div>
+        <div style="margin-top:.5rem">
+          <input class="cfg-inp" id="sm-url" type="url" placeholder="https://xxxx.trycloudflare.com"
+            style="width:100%;font-size:.62rem"
+            oninput="S.serverUrl=this.value.trim().replace(/\/$/,'');localStorage.setItem('obs_server',S.serverUrl);S.serverOk=false;"
+            onblur="if(this.value.trim()){retryServer().then(()=>refreshAccountUI());}"/>
         </div>
         <div style="display:flex;align-items:center;gap:.6rem;margin-top:.5rem">
           <div id="sm-server-status" style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm)">Checking…</div>
@@ -1683,11 +1738,21 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button class="chat-ico" onclick="hideUrlInput()" style="width:26px;height:26px;font-size:.78rem">✕</button>
       </div>
 
+      <div class="vm-bar" id="vm-bar">
+        <div class="vm-rec"></div>
+        <span class="vm-timer" id="vm-timer">0:00</span>
+        <span class="vm-label">Recording…</span>
+        <span class="vm-warn" id="vm-max-warn">Max 60s</span>
+        <button class="vm-cancel" onclick="cancelVoice()">✕ Cancel</button>
+        <button class="vm-send" onclick="sendVoice()">Send ▶</button>
+      </div>
+
       <div class="chat-foot-row">
         <button class="chat-ico" id="chat-plus-btn" onclick="toggleAttachMenu()" title="Attach">＋</button>
         <textarea class="chat-inp" id="chat-inp" placeholder="Message…  *italic*  **bold**  # heading"
           onkeydown="chatKeyDown(event)" rows="1" oninput="onChatInput(this)"></textarea>
         <button class="chat-ico" id="chat-emoji-btn" onclick="toggleChatEmoji()" title="Emoji">😊</button>
+        <button class="chat-ico" id="chat-mic-btn" onclick="toggleVoice()" title="Voice message">🎤</button>
         <button class="chat-send" id="chat-send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
       </div>
 
@@ -1726,7 +1791,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 <script>
 
-const HARDCODED_SERVER = 'https://illustration-picture-governing-cookie.trycloudflare.com';
+const HARDCODED_SERVER = '';
 
 const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1765,7 +1830,12 @@ function openSM(){
   if(ps){
     ps.value=ST.pageSize||24;
     $('st-pagesize-lbl').textContent=ST.pageSize||24;
-    const setPct=el=>{const pct=((el.value-el.min)/(el.max-el.min)*100).toFixed(1)+'%';el.style.setProperty('--val',pct);};
+    const setPct=el=>{
+      const pct=(el.value-el.min)/(el.max-el.min);
+      const w=el.offsetWidth||90;const r=9;
+      const filled=w>2*r?((pct*(w-2*r)+r)/w*100).toFixed(2)+'%':(pct*100).toFixed(2)+'%';
+      el.style.setProperty('--val',filled);
+    };
     setPct(ps);
     ps.oninput=function(){$('st-pagesize-lbl').textContent=this.value;ST.pageSize=parseInt(this.value);saveSettings();setPct(this);};
   }
@@ -1774,10 +1844,11 @@ function openSM(){
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===ST.theme));
 
   document.querySelectorAll('[data-cl]').forEach(c=>c.classList.toggle('on',c.dataset.cl===(ST.chatLayout||'modal')));
+  const urlInp=$('sm-url');if(urlInp)urlInp.value=S.serverUrl||'';
   const ss=$('sm-server-status');
   if(ss)ss.textContent=S.serverOk
     ?`✓ Connected — ${S.serverUrl}`
-    :`✕ Offline — ${S.serverUrl||'No URL fetched yet'}`;
+    :`✕ Offline — ${S.serverUrl||'No URL set'}`;
   const lc=$('liked-count-label');if(lc)lc.textContent=`${getLiked().length} liked videos saved`;
   refreshAccountUI();
   $('settings-modal').classList.add('on');
@@ -1933,7 +2004,7 @@ async function saveAccountChanges(){
   const np=$('sm-new-pass').value;
   const err=$('sm-edit-err');err.style.display='none';
   if(!op){err.textContent='Enter your current password';err.style.display='block';return;}
-  const body={oldPassword:op};
+  const body={password:op};
   if(nd)body.display=nd;
   body.bio=bio;
   if(np){if(np.length<4){err.textContent='New password must be 4+ chars';err.style.display='block';return;}body.newPassword=np;}
@@ -2094,7 +2165,7 @@ async function saveProfile(){
   const s=getSession();if(!s)return;
   const color=$('sm-pfp-color').value;
   const letter=($('sm-pfp-letter').value||'')[0]?.toUpperCase();
-  const body={oldPassword:s.password};
+  const body={password:s.password};
   if(color)body.pfpColor=color;
   if(letter)body.pfpLetter=letter;
   const d=await apiCall(`/api/users/${s.username}/update`,body);
@@ -2111,7 +2182,7 @@ async function sendFriendRequest(){
   const err=$('fr-add-err')||$('sm-acc-err2');
   if(err)err.style.display='none';
   if(!target){if(err){err.textContent='Enter a username';err.style.display='block';}return;}
-  const d=await apiCall(`/api/users/${s.username}/friends/request`,{password:s.password,target});
+  const d=await apiCall(`/api/users/${target}/friends/request`,{from:s.username,password:s.password});
   if(d.error){if(err){err.textContent=d.error;err.style.display='block';}return;}
   if(inp)inp.value='';
   toast(`Friend request sent to ${target}!`,'ok');
@@ -2233,6 +2304,7 @@ function getReplyPreview(msg){
   if(msg.mtype==='image')return'📷 Image';
   if(msg.mtype==='gif')return'🎞 GIF';
   if(msg.mtype==='video')return'🎬 Video';
+  if(msg.mtype==='audio')return'🎤 Voice message';
   const t=msg.content||'';return t.length>60?t.slice(0,60)+'…':t;
 }
 function scrollToMsg(id){
@@ -2253,7 +2325,7 @@ function clearReply(){_replyTo=null;$('chat-reply-bar').classList.remove('on');}
 function startEdit(msg){
   if(!msg)return;
   _editingId=msg.id;
-  const isMedia=msg.mtype==='image'||msg.mtype==='gif'||msg.mtype==='video';
+  const isMedia=msg.mtype==='image'||msg.mtype==='gif'||msg.mtype==='video'||msg.mtype==='audio';
   if(isMedia){
 
     const bar=$('chat-edit-bar');
@@ -2371,6 +2443,9 @@ function renderMsg(msg,myUsername,_,friendData){
           </div>
         </div>`
       :`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--gold);font-size:.65rem;word-break:break-all">${esc(u)}</a>`;}
+  else if(msg.mtype==='audio'){
+    content=`<div class="chat-audio"><span class="chat-audio-icon">🎤</span><audio controls src="${esc(msg.content)}" preload="metadata"></audio></div>`;
+  }
   else content=renderMarkdown(msg.content);
 
   const editedHtml=(!deleted&&msg.edited)?'<span class="msg-edited">(edited)</span>':'';
@@ -2624,7 +2699,7 @@ function closeChat(){
   stopTyping();
   const status=$('chat-hdr-status');if(status)status.textContent='';
   cancelEdit();clearReply();
-  toggleChatEmoji(true);closeAttachMenu();hideUrlInput();
+  toggleChatEmoji(true);closeAttachMenu();hideUrlInput();cancelVoice();
   $('chat-modal').classList.remove('on');document.body.style.overflow='';
 }
 
@@ -2746,6 +2821,66 @@ async function sendMediaMsg(content,type,editId){
   }
 }
 
+let _vmRecorder=null,_vmChunks=[],_vmTimer=null,_vmSec=0;
+const VM_MAX_SEC=60;
+
+async function toggleVoice(){
+  if(_vmRecorder&&_vmRecorder.state==='recording'){sendVoice();return;}
+  if(!navigator.mediaDevices?.getUserMedia){toast('Microphone not supported in this browser','err');return;}
+  const s=getSession();if(!s){toast('Log in to send voice messages','err');return;}
+  if(!_chatWith&&!_chatGroupId){toast('Open a chat first','err');return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    _vmChunks=[];_vmSec=0;
+    const mimes=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
+    const mime=mimes.find(m=>{try{return MediaRecorder.isTypeSupported(m);}catch{return false;}})||'';
+    _vmRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+    _vmRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)_vmChunks.push(e.data);};
+    _vmRecorder.onstop=()=>stream.getTracks().forEach(t=>t.stop());
+    _vmRecorder.start(200);
+    $('vm-bar').classList.add('on');
+    $('chat-mic-btn').classList.add('chat-mic-active');
+    _vmTimer=setInterval(()=>{
+      _vmSec++;
+      const m=Math.floor(_vmSec/60),sc=_vmSec%60;
+      $('vm-timer').textContent=`${m}:${sc.toString().padStart(2,'0')}`;
+      if(_vmSec>=VM_MAX_SEC-10)$('vm-max-warn').style.display='';
+      if(_vmSec>=VM_MAX_SEC)sendVoice();
+    },1000);
+  }catch(e){
+    toast('Microphone access denied','err');
+  }
+}
+
+async function sendVoice(){
+  if(!_vmRecorder)return;
+  clearInterval(_vmTimer);_vmTimer=null;
+  const rec=_vmRecorder;
+  if(rec.state==='recording')rec.stop();
+  await new Promise(r=>setTimeout(r,250));
+  if(!_vmRecorder){return;}
+  const mime=rec.mimeType||'audio/webm';
+  const blob=new Blob(_vmChunks,{type:mime});
+  _vmRecorder=null;_vmChunks=[];
+  $('vm-bar').classList.remove('on');
+  $('chat-mic-btn').classList.remove('chat-mic-active');
+  $('vm-max-warn').style.display='none';
+  $('vm-timer').textContent='0:00';
+  if(blob.size<500){toast('Recording too short','err');return;}
+  const reader=new FileReader();
+  reader.onload=async()=>{await sendMediaMsg(reader.result,'audio');};
+  reader.readAsDataURL(blob);
+}
+
+function cancelVoice(){
+  if(_vmRecorder){try{if(_vmRecorder.state==='recording')_vmRecorder.stop();}catch{}_vmRecorder=null;}
+  clearInterval(_vmTimer);_vmTimer=null;_vmChunks=[];_vmSec=0;
+  $('vm-bar').classList.remove('on');
+  $('chat-mic-btn').classList.remove('chat-mic-active');
+  $('vm-max-warn').style.display='none';
+  $('vm-timer').textContent='0:00';
+}
+
 async function checkNotifications(){
   await checkBroadcast();
   pollUnreadCounts();
@@ -2793,7 +2928,7 @@ async function pollUnreadCounts(){
     if(_chatWith===f)return;
     try{
       const since=_unread._lastSince?.[f]||0;
-      const r=await fetch(`${API()}/api/chat/messages?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${f}&since=${since}&limit=20`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      const r=await fetch(`${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${f}&since=${since}&timeout=0`,{mode:'cors',signal:AbortSignal.timeout(5000)});
       if(!r.ok)return;
       const d=await safeJson(r)||{};
       const msgs=(d.messages||[]).filter(m=>m.sender===f);
@@ -4535,9 +4670,22 @@ async function fetchReddit(append=false){
     $('rstate').innerHTML=`<span class="big">⏳</span>Loading r/${esc(sub)}…`;$('rstate').style.display='block';
   }
   try{
-    const qs=new URLSearchParams({limit:100,raw_json:1,...(S.rd.sort==='top'&&S.rd.time?{t:S.rd.time}:{}),...(S.rd.after?{after:S.rd.after}:{})});
-    const res=await fetch(`https://www.reddit.com/r/${encodeURIComponent(sub)}/${S.rd.sort}.json?${qs}`,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});
-    if(!res.ok){if(res.status===404)throw new Error(`r/${sub} not found`);if(res.status===403)throw new Error(`r/${sub} is private or quarantined`);throw new Error(`Reddit ${res.status}`);}
+    const qp={limit:100,raw_json:1,...(S.rd.sort==='top'&&S.rd.time?{t:S.rd.time}:{}),...(S.rd.after?{after:S.rd.after}:{})};
+    const qs=new URLSearchParams(qp);
+    let res;
+    if(S.serverUrl&&S.serverOk){
+      const sp=new URLSearchParams({sub,sort:S.rd.sort,...qp});
+      res=await fetch(`${S.serverUrl}/api/reddit?${sp}`,{mode:'cors',signal:AbortSignal.timeout(20000)});
+    }else{
+      res=await fetch(`https://www.reddit.com/r/${encodeURIComponent(sub)}/${S.rd.sort}.json?${qs}`,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(12000)});
+    }
+    if(!res.ok){
+      let errMsg=`Reddit ${res.status}`;
+      try{const ed=await res.json();if(ed.error)errMsg=ed.error;}catch{}
+      if(res.status===404)errMsg=`r/${sub} not found`;
+      if(res.status===403)errMsg=`r/${sub} is private or quarantined`;
+      throw new Error(errMsg);
+    }
     const data=await res.json();const listing=data?.data;if(!listing)throw new Error('Unexpected Reddit response');
     S.rd.after=listing.after||null;S.rd.hasMore=!!listing.after;
     const posts=(listing.children||[]).map(c=>c.data)
