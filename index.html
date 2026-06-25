@@ -428,7 +428,11 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .chat-hdr-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--tp);flex:1;}
 
 .chat-msgs{flex:1;overflow-y:auto;padding:.75rem .9rem;display:flex;flex-direction:column;
-  gap:.2rem;scroll-behavior:smooth;overscroll-behavior:contain;}
+  gap:0;scroll-behavior:smooth;overscroll-behavior:contain;}
+.msg-row{margin-top:.44rem;}
+.msg-row.grp{margin-top:.07rem;}
+.msg-row.grp .msg-av{visibility:hidden;}
+.msg-row.grp .msg-time{display:none;}
 .chat-day{text-align:center;font-family:'DM Mono',monospace;font-size:.5rem;color:var(--tm);
   letter-spacing:.14em;text-transform:uppercase;padding:.5rem 0;opacity:.55;user-select:none;}
 
@@ -1559,20 +1563,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
       <div class="sm-sec">
         <div class="sm-sec-title">Server Connection</div>
-        <div style="font-family:'DM Mono',monospace;font-size:.6rem;color:var(--tm);line-height:1.9;padding:.2rem 0">
-          Server URL is fetched automatically from GitHub on every load.<br/>
-          Update <code style="color:var(--gold)">website-api-link</code> on your repo and it updates for everyone.<br/>
-        </div>
-        <div style="margin-top:.5rem">
-          <input class="cfg-inp" id="sm-url" type="url" placeholder="https://xxxx.trycloudflare.com"
-            style="width:100%;font-size:.62rem"
-            oninput="S.serverUrl=this.value.trim().replace(/\/$/,'');localStorage.setItem('obs_server',S.serverUrl);S.serverOk=false;"
-            onblur="if(this.value.trim()){retryServer().then(()=>refreshAccountUI());}"/>
-        </div>
-        <div style="display:flex;align-items:center;gap:.6rem;margin-top:.5rem">
-          <div id="sm-server-status" style="font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm)">Checking…</div>
-          <button class="btn" onclick="retryServer()" style="font-size:.56rem;padding:.22rem .55rem">↺ Retry</button>
-        </div>
+        <button class="btn" onclick="retryServer()" style="font-size:.56rem;padding:.22rem .55rem;width:100%;margin-top:.25rem">↺ Retry Connection</button>
       </div>
 
       <div class="sm-sec">
@@ -1751,8 +1742,8 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
         <button class="chat-ico" id="chat-plus-btn" onclick="toggleAttachMenu()" title="Attach">＋</button>
         <textarea class="chat-inp" id="chat-inp" placeholder="Message…  *italic*  **bold**  # heading"
           onkeydown="chatKeyDown(event)" rows="1" oninput="onChatInput(this)"></textarea>
-        <button class="chat-ico" id="chat-emoji-btn" onclick="toggleChatEmoji()" title="Emoji">😊</button>
-        <button class="chat-ico" id="chat-mic-btn" onclick="toggleVoice()" title="Voice message">🎤</button>
+        <button class="chat-ico" id="chat-emoji-btn" onclick="toggleChatEmoji()" title="Emoji"><?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg></button>
+        <button class="chat-ico" id="chat-mic-btn" onclick="toggleVoice()" title="Voice message"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg></button>
         <button class="chat-send" id="chat-send-btn" onclick="sendMessage()" title="Send (Enter)">➤</button>
       </div>
 
@@ -1794,6 +1785,15 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 const HARDCODED_SERVER = '';
 
 const $=id=>document.getElementById(id);
+const _svg=(p,s=14)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const LI={
+  mic:_svg('<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/>'),
+  smile:_svg('<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>'),
+  pencil:_svg('<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>'),
+  trash:_svg('<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>'),
+  reply:_svg('<polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>'),
+  chat:_svg('<path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>',16),
+};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const deh=s=>String(s||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
 const fmtD=s=>{if(!s||isNaN(s))return'—';const m=Math.floor(s/60),x=Math.floor(s%60);return`${m}:${x.toString().padStart(2,'0')}`;};
@@ -1844,11 +1844,6 @@ function openSM(){
   document.querySelectorAll('.theme-chip').forEach(c=>c.classList.toggle('on',c.dataset.t===ST.theme));
 
   document.querySelectorAll('[data-cl]').forEach(c=>c.classList.toggle('on',c.dataset.cl===(ST.chatLayout||'modal')));
-  const urlInp=$('sm-url');if(urlInp)urlInp.value=S.serverUrl||'';
-  const ss=$('sm-server-status');
-  if(ss)ss.textContent=S.serverOk
-    ?`✓ Connected — ${S.serverUrl}`
-    :`✕ Offline — ${S.serverUrl||'No URL set'}`;
   const lc=$('liked-count-label');if(lc)lc.textContent=`${getLiked().length} liked videos saved`;
   refreshAccountUI();
   $('settings-modal').classList.add('on');
@@ -1892,6 +1887,7 @@ async function checkServer(retries=3){
 
 async function retryServer(){
   toast('Retrying server…','ok',1500);
+  await fetchServerUrlFromGithub();
   const ok=await checkServer(2);
   if(ok){
     exitRedditOnly();
@@ -2120,7 +2116,7 @@ async function renderFriendsList(){
         ${bio}
       </div>
       <div style="position:relative;cursor:pointer" onclick="openChat('${esc(f)}',${pStr})">
-        <div class="fr-chat-btn" title="Message ${esc(display)}">💬</div>
+        <div class="fr-chat-btn" title="Message ${esc(display)}">${LI.chat}</div>
         <div class="fr-unread${unread>0?' on':''}" data-chat-unread="${esc(f)}">${unread>9?'9+':unread||''}</div>
       </div>
       <button onclick="viewProfile('${esc(f)}')" style="background:none;border:1px solid var(--bdr);color:var(--tm);cursor:pointer;font-family:'DM Mono',monospace;font-size:.54rem;padding:.18rem .45rem;transition:all .15s" onmouseenter="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseleave="this.style.borderColor='var(--bdr)';this.style.color='var(--tm)'">Profile</button>
@@ -2265,6 +2261,7 @@ async function _longPollLoop(friendUsername,friendData,groupId){
       const r=await fetch(
         `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=4`,
         {mode:'cors',signal:AbortSignal.timeout(7000)});
+      if(r.status===401){setSession(null);refreshAccountUI();toast('Session expired — log in again','err',4000);break;}
       const d=await safeJson(r)||{};
       const msgs=d.messages||[];
       if(msgs.length&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
@@ -2274,7 +2271,7 @@ async function _longPollLoop(friendUsername,friendData,groupId){
         msgs.forEach(msg=>{
           if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
           if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
-          el.appendChild(renderMsg(msg,s.username,null,friendData));
+          appendChatMsg(el,msg,s.username,friendData);
         });
         if(wasBottom)el.scrollTop=el.scrollHeight;
         pollTyping(snapFriend,snapGroup);
@@ -2444,7 +2441,7 @@ function renderMsg(msg,myUsername,_,friendData){
         </div>`
       :`<a href="${esc(u)}" target="_blank" rel="noopener" style="color:var(--gold);font-size:.65rem;word-break:break-all">${esc(u)}</a>`;}
   else if(msg.mtype==='audio'){
-    content=`<div class="chat-audio"><span class="chat-audio-icon">🎤</span><audio controls src="${esc(msg.content)}" preload="metadata"></audio></div>`;
+    content=`<div class="chat-audio"><span class="chat-audio-icon">${LI.mic}</span><audio controls src="${esc(msg.content)}" preload="metadata"></audio></div>`;
   }
   else content=renderMarkdown(msg.content);
 
@@ -2454,16 +2451,17 @@ function renderMsg(msg,myUsername,_,friendData){
 
   const canDelete=mine||(!!_chatGroupId&&_hasGroupPerm('can_delete_msg'));
   const actions=deleted?'':`<div class="msg-actions">
-    ${mine?`<button class="msg-act" onclick="startEdit(window._msgCache[${msg.id}])" title="Edit">✏</button>`:''}
-    <button class="msg-act" onclick="startReply(window._msgCache[${msg.id}],window._friendCache)" title="Reply">↩</button>
-    <button class="msg-act" onclick="openReactionPicker(${msg.id})" title="React">😊</button>
-    ${canDelete?`<button class="msg-act del" onclick="deleteMsg(${msg.id})" title="Delete">🗑</button>`:''}
+    ${mine?`<button class="msg-act" onclick="startEdit(window._msgCache[${msg.id}])" title="Edit">${LI.pencil}</button>`:''}
+    <button class="msg-act" onclick="startReply(window._msgCache[${msg.id}],window._friendCache)" title="Reply">${LI.reply}</button>
+    <button class="msg-act" onclick="openReactionPicker(${msg.id})" title="React">${LI.smile}</button>
+    ${canDelete?`<button class="msg-act del" onclick="deleteMsg(${msg.id})" title="Delete">${LI.trash}</button>`:''}
   </div>`;
 
   const row=document.createElement('div');
   const mentionsMe=!mine&&s&&msg.content&&msg.content.includes(`@${s.username}`);
   row.className=`msg-row ${mine?'mine':'theirs'}${deleted?' msg-deleted':''}${mentionsMe?' mention-highlight':''}`;
   row.dataset.msgId=msg.id;
+  row.dataset.sender=msg.sender;
   row.innerHTML=`${av}
     <div class="msg-col">
       ${actions}
@@ -2707,19 +2705,30 @@ function renderChatHistory(msgs,myUsername,friendData){
   const el=$('chat-msgs');if(!el)return;
   el.innerHTML='';
   if(!msgs.length){
-    el.innerHTML=`<div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">No messages yet. Say hello! 👋</div>`;
+    el.innerHTML=`<div style="text-align:center;font-family:'DM Mono',monospace;font-size:.62rem;color:var(--tm);padding:2rem">No messages yet. Say hello!</div>`;
     return;
   }
-  let lastDay='';
+  let lastDay='';let lastSender='';
   msgs.forEach(msg=>{
     const day=fmtDay(msg.ts);
     if(day!==lastDay){
       const sep=document.createElement('div');sep.className='chat-day';sep.textContent=day;
-      el.appendChild(sep);lastDay=day;
+      el.appendChild(sep);lastDay=day;lastSender='';
     }
-    el.appendChild(renderMsg(msg,myUsername,null,friendData));
+    const row=renderMsg(msg,myUsername,null,friendData);
+    if(lastSender===msg.sender)row.classList.add('grp');
+    el.appendChild(row);
+    lastSender=msg.sender;
   });
   el.scrollTop=el.scrollHeight;
+}
+
+function appendChatMsg(el,msg,myUsername,friendData){
+  const last=el.querySelector('.msg-row:last-child');
+  const row=renderMsg(msg,myUsername,null,friendData);
+  if(last&&last.dataset.sender===msg.sender)row.classList.add('grp');
+  el.appendChild(row);
+  return row;
 }
 
 const _sentIds=new Set();
@@ -2752,8 +2761,8 @@ async function sendMessage(){
   const fakeMsg={id:'p'+nowTs,sender:s.username,content:text,mtype:'text',ts:nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
   const msgEl=$('chat-msgs');
   const wasBot=msgEl.scrollHeight-msgEl.scrollTop-msgEl.clientHeight<80;
-  const fakeRow=renderMsg(fakeMsg,s.username,null,window._friendCache);
-  fakeRow.style.opacity='.65';msgEl.appendChild(fakeRow);
+  const fakeRow=appendChatMsg(msgEl,fakeMsg,s.username,window._friendCache);
+  fakeRow.style.opacity='.65';
   if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
   clearReply();
   const d=await apiCall('/api/chat/send',body);
@@ -2765,8 +2774,7 @@ async function sendMessage(){
     _sentIds.add(d.id);
     const realMsg={id:d.id,sender:s.username,content:text,mtype:'text',
       ts:d.ts||nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
-    const realRow=renderMsg(realMsg,s.username,null,window._friendCache);
-    msgEl.appendChild(realRow);
+    const realRow=appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
     if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
     if(_chatGroupId)_sendMentionNotifs(text,_chatGroupId);
   }
@@ -2799,9 +2807,8 @@ async function sendMediaMsg(content,type,editId){
     ts:nowTs,reply_to:_replyTo?.id||null,reactions:'{}',edited:0,deleted:0};
   const msgEl=$('chat-msgs');
   const wasBot=msgEl.scrollHeight-msgEl.scrollTop-msgEl.clientHeight<80;
-  const fakeRow=renderMsg(fakeMsg,s.username,null,window._friendCache);
+  const fakeRow=appendChatMsg(msgEl,fakeMsg,s.username,window._friendCache);
   fakeRow.style.opacity='.65';
-  msgEl.appendChild(fakeRow);
   if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
   clearReply();
   const body={from:s.username,password:s.password,content,type};
@@ -2815,8 +2822,7 @@ async function sendMediaMsg(content,type,editId){
     _sentIds.add(d.id);
     const realMsg={id:d.id,sender:s.username,content,mtype:type,
       ts:d.ts||nowTs,reply_to:body.reply_to||null,reactions:{},edited:0,deleted:0};
-    const realRow=renderMsg(realMsg,s.username,null,window._friendCache);
-    msgEl.appendChild(realRow);
+    const realRow=appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
     if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
   }
 }
@@ -2830,11 +2836,11 @@ async function toggleVoice(){
   const s=getSession();if(!s){toast('Log in to send voice messages','err');return;}
   if(!_chatWith&&!_chatGroupId){toast('Open a chat first','err');return;}
   try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:48000}});
     _vmChunks=[];_vmSec=0;
     const mimes=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'];
     const mime=mimes.find(m=>{try{return MediaRecorder.isTypeSupported(m);}catch{return false;}})||'';
-    _vmRecorder=new MediaRecorder(stream,mime?{mimeType:mime}:{});
+    _vmRecorder=new MediaRecorder(stream,{...(mime?{mimeType:mime}:{}),audioBitsPerSecond:128000});
     _vmRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)_vmChunks.push(e.data);};
     _vmRecorder.onstop=()=>stream.getTracks().forEach(t=>t.stop());
     _vmRecorder.start(200);
@@ -2929,6 +2935,7 @@ async function pollUnreadCounts(){
     try{
       const since=_unread._lastSince?.[f]||0;
       const r=await fetch(`${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${f}&since=${since}&timeout=0`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+      if(r.status===401){setSession(null);refreshAccountUI();toast('Session expired — log in again','err',4000);return;}
       if(!r.ok)return;
       const d=await safeJson(r)||{};
       const msgs=(d.messages||[]).filter(m=>m.sender===f);
@@ -3953,6 +3960,7 @@ async function pollChatUpdates(friendUsername,friendData){
   const s=getSession();if(!s||_chatWith!==friendUsername)return;
   try{
     const r=await fetch(`${API()}/api/chat/updates?user=${s.username}&password=${encodeURIComponent(s.password)}&with=${friendUsername}&since=${_lastUpdateTs}`,{mode:'cors',signal:AbortSignal.timeout(5000)});
+    if(r.status===401){setSession(null);refreshAccountUI();toast('Session expired — log in again','err',4000);return;}
     const d=await safeJson(r)||{};
     const updates=d.updates||[];
     updates.forEach(msg=>{
@@ -4045,7 +4053,6 @@ async function fetchServerUrlFromGithub(){
     if(url!==S.serverUrl){
       S.serverUrl=url;
       localStorage.setItem('obs_server',url);
-      const inp=$('sm-url');if(inp)inp.value=url;
       console.log('[GitHub] Server URL updated to:',url);
     }
   }catch(e){
@@ -4259,7 +4266,7 @@ async function proxyFetch(url,parse='json'){
 
 const PH_SORT={views:'mostviewed',newest:'newest',rating:'rating',trending:'trending'};
 async function fetchPornhub(q='',page=1,sort='views',region=''){
-  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  if(!S.serverUrl)throw new Error('server-offline');
   const p=new URLSearchParams({page,limit:getCfgPage(),sort:PH_SORT[sort]||'mostviewed'});
   if(q)p.set('q',q);
   if(region)p.set('region',region);
@@ -4270,7 +4277,7 @@ async function fetchPornhub(q='',page=1,sort='views',region=''){
 }
 
 async function fetchRedTube(q='',page=1,sort='views',region=''){
-  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  if(!S.serverUrl)throw new Error('server-offline');
   const p=new URLSearchParams({page,sort,limit:getCfgPage()});
   if(q)p.set('q',q);
   if(region)p.set('region',region);
@@ -4281,7 +4288,7 @@ async function fetchRedTube(q='',page=1,sort='views',region=''){
 }
 
 async function fetchYouPorn(q='',page=1,sort='views',region=''){
-  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  if(!S.serverUrl)throw new Error('server-offline');
   const p=new URLSearchParams({page,sort,limit:getCfgPage()});
   if(q)p.set('q',q);
   if(region)p.set('region',region);
@@ -4301,7 +4308,7 @@ function fetchByName(name,q,page,sort,opts={}){
 }
 const RG={pos:{}};
 async function fetchRedgifs(q='',page=1){
-  if(!S.serverUrl||!S.serverOk)throw new Error('server-offline');
+  if(!S.serverUrl)throw new Error('server-offline');
   const sub=q||'gonewild';
   const sort='hot';
   const posKey=sub+'_'+sort;
@@ -4340,7 +4347,7 @@ async function fetchRedgifs(q='',page=1){
 
 async function fetchMain(params={}){
   const{q='',page=1,sort='views',tag='all',cat='',dur='',qual='',region=''}=params;
-  const up=S.serverUrl&&S.serverOk;
+  const up=!!S.serverUrl;
 
   if(tag==='gif'||q.startsWith('__rg')){
     const rq=q.startsWith('__rg')?'':q;
@@ -5378,13 +5385,12 @@ async function bootApp(){
       toast('Server connected ✓','ok',2000);
       startPresenceHeartbeat();
       setTimeout(checkBroadcast, 1500);
-      loadVideos();
     }else{
       await fetchServerUrlFromGithub();
       const ok2=await checkServer(1);
-      if(ok2){startPresenceHeartbeat();loadVideos();}
-      else{showApiDownPopup();}
+      if(ok2){startPresenceHeartbeat();}
     }
+    loadVideos();
   }else{
     loadVideos();
   }
