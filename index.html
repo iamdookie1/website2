@@ -234,9 +234,21 @@
 }
 [data-theme=lglass] .bn.on{background:rgba(77,217,255,.18);}
 
+/* Chat modal overlay — must be transparent so body gradient bleeds through .chat-box */
+[data-theme=lglass] #chat-modal{background:rgba(0,0,10,.45)!important;backdrop-filter:blur(4px)!important;-webkit-backdrop-filter:blur(4px)!important;}
+[data-theme=lglass] #chat-modal.layout-sidebar{background:transparent!important;backdrop-filter:none!important;}
+
 /* Chat window */
 [data-theme=lglass] .chat-hdr{border-bottom:1px solid rgba(255,255,255,.14);}
 [data-theme=lglass] .chat-foot{border-top:1px solid rgba(255,255,255,.14);}
+[data-theme=lglass] .chat-msgs{background:transparent!important;}
+[data-theme=lglass] .chat-day{color:rgba(255,255,255,.45);}
+[data-theme=lglass] #chat-reply-bar{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.15)!important;}
+[data-theme=lglass] .vm-bar{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.15)!important;}
+[data-theme=lglass] #chat-url-bar{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.15)!important;}
+[data-theme=lglass] .chat-attach-menu{background:rgba(10,12,40,.7)!important;border-color:rgba(255,255,255,.2)!important;}
+[data-theme=lglass] #chat-emoji-panel{background:rgba(10,12,40,.75)!important;border-color:rgba(255,255,255,.18)!important;}
+[data-theme=lglass] .msg-reacts .react-chip{background:rgba(255,255,255,.1)!important;border-color:rgba(255,255,255,.2)!important;}
 
 /* Message action buttons */
 [data-theme=lglass] .msg-act{
@@ -2237,7 +2249,7 @@ async function syncSessionFromServer(){
     if(!r.ok)return;
     const fresh=await safeJson(r);
     if(fresh)setSession({...s,...fresh,password:s.password});
-  }catch(e){console.warn('[syncSession]',e.message);}
+  }catch(e){if(e?.name!=='TimeoutError')console.warn('[syncSession]',e.message);}
 }
 
 async function viewProfile(username){
@@ -2434,10 +2446,7 @@ async function loadFriendRequests(){
           <button class="btn" onclick="respondRequest('${esc(r.from)}','decline')" style="font-size:.58rem;padding:.26rem .6rem;border-color:#8b2222;color:#999">✕</button>
         </div>
       </div>`).join('');
-  }catch(e){
-
-    console.warn('[loadFriendRequests]',e.message);
-  }
+  }catch(e){if(e?.name!=='TimeoutError')console.warn('[loadFriendRequests]',e.message);}
 }
 function openFrReqPanel(){$('fr-req-panel').classList.add('on');loadFriendRequests();}
 function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
