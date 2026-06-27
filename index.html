@@ -2457,44 +2457,71 @@ function closeFrReqPanel(){$('fr-req-panel').classList.remove('on');}
 let _chatWith=null,_chatPoll=null,_chatLastTs=0,_unread={};
 let _chatGroupId=null;
 let _updatePoll=null,_lastUpdateTs=0;
-let _pollRunning=false;
+let _pollGen=0;
+let _ws=null;
 
-async function _longPollLoop(friendUsername,friendData,groupId){
-  if(_pollRunning)return;
-  _pollRunning=true;
+function _wsRoomKey(friendUsername,groupId){
+  if(groupId)return`grp:${groupId}`;
+  const s=getSession();if(!s)return'';
+  const pair=[s.username.toLowerCase(),friendUsername.toLowerCase()].sort();
+  return`dm:${pair.join('__')}`;
+}
+
+function _startChatWs(friendUsername,friendData,groupId){
+  const myGen=++_pollGen;
   const s=getSession();if(!s)return;
-  const snapFriend=friendUsername;
-  const snapGroup=groupId;
-  while(_pollRunning&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
-    /* when tab is hidden just do a quick check, then wait 5s so we don't hold a server thread */
-    const hidden=document.hidden;
+  if(_ws){try{_ws.close();}catch{}_ws=null;}
+
+  const room=_wsRoomKey(friendUsername,groupId);
+  const base=API().replace(/^http/,'ws');
+  const url=`${base}/api/ws?user=${encodeURIComponent(s.username)}&password=${encodeURIComponent(s.password)}&room=${encodeURIComponent(room)}`;
+
+  const ws=new WebSocket(url);
+  _ws=ws;
+
+  ws.onmessage=(e)=>{
+    if(_pollGen!==myGen){ws.close();return;}
     try{
-      const params=snapGroup?`group_id=${snapGroup}`:`with=${snapFriend}`;
-      const srvTimeout=hidden?0:5;
-      const r=await fetch(
-        `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=${srvTimeout}`,
-        {mode:'cors',signal:AbortSignal.timeout(hidden?3000:9000)});
-      if(r.status===401){setSession(null);refreshAccountUI();toast('Session expired — log in again','err',4000);break;}
-      const d=await safeJson(r)||{};
-      const msgs=d.messages||[];
-      if(msgs.length&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
-        _chatLastTs=msgs[msgs.length-1].ts;
-        const el=$('chat-msgs');if(!el)break;
-        const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
-        msgs.forEach(msg=>{
-          if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
-          if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
-          appendChatMsg(el,msg,s.username,friendData);
-        });
-        if(wasBottom)el.scrollTop=el.scrollHeight;
-        if(!hidden)pollTyping(snapFriend,snapGroup);
-      }
-      if(hidden)await new Promise(r=>setTimeout(r,5000));
-    }catch{
-      await new Promise(r=>setTimeout(r,2000));
-    }
-  }
-  _pollRunning=false;
+      const msg=JSON.parse(e.data);
+      if(!msg||!msg.id)return;
+      const el=$('chat-msgs');if(!el)return;
+      if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
+      if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
+      _chatLastTs=Math.max(_chatLastTs,msg.ts||0);
+      const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+      appendChatMsg(el,msg,s.username,friendData);
+      if(wasBottom)el.scrollTop=el.scrollHeight;
+      if(!document.hidden)pollTyping(friendUsername,groupId);
+    }catch{}
+  };
+
+  ws.onclose=()=>{
+    if(_pollGen!==myGen)return;
+    /* reconnect and catch up on any messages missed while disconnected */
+    setTimeout(()=>{
+      if(_pollGen!==myGen)return;
+      _startChatWs(friendUsername,friendData,groupId);
+      /* fetch anything we may have missed */
+      const ss=getSession();if(!ss)return;
+      const params=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
+      fetch(`${API()}/api/chat/poll?user=${ss.username}&password=${encodeURIComponent(ss.password)}&${params}&since=${_chatLastTs}&timeout=0`,{mode:'cors'})
+        .then(r=>r.json()).then(d=>{
+          const msgs=(d.messages||[]);
+          if(!msgs.length)return;
+          const el=$('chat-msgs');if(!el)return;
+          msgs.forEach(msg=>{
+            if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
+            if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
+            _chatLastTs=Math.max(_chatLastTs,msg.ts||0);
+            const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+            appendChatMsg(el,msg,ss.username,friendData);
+            if(wasBottom)el.scrollTop=el.scrollHeight;
+          });
+        }).catch(()=>{});
+    },1500);
+  };
+
+  ws.onerror=()=>{ws.close();};
 }
 
 let _replyTo=null,_editingId=null;
@@ -2898,14 +2925,15 @@ async function openChat(friendUsername,friendData,groupId){
     _chatLastTs=msgs.length?msgs[msgs.length-1].ts:0;
     renderChatHistory(msgs,s.username,friendData);
   }catch{$('chat-msgs').innerHTML=`<div style="text-align:center;color:var(--tm);font-family:'DM Mono',monospace;font-size:.65rem;padding:2rem">Could not load messages</div>`;}
-  _pollRunning=false;
-  _longPollLoop(friendUsername,friendData,groupId);
+  _startChatWs(friendUsername,friendData,groupId);
   clearInterval(_updatePoll);
   _updatePoll=setInterval(()=>{if(!document.hidden)pollChatUpdates(friendUsername,friendData,groupId);},8000);
   $('chat-inp').focus();
 }
 
 function closeChat(){
+  ++_pollGen;
+  if(_ws){try{_ws.close();}catch{}_ws=null;}
   clearInterval(_chatPoll);clearInterval(_updatePoll);
   _chatPoll=null;_updatePoll=null;_chatWith=null;
   stopTyping();
