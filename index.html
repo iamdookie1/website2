@@ -491,7 +491,7 @@ body{font-family:'Cormorant Garamond',serif;background:var(--bg0);color:var(--tp
 .btn.r{background:var(--red);border-color:var(--red);color:#fff;text-decoration:none;display:inline-flex;align-items:center;}.btn.r:hover{background:#FF5722;}
 .btn.p{background:var(--pur-b);border-color:var(--pur-b);color:#fff;}.btn.p:hover{background:var(--pur);}
 
-.pm{position:fixed;inset:0;z-index:850;background:var(--ov);display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
+.pm{position:fixed;inset:0;z-index:9200;background:var(--ov);display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(8px);}
 .pm.on{display:flex;animation:mIn .28s ease;}
 
 .ps{width:100%;max-width:1040px;background:var(--bg1);border:1px solid var(--bdr);
@@ -1178,6 +1178,7 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 .hidden{display:none!important;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 </head>
 <body>
 
@@ -2687,7 +2688,7 @@ function renderMsg(msg,myUsername,_,friendData){
   const deleted=msg.deleted===1||msg.content==='[Message deleted]';
   let content='';
   if(deleted)content='<em style="opacity:.5">[Message deleted]</em>';
-  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia(this.src,'image')" referrerpolicy="no-referrer"/>`;
+  else if(msg.mtype==='image')content=`<img class="chat-img" src="${esc(msg.content)}" loading="lazy" onclick="openChatMedia(this.src,'image')" referrerpolicy="no-referrer" onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<a href=\\''+this.src+'\\' download style=\\'display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .85rem;background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;color:var(--ts);text-decoration:none;font-size:.72rem;margin-top:.3rem\\'>⬇ Download image</a>')"/>`;
   else if(msg.mtype==='gif'){
 
     const s=msg.content;
@@ -4100,13 +4101,31 @@ function handleMediaDrop(e){
   if(file)handleMediaFile({target:{files:[file],value:'',dataset:{}}});
 }
 
-function handleMediaFile(e){
+async function handleMediaFile(e){
   const file=e.target.files?.[0];
   const editId=e.target.dataset?.editId?parseInt(e.target.dataset.editId):null;
   if(e.target.value!==undefined)e.target.value='';
   if(!file)return;
   closeAttachMenu();
   if(file.size>50*1024*1024){toast('Max 50MB','err');return;}
+
+  /* convert HEIC/HEIF (iPhone photos) to JPEG before anything else */
+  const fname=(file.name||'').toLowerCase();
+  const isHeic=file.type==='image/heic'||file.type==='image/heif'||file.type==='image/heic-sequence'||fname.endsWith('.heic')||fname.endsWith('.heif');
+  if(isHeic){
+    toast('Converting iPhone photo…','ok',3000);
+    try{
+      const result=await heic2any({blob:file,toType:'image/jpeg',quality:0.88});
+      const jpegBlob=Array.isArray(result)?result[0]:result;
+      const jpegFile=new File([jpegBlob],fname.replace(/\.heic?$/i,'.jpg'),{type:'image/jpeg'});
+      _compressAndSend(jpegFile,editId);
+    }catch(err){
+      toast('Could not convert photo. On iPhone: Settings → Camera → Formats → Most Compatible.','err',6000);
+    }
+    if(editId)cancelEdit();
+    return;
+  }
+
   if(file.type==='image/gif'){
     if(file.size>25*1024*1024){
       toast('GIF over 25MB — paste a Giphy/Tenor URL instead','err',4500);
@@ -4180,7 +4199,10 @@ function _compressAndSend(file,editId){
       r.readAsDataURL(blob||file);
     },'image/webp',0.85);
   };
-  img.onerror=()=>{const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r.readAsDataURL(file);};
+  img.onerror=()=>{
+    URL.revokeObjectURL(url);
+    const r=new FileReader();r.onload=ev=>sendMediaMsg(ev.target.result,'image',editId);r.readAsDataURL(file);
+  };
   img.src=url;
 }
 
