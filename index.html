@@ -2522,6 +2522,33 @@ function _startChatWs(friendUsername,friendData,groupId){
   };
 
   ws.onerror=()=>{ws.close();};
+
+  /* silent 4-second catch-up poll — fallback for any messages WS misses */
+  (async function catchUp(){
+    if(_pollGen!==myGen)return;
+    const ss=getSession();if(!ss)return;
+    const params=groupId?`group_id=${groupId}`:`with=${friendUsername}`;
+    try{
+      const r=await fetch(
+        `${API()}/api/chat/poll?user=${ss.username}&password=${encodeURIComponent(ss.password)}&${params}&since=${_chatLastTs}&timeout=0`,
+        {mode:'cors',signal:AbortSignal.timeout(4000)});
+      const d=await r.json().catch(()=>({}));
+      const msgs=d.messages||[];
+      if(msgs.length&&_pollGen===myGen){
+        const el=$('chat-msgs');if(el){
+          msgs.forEach(msg=>{
+            if(_sentIds.has(msg.id)){_sentIds.delete(msg.id);return;}
+            if(document.querySelector(`[data-msg-id="${msg.id}"]`))return;
+            _chatLastTs=Math.max(_chatLastTs,msg.ts||0);
+            const wasBottom=el.scrollHeight-el.scrollTop-el.clientHeight<80;
+            appendChatMsg(el,msg,ss.username,friendData);
+            if(wasBottom)el.scrollTop=el.scrollHeight;
+          });
+        }
+      }
+    }catch{}
+    setTimeout(()=>catchUp(),4000);
+  })();
 }
 
 let _replyTo=null,_editingId=null;
@@ -3015,10 +3042,13 @@ async function sendMessage(){
   fakeRow.remove();
   if(d.id){
     _sentIds.add(d.id);
-    const realMsg={id:d.id,sender:s.username,content:text,mtype:'text',
-      ts:d.ts||nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
-    const realRow=appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
-    if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+    /* WS may have already rendered the real message before POST responded */
+    if(!document.querySelector(`[data-msg-id="${d.id}"]`)){
+      const realMsg={id:d.id,sender:s.username,content:text,mtype:'text',
+        ts:d.ts||nowTs,reply_to:_replyTo?.id||null,reactions:{},edited:0,deleted:0};
+      appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
+      if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+    }
     if(_chatGroupId)_sendMentionNotifs(text,_chatGroupId);
   }
   _closeMentionDropdown();
@@ -3063,10 +3093,12 @@ async function sendMediaMsg(content,type,editId){
   fakeRow.remove();
   if(d.id){
     _sentIds.add(d.id);
-    const realMsg={id:d.id,sender:s.username,content,mtype:type,
-      ts:d.ts||nowTs,reply_to:body.reply_to||null,reactions:{},edited:0,deleted:0};
-    const realRow=appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
-    if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+    if(!document.querySelector(`[data-msg-id="${d.id}"]`)){
+      const realMsg={id:d.id,sender:s.username,content,mtype:type,
+        ts:d.ts||nowTs,reply_to:body.reply_to||null,reactions:{},edited:0,deleted:0};
+      appendChatMsg(msgEl,realMsg,s.username,window._friendCache);
+      if(wasBot)msgEl.scrollTop=msgEl.scrollHeight;
+    }
   }
 }
 
