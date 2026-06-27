@@ -1978,6 +1978,9 @@ body.reddit-only .bico:not([onclick*="openSM"]){opacity:.2;pointer-events:none;}
 
 <script>
 
+/* patch fetch to add ngrok bypass header when hitting ngrok URLs */
+(()=>{const _f=window.fetch;window.fetch=function(u,o={}){if(/ngrok/i.test(String(u?.url??u))){o={...o,headers:{'ngrok-skip-browser-warning':'1',...(o.headers||{})}}}return _f(u,o)};})();
+
 const HARDCODED_SERVER = '';
 
 const $=id=>document.getElementById(id);
