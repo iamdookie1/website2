@@ -2463,11 +2463,14 @@ async function _longPollLoop(friendUsername,friendData,groupId){
   const snapFriend=friendUsername;
   const snapGroup=groupId;
   while(_pollRunning&&_chatWith===snapFriend&&_chatGroupId===snapGroup){
+    /* when tab is hidden just do a quick check, then wait 5s so we don't hold a server thread */
+    const hidden=document.hidden;
     try{
       const params=snapGroup?`group_id=${snapGroup}`:`with=${snapFriend}`;
+      const srvTimeout=hidden?0:5;
       const r=await fetch(
-        `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=4`,
-        {mode:'cors',signal:AbortSignal.timeout(7000)});
+        `${API()}/api/chat/poll?user=${s.username}&password=${encodeURIComponent(s.password)}&${params}&since=${_chatLastTs}&timeout=${srvTimeout}`,
+        {mode:'cors',signal:AbortSignal.timeout(hidden?3000:9000)});
       if(r.status===401){setSession(null);refreshAccountUI();toast('Session expired — log in again','err',4000);break;}
       const d=await safeJson(r)||{};
       const msgs=d.messages||[];
@@ -2481,10 +2484,11 @@ async function _longPollLoop(friendUsername,friendData,groupId){
           appendChatMsg(el,msg,s.username,friendData);
         });
         if(wasBottom)el.scrollTop=el.scrollHeight;
-        pollTyping(snapFriend,snapGroup);
+        if(!hidden)pollTyping(snapFriend,snapGroup);
       }
+      if(hidden)await new Promise(r=>setTimeout(r,5000));
     }catch{
-      await new Promise(r=>setTimeout(r,1500));
+      await new Promise(r=>setTimeout(r,2000));
     }
   }
   _pollRunning=false;
@@ -2894,7 +2898,7 @@ async function openChat(friendUsername,friendData,groupId){
   _pollRunning=false;
   _longPollLoop(friendUsername,friendData,groupId);
   clearInterval(_updatePoll);
-  _updatePoll=setInterval(()=>pollChatUpdates(friendUsername,friendData,groupId),3000);
+  _updatePoll=setInterval(()=>{if(!document.hidden)pollChatUpdates(friendUsername,friendData,groupId);},8000);
   $('chat-inp').focus();
 }
 
@@ -5584,7 +5588,13 @@ function showSplash(){const sp=$('splash');sp.classList.add('active');const stop
 function exitSplash(stop){$('splash').classList.add('out');stop?.();setTimeout(()=>{$('splash').style.display='none';const app=$('app');app.removeAttribute('aria-hidden');app.classList.add('on');bootApp();},600);}
 
 async function bootApp(){
-  await fetchServerUrlFromGithub();
+  /* when running inside the Tauri desktop app, the server is always local */
+  if(window.__TAURI_MODE__||window.__OBSIDIAN_LOCAL_PORT__){
+    const port=window.__OBSIDIAN_LOCAL_PORT__||5000;
+    S.serverUrl=`http://localhost:${port}`;
+  }else{
+    await fetchServerUrlFromGithub();
+  }
   refreshAccountUI();
   if(S.serverUrl){
     skels();
